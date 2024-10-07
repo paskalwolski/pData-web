@@ -11,7 +11,7 @@ function App() {
   const [selectedLap, setSelectedLap] = useState(null);
 
   useEffect(() => {
-    if (selectedLap){
+    if (selectedLap !== null){
       console.log(`Selected Lap ${selectedLap.lap_number}`)
     }
   }, [selectedLap])
@@ -19,7 +19,7 @@ function App() {
   return (
     <>
       <h1>{eventData.car} on {eventData.track} - {eventData.eventTime}</h1>
-      <div>
+      <div className='card' id='lapSelector'>
         {eventData.laps.map((lap, i) => {
           return <LapCard key={i} {...{ lapData: lap, isFastestLap: lap.lap_number === eventData.fastestLap }} onClick={() => {setSelectedLap(lap)}}/>
         })}

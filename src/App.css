@@ -1,7 +1,6 @@
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
   text-align: center;
 }
 
@@ -27,6 +26,10 @@
   margin: 0.5em;
 }
 
+.pit{
+  background-color: blue;
+}
+
 .valid {
   background-color: green;
 }
@@ -39,9 +42,10 @@
 }
 
 .fastest {
-  background-color: blue;
+  background-color: purple;
 }
 
-.read-the-docs {
-  color: #888;
+#lapSelector {
+  display: flex;
+  flex-direction: row;
 }

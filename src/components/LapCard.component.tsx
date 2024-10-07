@@ -2,7 +2,6 @@ import { useState } from "react";
 
 const LapCard = ({ lapData, isFastestLap, ...props}) => {
 
-
     const getLapClass = (lap) => {
         let classname = "card"
         if (isFastestLap) {classname += " fastest"}
@@ -21,7 +20,7 @@ const LapCard = ({ lapData, isFastestLap, ...props}) => {
     }
 
     return (
-        <div onClick={props.onClick}>
+        <div onClick={props.onClick} >
             {<div className={getLapClass(lapData)}>{lapData.lap_number}</div>}
         </div>
     )
