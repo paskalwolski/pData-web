@@ -6,40 +6,67 @@ const LapData = ({ selectedLap, ...props }) => {
     const svgRef = useRef(null);
 
     useEffect(() => {
-        if (!selectedLap) return
-        const minX = selectedLap.lap_data.reduce((d, min) => d.pos[0] < min.pos[0] ? d : min)
-        const minY = selectedLap.lap_data.reduce((d, min) => d.pos[1] < min.pos[1] ? d : min)
-        console.log("Minx", minX.pos[0], "MinY", minY.pos[1])
-    }, [selectedLap])
-
-    useEffect(() => {
         if (selectedLap) {
             const svg = d3.select(svgRef.current)
                 .append("g")
-                .attr('width', 500)
-                .attr('height', 500)
+                .attr('width', 520)
+                .attr('height', 520)
                 .style('border', '1px solid black')
 
             const xScale = d3.scaleLinear()
                 .domain(d3.extent(selectedLap.lap_data, data => data.pos[0]))
                 .range([0, 500])
             const yScale = d3.scaleLinear()
-                .domain(d3.extent(selectedLap.lap_data, data => data.pos[1]))
+                .domain(d3.extent(selectedLap.lap_data, data => data.pos[2]))
                 .range([0, 500])
 
             const lineGenerator = d3.line()
                 .x((d) => xScale(d.pos[0]))
-                .y((d) => yScale(d.pos[1]))
+                .y((d) => yScale(d.pos[2]))
                 .curve(d3.curveCatmullRom);
 
-            svg.selectAll("*").remove();
+            const colorGen = (n) => {
+                let gas, brake;
+                ({ gas, brake } = n)
+                if (gas != 0 && brake != 0) {
+                    return `#000000`
+                } else if (gas) {
+                    return d3.hsl(120, 1, 1 - (gas * 0.5)).formatHex8()
+                } else if (brake) {
+                    return d3.hsl(0, 1, 1 - (brake * 0.5)).formatHex8()
+                } else {
+                    return "#FFFFFF"
+                }
+            }
 
-            svg.append('path')
-                .datum(selectedLap.lap_data)
-                .attr("d", lineGenerator)
-                .attr('fill', null)
-                .attr('stroke', 'steelblue')
-                .attr('strokewidth', 5)
+            svg.select("g").remove();
+
+            const g = svg.append("g")
+            selectedLap.lap_data.reduce((o, n, i) => {
+
+                const colour = colorGen(o)
+                console.log(colour)
+
+                g.append("path")
+                    .datum([o, n])
+                    .attr("d", lineGenerator)
+                    .attr("fill", 'none')
+                    .attr("stroke", colour)
+                    .attr('stroke-width', 5)
+                    .attr('data-id', i-1)
+                    .on('mouseover', () => {
+                        console.log(`Distance ${o.distance}`)
+                    })
+
+                // move onto the next point
+                return n;
+            })
+            // svg.append('path')
+            //     .datum(selectedLap.lap_data)
+            //     .attr('fill', "none")
+            //     .attr("d", lineGenerator)
+            //     .attr('stroke', 'steelblue')
+            //     .attr('stroke-width', 6)
         }
     }, [selectedLap])
 
@@ -48,7 +75,7 @@ const LapData = ({ selectedLap, ...props }) => {
             {selectedLap ?
                 <>
                     <div>Lap Number {selectedLap.lap_number}</div>
-                    <svg ref={svgRef} id='graph' width={600} height={600}></svg>
+                    <svg ref={svgRef} id='graph' height={520} width={520}></svg>
                 </>
                 :
                 <>Select a Lap to Get Started</>}

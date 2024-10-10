@@ -26,7 +26,7 @@ function App() {
         })}
       </div>
 
-      <LapData id='lapDisplay' {...{selectedLap}}></LapData>
+      <LapData id='lapDisplay' {...{ selectedLap }}></LapData>
     </>
   )
 }
