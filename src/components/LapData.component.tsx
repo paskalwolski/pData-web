@@ -1,9 +1,24 @@
 import * as d3 from "d3"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 
 
 const LapData = ({ selectedLap, ...props }) => {
     const svgRef = useRef(null);
+
+    const [isSecondaryLap, setSecondaryLap] = useState(false)
+
+    const handleSecondaryLap = () => {
+        const neededState = !isSecondaryLap
+        if (neededState){
+            d3.selectAll("path")
+                .style("filter", "saturate(0.2)")
+        } else {
+            d3.selectAll("path")
+                .style("filter", "saturate(1)")
+        }
+
+        setSecondaryLap(!isSecondaryLap)
+    }
 
     useEffect(() => {
         if (selectedLap) {
@@ -45,7 +60,6 @@ const LapData = ({ selectedLap, ...props }) => {
             selectedLap.lap_data.reduce((o, n, i) => {
 
                 const colour = colorGen(o)
-                console.log(colour)
 
                 g.append("path")
                     .datum([o, n])
@@ -53,7 +67,7 @@ const LapData = ({ selectedLap, ...props }) => {
                     .attr("fill", 'none')
                     .attr("stroke", colour)
                     .attr('stroke-width', 5)
-                    .attr('data-id', i-1)
+                    .attr('data-id', i - 1)
                     .on('mouseover', () => {
                         console.log(`Distance ${o.distance}`)
                     })
@@ -74,7 +88,8 @@ const LapData = ({ selectedLap, ...props }) => {
         <div className="card" id={props?.id}>
             {selectedLap ?
                 <>
-                    <div>Lap Number {selectedLap.lap_number}</div>
+                    <input id='tempSecondLapCheck' type="checkbox" checked={isSecondaryLap} onChange={handleSecondaryLap}></input>
+                    <label htmlFor='tempSecondLapCheck'>Secondary Lap</label>
                     <svg ref={svgRef} id='graph' height={520} width={520}></svg>
                 </>
                 :
