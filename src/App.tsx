@@ -25,8 +25,7 @@ function App() {
           return <LapCard key={i} {...{ lapData: lap, isFastestLap: lap.lap_number === eventData.fastestLap }} onClick={() => { setSelectedLap(lap) }} />
         })}
       </div>
-
-      <LapData id='lapDisplay' {...{ selectedLap }}></LapData>
+      <LapData {...{selectedLap}}/>
     </>
   )
 }
