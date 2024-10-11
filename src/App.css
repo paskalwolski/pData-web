@@ -45,6 +45,10 @@
   background-color: purple;
 }
 
+.secondary {
+  filter: saturate(0.4)
+}
+
 #lapSelector {
   display: flex;
   flex-direction: row;

@@ -11,10 +11,10 @@ const LapData = ({ selectedLap, ...props }) => {
         const neededState = !isSecondaryLap
         if (neededState){
             d3.selectAll("path")
-                .style("filter", "saturate(0.2)")
-        } else {
-            d3.selectAll("path")
-                .style("filter", "saturate(1)")
+                .classed("secondary", true)
+            } else {
+                d3.selectAll("path")
+                .classed("secondary", false)
         }
 
         setSecondaryLap(!isSecondaryLap)
