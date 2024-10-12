@@ -1,11 +1,9 @@
-import { useState, useEffect } from 'react'
-import './App.css'
+import { useState, useEffect } from "react";
+import "./App.css";
 
-
-
-import { exampleData } from './assets/data'
-import LapCard from './components/LapCard.component';
-import LapData from './components/LapData.component';
+import { exampleData } from "./assets/data";
+import LapCard from "./components/LapCard.component";
+import LapData from "./components/LapData.component";
 
 function App() {
   const eventData = exampleData;
@@ -13,21 +11,34 @@ function App() {
 
   useEffect(() => {
     if (selectedLap !== null) {
-      console.log(`Selected Lap ${selectedLap.lap_number}`)
+      console.log(`Selected Lap ${selectedLap.lap_number}`);
     }
-  }, [selectedLap])
+  }, [selectedLap]);
 
   return (
     <>
-      <h1>{eventData.car} on {eventData.track} - {eventData.eventTime}</h1>
-      <div className='card' id='lapSelector'>
+      <h1>
+        {eventData.car} on {eventData.track} - {eventData.eventTime}
+      </h1>
+      <div className="card" id="lapSelector">
         {eventData.laps.map((lap, i) => {
-          return <LapCard key={i} {...{ lapData: lap, isFastestLap: lap.lap_number === eventData.fastestLap }} onClick={() => { setSelectedLap(lap) }} />
+          return (
+            <LapCard
+              key={i}
+              {...{
+                lapData: lap,
+                isFastestLap: lap.lap_number === eventData.fastestLap,
+              }}
+              onClick={() => {
+                setSelectedLap(lap);
+              }}
+            />
+          );
         })}
       </div>
-      <LapData {...{selectedLap}}/>
+      <LapData {...{ selectedLap }} />
     </>
-  )
+  );
 }
 
-export default App
+export default App;
