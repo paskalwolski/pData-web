@@ -35,10 +35,11 @@ const GraphDisplay = ({ selectedLap, ...props }) => {
                 .attr("transform", `translate(${margins.left}, ${gHeight - margins.bottom})`)
                 .call(d3.axisBottom(xScale))
 
-
+            const domain = d3.extent(selectedLap.lap_data, data => data.speed)
+            const bufferedDomain = [domain[0] *0.95, domain[1] * 1.05]
             const yScale = d3.scaleLinear()
                 // .domain([0, maxSpeed])
-                .domain(d3.extent(saniData, data => data.speed))
+                .domain(bufferedDomain)
                 .range([height, 0])
             svg.append("g")
                 .attr("transform", `translate(${margins.left}, ${margins.top})`)
