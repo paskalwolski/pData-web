@@ -13,9 +13,28 @@ const LapData = ({ selectedLap }) => {
                     {/* <GraphDisplay
             {...{ selectedLap, selectedPoint, setSelectedPoint }}
           ></GraphDisplay> */}
-                    <Graph
-                        {...{ selectedLap, selectedPoint, setSelectedPoint }}
-                    ></Graph>
+                    <div
+                        id="graphContainer"
+                        style={{ display: "flex", flexDirection: "column" }}
+                    >
+                        <Graph
+                            {...{
+                                target: "speed",
+                                selectedLap,
+                                selectedPoint,
+                                setSelectedPoint,
+                            }}
+                        ></Graph>
+                        <Graph
+                            {...{
+                                target: "gas",
+                                colour: "green",
+                                selectedLap,
+                                selectedPoint,
+                                setSelectedPoint,
+                            }}
+                        ></Graph>
+                    </div>
                     <TrackDisplay
                         id="lapDisplay"
                         {...{ selectedLap, selectedPoint, setSelectedPoint }}

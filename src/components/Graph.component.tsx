@@ -1,11 +1,19 @@
 import * as d3 from "d3";
 import { useEffect, useRef, useState } from "react";
 
-const Graph = ({ selectedLap, selectedPoint, setSelectedPoint, ...props }) => {
+const Graph = ({
+    target,
+    selectedLap,
+    selectedPoint,
+    setSelectedPoint,
+    ...props
+}) => {
     const height = 200;
     const width = 500;
     const focusRef = useRef(null);
     const [focusCoord, setFocusCoord] = useState([0, 0]);
+
+    const colour = props?.colour ?? "steelblue";
 
     const saniData = selectedLap.lap_data.sort(
         (a, b) => a.distance - b.distance
@@ -16,7 +24,7 @@ const Graph = ({ selectedLap, selectedPoint, setSelectedPoint, ...props }) => {
         .domain(d3.extent(saniData, (data) => data.distance))
         .range([0, width]);
 
-    const domain = d3.extent(selectedLap.lap_data, (data) => data.speed);
+    const domain = d3.extent(selectedLap.lap_data, (data) => data[target]);
     const bufferedDomain = [domain[0] * 0.8, domain[1] * 1.1]; // Expand by ~10%
     const yScale = d3
         .scaleLinear()
@@ -27,7 +35,7 @@ const Graph = ({ selectedLap, selectedPoint, setSelectedPoint, ...props }) => {
     const lineGenerator = d3
         .line()
         .x((d) => xScale(Number(Number(d.distance).toFixed(0))))
-        .y((d) => yScale(d.speed));
+        .y((d) => yScale(d[target]));
     const linePath = lineGenerator(saniData);
 
     const handleMouseEnter = () => {
@@ -45,7 +53,7 @@ const Graph = ({ selectedLap, selectedPoint, setSelectedPoint, ...props }) => {
         const selectedData = saniData[selectedPoint];
         setFocusCoord([
             xScale(selectedData.distance),
-            yScale(selectedData.speed),
+            yScale(selectedData[target]),
         ]);
     }, [selectedPoint]);
 
@@ -55,7 +63,7 @@ const Graph = ({ selectedLap, selectedPoint, setSelectedPoint, ...props }) => {
                 {/* TODO: Draw the axis? */}
                 <path
                     d={linePath}
-                    stroke="steelblue"
+                    stroke={colour}
                     strokeWidth={2}
                     fill="none"
                 />
