@@ -4,12 +4,12 @@ import TrackDisplay from "./TrackDisplay.component";
 const LapData = ({ selectedLap }) => {
 
     return (
-        <div className="card">
+        <div className="card" id="LapDataContainer">
             <>{selectedLap && true}</>
             {selectedLap ?
                 <>
-                    <TrackDisplay id='lapDisplay' {...{ selectedLap }}></TrackDisplay>
                     <GraphDisplay {...{ selectedLap }}></GraphDisplay>
+                    <TrackDisplay id='lapDisplay' {...{ selectedLap }}></TrackDisplay>
                 </>
                 :
                 <>Select a Lap to Get Started</>

@@ -23,10 +23,11 @@ const TrackDisplay = ({ selectedLap, ...props }) => {
     useEffect(() => {
         if (selectedLap) {
             const svg = d3.select(svgRef.current)
-                .append("g")
                 .attr('width', 320)
                 .attr('height', 320)
                 .style('border', '1px solid black')
+            // TODO: limit this cleanup to this graph
+            d3.selectAll("g").selectAll("path").remove()
 
             const xScale = d3.scaleLinear()
                 .domain(d3.extent(selectedLap.lap_data, data => data.pos[0]))
@@ -53,8 +54,8 @@ const TrackDisplay = ({ selectedLap, ...props }) => {
                     return "#FFFFFF"
                 }
             }
-
-            svg.select("g").remove();
+            
+            
 
             const g = svg.append("g")
             selectedLap.lap_data.reduce((o, n, i) => {
@@ -66,7 +67,7 @@ const TrackDisplay = ({ selectedLap, ...props }) => {
                     .attr("d", lineGenerator)
                     .attr("fill", 'none')
                     .attr("stroke", colour)
-                    .attr('stroke-width', 5)
+                    .attr('stroke-width', 3)
                     .attr('data-id', i - 1)
                     .on('mouseover', () => {
                         console.log(`Distance ${o.distance}`)
@@ -79,7 +80,7 @@ const TrackDisplay = ({ selectedLap, ...props }) => {
     }, [selectedLap])
 
     return (
-        <div className="card" id={props?.id}>
+        <div style={{display: "flex", flexDirection: "column", flexBasis: 1, flexGrow: 0}}>
             <input id='tempSecondLapCheck' type="checkbox" checked={isSecondaryLap} onChange={handleSecondaryLap}></input>
             <label htmlFor='tempSecondLapCheck'>Secondary Lap</label>
             <svg ref={svgRef} id='graph' height={320} width={320}></svg>

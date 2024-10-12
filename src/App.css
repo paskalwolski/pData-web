@@ -1,5 +1,5 @@
 #root {
-  width: 90%;
+  width: 96%;
   margin: 0 auto;
   text-align: center;
 }
@@ -24,6 +24,12 @@
   border: 2px solid lightgrey;
   border-radius: 5px;
   margin: 0.5em;
+  display: flex;
+  flex-direction: row;
+}
+#LapDataContainer {
+  padding: 1em;
+  justify-content: space-between;
 }
 
 .pit{
@@ -46,7 +52,7 @@
 }
 
 .secondary {
-  filter: saturate(0.4)
+  filter: saturate(0.4);
 }
 
 #lapSelector {
