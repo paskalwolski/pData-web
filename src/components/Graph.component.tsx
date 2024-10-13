@@ -11,7 +11,7 @@ const Graph = ({
     const height = 200;
     const width = 500;
     const focusRef = useRef(null);
-    const [focusCoord, setFocusCoord] = useState([0, 0]);
+    const [focusPos, setFocusPos] = useState(null);
 
     const colour = props?.colour ?? "steelblue";
 
@@ -51,11 +51,21 @@ const Graph = ({
     useEffect(() => {
         if (!selectedPoint) return;
         const selectedData = saniData[selectedPoint];
-        setFocusCoord([
-            xScale(selectedData.distance),
-            yScale(selectedData[target]),
-        ]);
+        setFocusPos({
+            x: xScale(selectedData.distance),
+            y: yScale(selectedData[target]),
+        });
     }, [selectedPoint]);
+
+    // This (with some mods) goes to the trackdisplay to show 2d position
+    // useEffect(() => {
+    //     if (!selectedPoint) return;
+    //     const selectedData = saniData[selectedPoint];
+    //     setFocusCoord([
+    //         xScale(selectedData.distance),
+    //         yScale(selectedData[target]),
+    //     ]);
+    // }, [selectedPoint]);
 
     return (
         <div>
@@ -68,13 +78,29 @@ const Graph = ({
                     fill="none"
                 />
                 <g>
-                    <circle
+                    {/* <circle
                         ref={focusRef}
                         cx={focusCoord[0] ?? 0}
                         cy={focusCoord[1] ?? 0}
                         opacity={1}
                         r={5}
-                    />
+                    /> */}
+                    <g>
+                        <line
+                            ref={focusRef}
+                            x1={focusPos?.x}
+                            x2={focusPos?.x}
+                            y1={yScale.range()[0]}
+                            y2={yScale.range()[1]}
+                            stroke="red"
+                        />
+                        <circle
+                            cx={focusPos?.x}
+                            cy={focusPos?.y}
+                            opacity={1}
+                            r={3}
+                        />
+                    </g>
                     <rect
                         style={{ pointerEvents: "all" }}
                         fill="none"
