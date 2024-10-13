@@ -2,6 +2,7 @@ import { useState } from "react";
 import GraphDisplay from "./GraphDisplay.component";
 import TrackDisplay from "./TrackDisplay.component";
 import Graph from "./Graph.component";
+import Track from "./Track.component";
 
 const LapData = ({ selectedLap }) => {
     const [selectedPoint, setSelectedPoint] = useState(null);
@@ -35,10 +36,9 @@ const LapData = ({ selectedLap }) => {
                             }}
                         ></Graph>
                     </div>
-                    <TrackDisplay
-                        id="lapDisplay"
+                    <Track
                         {...{ selectedLap, selectedPoint, setSelectedPoint }}
-                    ></TrackDisplay>
+                    ></Track>
                 </>
             ) : (
                 <>Select a Lap to Get Started</>

@@ -78,13 +78,6 @@ const Graph = ({
                     fill="none"
                 />
                 <g>
-                    {/* <circle
-                        ref={focusRef}
-                        cx={focusCoord[0] ?? 0}
-                        cy={focusCoord[1] ?? 0}
-                        opacity={1}
-                        r={5}
-                    /> */}
                     <g>
                         <line
                             ref={focusRef}
