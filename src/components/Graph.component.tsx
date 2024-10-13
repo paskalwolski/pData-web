@@ -1,8 +1,9 @@
 import * as d3 from "d3";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const Graph = ({
     target,
+    targets,
     selectedLap,
     selectedPoint,
     setSelectedPoint,
@@ -10,8 +11,8 @@ const Graph = ({
 }) => {
     const height = 200;
     const width = 500;
-    const focusRef = useRef(null);
     const [focusPos, setFocusPos] = useState(null);
+    const [focusVisible, setFocusVisible] = useState(false);
 
     const colour = props?.colour ?? "steelblue";
 
@@ -41,39 +42,32 @@ const Graph = ({
         .line()
         .x((d) => xScale(Number(Number(d.distance).toFixed(0))))
         .y((d) => yScale(d[target]));
+
     const linePath = useMemo(
         () => lineGenerator(selectedLap.lap_data),
         [selectedLap.lap_number]
     );
 
-    const handleMouseEnter = () => {
-        return;
-    };
     const handleMouseMove = (e) => {
         const x0 = xScale.invert(d3.pointer(e)[0]);
         const i = d3.bisector((d) => d.distance).left(selectedLap.lap_data, x0);
         setSelectedPoint(i);
     };
-    const handleMouseLeave = () => {};
+    const handleMouseLeave = () => {
+        setSelectedPoint(null);
+    };
 
     useEffect(() => {
-        if (!selectedPoint) return;
+        if (!selectedPoint) {
+            setFocusPos(null);
+            return;
+        }
         const selectedData = selectedLap.lap_data[selectedPoint];
         setFocusPos({
             x: xScale(selectedData.distance),
             y: yScale(selectedData[target]),
         });
     }, [selectedPoint]);
-
-    // This (with some mods) goes to the trackdisplay to show 2d position
-    // useEffect(() => {
-    //     if (!selectedPoint) return;
-    //     const selectedData = saniData[selectedPoint];
-    //     setFocusCoord([
-    //         xScale(selectedData.distance),
-    //         yScale(selectedData[target]),
-    //     ]);
-    // }, [selectedPoint]);
 
     return (
         <div>
@@ -86,28 +80,29 @@ const Graph = ({
                     fill="none"
                 />
                 <g>
-                    <g>
-                        <line
-                            ref={focusRef}
-                            x1={focusPos?.x}
-                            x2={focusPos?.x}
-                            y1={yScale.range()[0]}
-                            y2={yScale.range()[1]}
-                            stroke="red"
-                        />
-                        <circle
-                            cx={focusPos?.x}
-                            cy={focusPos?.y}
-                            opacity={1}
-                            r={3}
-                        />
-                    </g>
+                    {focusPos && (
+                        <g>
+                            <line
+                                x1={focusPos?.x}
+                                x2={focusPos?.x}
+                                y1={yScale.range()[0]}
+                                y2={yScale.range()[1]}
+                                stroke="red"
+                            />
+                            <circle
+                                cx={focusPos?.x}
+                                cy={focusPos?.y}
+                                opacity={1}
+                                r={3}
+                            />
+                        </g>
+                    )}
                     <rect
                         style={{ pointerEvents: "all" }}
                         fill="none"
                         height={height}
                         width={width}
-                        onMouseEnter={handleMouseEnter}
+                        // onMouseEnter={handleMouseEnter}
                         onMouseMove={handleMouseMove}
                         onMouseLeave={handleMouseLeave}
                     />
