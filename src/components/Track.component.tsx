@@ -6,10 +6,6 @@ const Track = ({ selectedLap, selectedPoint, setSelectedPoint }) => {
     const focusRef = useRef(null);
     const [focusPos, setFocusPos] = useState([0, 0]);
     const [focusVisible, setFocusVisible] = useState(false);
-    const saniData = useMemo(
-        () => selectedLap.lap_data.sort((a, b) => a.distance - b.distance),
-        [selectedLap.lap_number]
-    );
     const height = 500;
     const width = 500;
 
@@ -19,7 +15,7 @@ const Track = ({ selectedLap, selectedPoint, setSelectedPoint }) => {
                 .scaleLinear()
                 .domain(d3.extent(selectedLap.lap_data, (data) => data.pos[0]))
                 .range([0, width]),
-        [saniData.lap_number]
+        [selectedLap.lap_number]
     );
     const yScale = useMemo(
         () =>
@@ -27,18 +23,18 @@ const Track = ({ selectedLap, selectedPoint, setSelectedPoint }) => {
                 .scaleLinear()
                 .domain(d3.extent(selectedLap.lap_data, (data) => data.pos[2]))
                 .range([0, height]),
-        [saniData.lap_number]
+        [selectedLap.lap_number]
     );
 
     const setFocus = useMemo(
         // Factory which returns a function
         () => (i) => {
             setSelectedPoint(i);
-            const d = saniData[i];
+            const d = selectedLap.lap_data[i];
             setFocusPos([xScale(d.pos[0]), yScale(d.pos[2])]);
             setFocusVisible(true);
         },
-        [saniData]
+        [selectedLap.lap_number]
     );
 
     useEffect(() => {
@@ -58,9 +54,14 @@ const Track = ({ selectedLap, selectedPoint, setSelectedPoint }) => {
     return (
         <div>
             <svg width={width} height={height} style={{ margin: "10px" }}>
-                {saniData && (
+                {selectedLap && (
                     <TrackLine
-                        {...{ data: saniData, xScale, yScale, setFocus }}
+                        {...{
+                            data: selectedLap.lap_data,
+                            xScale,
+                            yScale,
+                            setFocus,
+                        }}
                     />
                 )}
                 {focusVisible && (

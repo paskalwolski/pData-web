@@ -15,6 +15,11 @@ function App() {
         }
     }, [selectedLap]);
 
+    const sanitizeLap = (lap) => {
+        lap.lap_data.sort((a, b) => a.distance - b.distance);
+        return lap;
+    };
+
     return (
         <>
             <h1>
@@ -28,16 +33,16 @@ function App() {
                             {...{
                                 lapData: lap,
                                 isFastestLap:
-                                    lap.lap_number === eventData.fastestLap,
+                                    lap?.lap_number === eventData.fastestLap,
                             }}
                             onClick={() => {
-                                setSelectedLap(lap);
+                                setSelectedLap(sanitizeLap(lap));
                             }}
                         />
                     );
                 })}
             </div>
-            <LapData {...{ selectedLap }} />
+            {selectedLap && <LapData {...{ selectedLap }} />}
         </>
     );
 }
