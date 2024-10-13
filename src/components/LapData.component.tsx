@@ -8,7 +8,6 @@ const LapData = ({ selectedLap }) => {
     const [selectedPoint, setSelectedPoint] = useState(null);
     return (
         <div className="card" id="LapDataContainer">
-            <>{selectedLap && true}</>
             {selectedLap ? (
                 <>
                     {/* <GraphDisplay

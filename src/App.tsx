@@ -42,7 +42,7 @@ function App() {
                     );
                 })}
             </div>
-            {selectedLap && <LapData {...{ selectedLap }} />}
+            <LapData {...{ selectedLap }} />
         </>
     );
 }
