@@ -31,7 +31,36 @@ const LapData = ({ selectedLap }) => {
                                     { target: "gas", color: "green" },
                                     { target: "brake", color: "red" },
                                 ],
-                                colour: "green",
+                                selectedLap,
+                                selectedPoint,
+                                setSelectedPoint,
+                            }}
+                        ></Graph>
+                        <Graph
+                            {...{
+                                targets: [
+                                    { target: "steer", color: "purple" },
+                                ],
+                                selectedLap,
+                                selectedPoint,
+                                setSelectedPoint,
+                            }}
+                        ></Graph>
+                        <Graph
+                            {...{
+                                targets: [
+                                    { target: "rpm", color: "steelblue" },
+                                ],
+                                selectedLap,
+                                selectedPoint,
+                                setSelectedPoint,
+                            }}
+                        ></Graph>
+                        <Graph
+                            {...{
+                                targets: [
+                                    { target: "gear", color: "steelblue" },
+                                ],
                                 selectedLap,
                                 selectedPoint,
                                 setSelectedPoint,
