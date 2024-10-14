@@ -2,7 +2,6 @@ import * as d3 from "d3";
 import { useEffect, useMemo, useState } from "react";
 
 const Graph = ({
-    target,
     targets,
     selectedLap,
     selectedPoint,
@@ -14,7 +13,20 @@ const Graph = ({
     const [focusPos, setFocusPos] = useState(null);
     const [focusVisible, setFocusVisible] = useState(false);
 
-    const colour = props?.colour ?? "steelblue";
+    // const colour = props?.colour ?? "steelblue";
+
+    // Create the list of domains
+    const yDomainList = targets.map((g) =>
+        d3.extent(selectedLap.lap_data, (data) => data[g.target])
+    );
+    // Find the min/max
+    const domain = useMemo(
+        () =>
+            yDomainList.reduce((d, bounds) => {
+                return [d3.min([d[0], bounds[0]]), d3.max([d[1], bounds[1]])];
+            }),
+        [selectedLap.lap_number]
+    );
 
     const xScale = useMemo(
         () =>
@@ -27,10 +39,6 @@ const Graph = ({
         [selectedLap.lap_number]
     );
 
-    const domain = useMemo(
-        () => d3.extent(selectedLap.lap_data, (data) => data[target]),
-        [selectedLap.lap_number]
-    );
     const bufferedDomain = [domain[0] * 0.8, domain[1] * 1.1]; // Expand by ~10%
     const yScale = d3
         .scaleLinear()
@@ -38,15 +46,11 @@ const Graph = ({
         .domain(bufferedDomain)
         .range([height, 0]);
 
-    const lineGenerator = d3
-        .line()
-        .x((d) => xScale(Number(Number(d.distance).toFixed(0))))
-        .y((d) => yScale(d[target]));
-
-    const linePath = useMemo(
-        () => lineGenerator(selectedLap.lap_data),
-        [selectedLap.lap_number]
-    );
+    const lineGenerator = (target) =>
+        d3
+            .line()
+            .x((d) => xScale(Number(Number(d.distance).toFixed(0))))
+            .y((d) => yScale(d[target]))(selectedLap.lap_data);
 
     const handleMouseMove = (e) => {
         const x0 = xScale.invert(d3.pointer(e)[0]);
@@ -57,44 +61,53 @@ const Graph = ({
         setSelectedPoint(null);
     };
 
-    useEffect(() => {
-        if (!selectedPoint) {
-            setFocusPos(null);
-            return;
-        }
-        const selectedData = selectedLap.lap_data[selectedPoint];
-        setFocusPos({
-            x: xScale(selectedData.distance),
-            y: yScale(selectedData[target]),
-        });
-    }, [selectedPoint]);
+    const graphDistance =
+        // Find the x value for this point
+        selectedPoint
+            ? xScale(selectedLap.lap_data[selectedPoint].distance)
+            : 0;
+    const getGraphValue = (target) => {
+        // find the y value for this target type
+        return yScale(selectedLap.lap_data[selectedPoint][target]);
+    };
 
     return (
         <div>
             <svg width={width} height={height}>
-                {/* TODO: Draw the axis? */}
-                <path
-                    d={linePath}
-                    stroke={colour}
-                    strokeWidth={2}
-                    fill="none"
-                />
+                {targets.map((g) => {
+                    return (
+                        <path
+                            d={lineGenerator(g.target)}
+                            stroke={g.color ?? "steelblue"}
+                            strokeWidth={2}
+                            fill="none"
+                        />
+                    );
+                })}
                 <g>
-                    {focusPos && (
+                    {selectedPoint && (
                         <g>
                             <line
-                                x1={focusPos?.x}
-                                x2={focusPos?.x}
+                                x1={graphDistance}
+                                x2={graphDistance}
                                 y1={yScale.range()[0]}
                                 y2={yScale.range()[1]}
                                 stroke="red"
+                                strokeWidth={2}
                             />
-                            <circle
-                                cx={focusPos?.x}
-                                cy={focusPos?.y}
-                                opacity={1}
-                                r={3}
-                            />
+                            {targets.map((g) => {
+                                return (
+                                    <circle
+                                        cx={graphDistance}
+                                        cy={getGraphValue(g.target)}
+                                        opacity={1}
+                                        r={3}
+                                        stroke={g.color ?? "steelblue"}
+                                        strokeWidth={2}
+                                        fill="none"
+                                    />
+                                );
+                            })}
                         </g>
                     )}
                     <rect

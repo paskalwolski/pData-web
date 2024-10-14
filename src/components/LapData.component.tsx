@@ -19,7 +19,7 @@ const LapData = ({ selectedLap }) => {
                     >
                         <Graph
                             {...{
-                                target: "speed",
+                                targets: [{ target: "speed" }],
                                 selectedLap,
                                 selectedPoint,
                                 setSelectedPoint,
@@ -27,7 +27,10 @@ const LapData = ({ selectedLap }) => {
                         ></Graph>
                         <Graph
                             {...{
-                                target: "gas",
+                                targets: [
+                                    { target: "gas", color: "green" },
+                                    { target: "brake", color: "red" },
+                                ],
                                 colour: "green",
                                 selectedLap,
                                 selectedPoint,
