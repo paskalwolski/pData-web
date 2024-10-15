@@ -71,7 +71,12 @@ const LapData = ({ primaryLap, secondaryLap }) => {
                         ></Graph>
                     </div>
                     <Track
-                        {...{ primaryLap, secondaryLap, selectedPoint, setSelectedPoint }}
+                        {...{
+                            primaryLap,
+                            secondaryLap,
+                            selectedPoint,
+                            setSelectedPoint,
+                        }}
                     ></Track>
                 </>
             ) : (

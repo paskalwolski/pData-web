@@ -1,5 +1,6 @@
 import * as d3 from "d3";
 import { useEffect, useMemo, useState } from "react";
+import GraphLine from "./GraphLine.component";
 
 const Graph = ({
     targets,
@@ -63,18 +64,16 @@ const Graph = ({
         domainExtent[0] - Math.abs(0.2 * domainExtent[0]), // Make sure negative values are reduced
         domainExtent[1] + Math.abs(domainExtent[1] * 1.1),
     ]; // Expand by ~10%
-    const yScale = d3
-        .scaleLinear()
-        // .domain([0, maxSpeed])
-        .domain(bufferedDomain)
-        .range([height, 0]);
 
-    const lineGenerator = (data, target) => {
-        return d3
-            .line()
-            .x((d) => xScale(Number(Number(d.distance).toFixed(0))))
-            .y((d) => yScale(d[target]))(data);
-    };
+    const yScale = useMemo(() => {
+        return (
+            d3
+                .scaleLinear()
+                // .domain([0, maxSpeed])
+                .domain(bufferedDomain)
+                .range([height, 0])
+        );
+    }, [JSON.stringify(bufferedDomain)]); // Hack to use the bufferedDomain list as a dep
 
     const handleMouseMove = (e) => {
         const x0 = xScale.invert(d3.pointer(e)[0]);
@@ -99,12 +98,9 @@ const Graph = ({
                 {graphData &&
                     graphData.map((g, i) => {
                         return (
-                            <path
-                                d={lineGenerator(g.data, g.target)}
-                                stroke={g.color}
-                                strokeWidth={2}
-                                strokeDasharray={g.secondary ? "5 2" : "0"}
-                                fill="none"
+                            <GraphLine
+                                key={`line-${i}`}
+                                {...{ target: g, xScale, yScale }}
                             />
                         );
                     })}
@@ -120,7 +116,7 @@ const Graph = ({
                                 strokeWidth={2}
                                 opacity={0.4}
                             />
-                            {graphData.map((g) => {
+                            {graphData.map((g, i) => {
                                 return (
                                     <circle
                                         cx={graphDistance}
@@ -128,6 +124,7 @@ const Graph = ({
                                         opacity={1}
                                         r={4}
                                         fill={g.color ?? "darkgray"}
+                                        key={`mark-${g.target}-${i}`}
                                     />
                                 );
                             })}
