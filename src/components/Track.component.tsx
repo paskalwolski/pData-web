@@ -2,27 +2,51 @@ import * as d3 from "d3";
 import { useEffect, useMemo, useState } from "react";
 import TrackLine from "./TrackLine.component";
 
-const Track = ({ primaryLap, selectedPoint, setSelectedPoint }) => {
+const Track = ({
+    primaryLap,
+    secondaryLap,
+    selectedPoint,
+    setSelectedPoint,
+}) => {
     const [focusPos, setFocusPos] = useState(null);
     const height = 500;
     const width = 500;
 
-    const xScale = useMemo(
-        () =>
-            d3
-                .scaleLinear()
-                .domain(d3.extent(primaryLap.lap_data, (data) => data.pos[0]))
-                .range([0, width]),
-        [primaryLap.lap_number]
-    );
-    const yScale = useMemo(
-        () =>
-            d3
-                .scaleLinear()
-                .domain(d3.extent(primaryLap.lap_data, (data) => data.pos[2]))
-                .range([0, height]),
-        [primaryLap.lap_number]
-    );
+    const xDomain = useMemo(() => {
+        const dom = d3.extent(primaryLap.lap_data, (data) => data.pos[0]);
+        if (secondaryLap) {
+            const secDom = d3.extent(
+                secondaryLap.lap_data,
+                (data) => data.pos[0]
+            );
+            dom[0] = d3.min([dom[0], secDom[0]]);
+            dom[1] = d3.max([dom[1], secDom[1]]);
+        }
+        return dom;
+    }, [primaryLap.lap_number, secondaryLap?.lap_number]);
+
+    const xScale = useMemo(() => {
+        console.log("X Scale Updated");
+        return d3.scaleLinear().domain(xDomain).range([0, width]);
+    }, [xDomain]);
+
+    const yDomain = useMemo(() => {
+        const dom = d3.extent(primaryLap.lap_data, (data) => data.pos[2]);
+        if (secondaryLap) {
+            const secDom = d3.extent(
+                secondaryLap.lap_data,
+                (data) => data.pos[2]
+            );
+            dom[0] = d3.min([dom[0], secDom[0]]);
+            dom[1] = d3.max([dom[1], secDom[1]]);
+        }
+        return dom;
+    }, [primaryLap.lap_number, secondaryLap?.lap_number]);
+
+    const yScale = useMemo(() => {
+        console.log("Y domain Updated");
+        return d3.scaleLinear().domain(yDomain).range([0, height]);
+    }, [yDomain]);
 
     const setFocus = useMemo(
         // Factory which returns a function
@@ -31,7 +55,7 @@ const Track = ({ primaryLap, selectedPoint, setSelectedPoint }) => {
             const d = primaryLap.lap_data[i];
             setFocusPos([xScale(d.pos[0]), yScale(d.pos[2])]);
         },
-        [primaryLap.lap_number]
+        [xScale, yScale]
     );
 
     useEffect(() => {
@@ -45,16 +69,26 @@ const Track = ({ primaryLap, selectedPoint, setSelectedPoint }) => {
     return (
         <div>
             <svg width={width} height={height} style={{ margin: "10px" }}>
-                {primaryLap && (
+                {secondaryLap && ( // Ensure the secondary lap is rendered below
                     <TrackLine
                         {...{
-                            data: primaryLap.lap_data,
+                            data: secondaryLap.lap_data,
                             xScale,
                             yScale,
                             setFocus,
+                            secondary: true,
                         }}
                     />
                 )}
+                <TrackLine
+                    {...{
+                        data: primaryLap.lap_data,
+                        xScale,
+                        yScale,
+                        setFocus,
+                        secondary: false,
+                    }}
+                />
                 {focusPos && (
                     <circle
                         r={3}
