@@ -1,8 +1,8 @@
 import { useState } from "react";
 import GraphDisplay from "./GraphDisplay.component";
 import TrackDisplay from "./TrackDisplay.component";
-import Graph from "./Graph.component";
-import Track from "./Track.component";
+import Graph from "./Graph/Graph.component";
+import Track from "./Track/Track.component";
 
 const LapData = ({ primaryLap, secondaryLap }) => {
     const [selectedPoint, setSelectedPoint] = useState(null);
