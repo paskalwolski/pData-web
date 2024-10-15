@@ -4,14 +4,14 @@ import TrackDisplay from "./TrackDisplay.component";
 import Graph from "./Graph.component";
 import Track from "./Track.component";
 
-const LapData = ({ selectedLap }) => {
+const LapData = ({ primaryLap, secondaryLap }) => {
     const [selectedPoint, setSelectedPoint] = useState(null);
     return (
         <div className="card" id="LapDataContainer">
-            {selectedLap ? (
+            {primaryLap ? (
                 <>
                     {/* <GraphDisplay
-            {...{ selectedLap, selectedPoint, setSelectedPoint }}
+            {...{ primaryLap, selectedPoint, setSelectedPoint }}
           ></GraphDisplay> */}
                     <div
                         id="graphContainer"
@@ -20,7 +20,8 @@ const LapData = ({ selectedLap }) => {
                         <Graph
                             {...{
                                 targets: [{ target: "speed" }],
-                                selectedLap,
+                                primaryLap,
+                                secondaryLap,
                                 selectedPoint,
                                 setSelectedPoint,
                             }}
@@ -31,44 +32,46 @@ const LapData = ({ selectedLap }) => {
                                     { target: "gas", color: "green" },
                                     { target: "brake", color: "red" },
                                 ],
-                                selectedLap,
+                                primaryLap,
+                                secondaryLap,
                                 selectedPoint,
                                 setSelectedPoint,
                             }}
-                        ></Graph>
+                            ></Graph>
                         <Graph
                             {...{
-                                targets: [
-                                    { target: "steer", color: "purple" },
-                                ],
-                                selectedLap,
+                                targets: [{ target: "steer", color: "purple" }],
+                                primaryLap,
+                                secondaryLap,
                                 selectedPoint,
                                 setSelectedPoint,
                             }}
-                        ></Graph>
+                            ></Graph>
                         <Graph
                             {...{
                                 targets: [
                                     { target: "rpm", color: "steelblue" },
                                 ],
-                                selectedLap,
+                                primaryLap,
+                                secondaryLap,
                                 selectedPoint,
                                 setSelectedPoint,
                             }}
-                        ></Graph>
+                            ></Graph>
                         <Graph
                             {...{
                                 targets: [
                                     { target: "gear", color: "steelblue" },
                                 ],
-                                selectedLap,
+                                primaryLap,
+                                secondaryLap,
                                 selectedPoint,
                                 setSelectedPoint,
                             }}
                         ></Graph>
                     </div>
                     <Track
-                        {...{ selectedLap, selectedPoint, setSelectedPoint }}
+                        {...{ primaryLap, selectedPoint, setSelectedPoint }}
                     ></Track>
                 </>
             ) : (

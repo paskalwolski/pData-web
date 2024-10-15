@@ -2,7 +2,7 @@ import * as d3 from "d3";
 import { useEffect, useMemo, useState } from "react";
 import TrackLine from "./TrackLine.component";
 
-const Track = ({ selectedLap, selectedPoint, setSelectedPoint }) => {
+const Track = ({ primaryLap, selectedPoint, setSelectedPoint }) => {
     const [focusPos, setFocusPos] = useState(null);
     const height = 500;
     const width = 500;
@@ -11,27 +11,27 @@ const Track = ({ selectedLap, selectedPoint, setSelectedPoint }) => {
         () =>
             d3
                 .scaleLinear()
-                .domain(d3.extent(selectedLap.lap_data, (data) => data.pos[0]))
+                .domain(d3.extent(primaryLap.lap_data, (data) => data.pos[0]))
                 .range([0, width]),
-        [selectedLap.lap_number]
+        [primaryLap.lap_number]
     );
     const yScale = useMemo(
         () =>
             d3
                 .scaleLinear()
-                .domain(d3.extent(selectedLap.lap_data, (data) => data.pos[2]))
+                .domain(d3.extent(primaryLap.lap_data, (data) => data.pos[2]))
                 .range([0, height]),
-        [selectedLap.lap_number]
+        [primaryLap.lap_number]
     );
 
     const setFocus = useMemo(
         // Factory which returns a function
         () => (i) => {
             setSelectedPoint(i);
-            const d = selectedLap.lap_data[i];
+            const d = primaryLap.lap_data[i];
             setFocusPos([xScale(d.pos[0]), yScale(d.pos[2])]);
         },
-        [selectedLap.lap_number]
+        [primaryLap.lap_number]
     );
 
     useEffect(() => {
@@ -45,10 +45,10 @@ const Track = ({ selectedLap, selectedPoint, setSelectedPoint }) => {
     return (
         <div>
             <svg width={width} height={height} style={{ margin: "10px" }}>
-                {selectedLap && (
+                {primaryLap && (
                     <TrackLine
                         {...{
-                            data: selectedLap.lap_data,
+                            data: primaryLap.lap_data,
                             xScale,
                             yScale,
                             setFocus,

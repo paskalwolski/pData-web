@@ -7,13 +7,19 @@ import LapData from "./components/LapData.component";
 
 function App() {
     const eventData = exampleData;
-    const [selectedLap, setSelectedLap] = useState(null);
+    const [primaryLap, setPrimaryLap] = useState(null);
+    const [secondaryLap, setSecondaryLap] = useState(null);
 
     useEffect(() => {
-        if (selectedLap !== null) {
-            console.log(`Selected Lap ${selectedLap.lap_number}`);
+        if (primaryLap !== null) {
+            console.log(`Primary Lap ${primaryLap.lap_number}`);
         }
-    }, [selectedLap]);
+    }, [primaryLap]);
+    useEffect(() => {
+        if (secondaryLap !== null) {
+            console.log(`Secondary Lap ${secondaryLap.lap_number}`);
+        }
+    }, [secondaryLap]);
 
     const sanitizeLap = (lap) => {
         lap.lap_data.sort((a, b) => a.distance - b.distance);
@@ -25,24 +31,54 @@ function App() {
             <h1>
                 {eventData.car} on {eventData.track} - {eventData.eventTime}
             </h1>
-            <div className="card" id="lapSelector">
-                {eventData.laps.map((lap, i) => {
-                    return (
-                        <LapCard
-                            key={i}
-                            {...{
-                                lapData: lap,
-                                isFastestLap:
-                                    lap?.lap_number === eventData.fastestLap,
-                            }}
-                            onClick={() => {
-                                setSelectedLap(sanitizeLap(lap));
-                            }}
-                        />
-                    );
-                })}
+            <div
+                className="card"
+                style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                }}
+            >
+                <div id="primaryLapSelector" style={{ display: "flex" }}>
+                    {eventData.laps.map((lap, i) => {
+                        return (
+                            <LapCard
+                                key={i}
+                                {...{
+                                    lapData: lap,
+                                    isFastestLap:
+                                        lap?.lap_number ===
+                                        eventData.fastestLap,
+                                }}
+                                onClick={() => {
+                                    setPrimaryLap(sanitizeLap(lap));
+                                }}
+                            />
+                        );
+                    })}
+                </div>
+                {primaryLap && (
+                    <div id="secondaryLapSelector" style={{ display: "flex" }}>
+                        {eventData.laps.map((lap, i) => {
+                            return (
+                                <LapCard
+                                    key={i}
+                                    {...{
+                                        lapData: lap,
+                                        isFastestLap:
+                                            lap?.lap_number ===
+                                            eventData.fastestLap,
+                                    }}
+                                    onClick={() => {
+                                        setSecondaryLap(sanitizeLap(lap));
+                                    }}
+                                />
+                            );
+                        })}
+                    </div>
+                )}
             </div>
-            <LapData {...{ selectedLap }} />
+            <LapData {...{ primaryLap, secondaryLap }} />
         </>
     );
 }
