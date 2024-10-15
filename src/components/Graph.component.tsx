@@ -13,7 +13,6 @@ const Graph = ({
     const width = 500;
 
     const graphData = useMemo(() => {
-        console.log("Recalculating graphdata");
         const data = targets.map((t) => {
             return {
                 target: t.target,
@@ -42,7 +41,6 @@ const Graph = ({
     }, [primaryLap?.lap_number, secondaryLap?.lap_number]);
 
     const domainExtent = useMemo(() => {
-        console.log(graphData);
         const eList = graphData.map((g) => {
             return d3.extent(g.data, (d) => d[g.target]);
         });
@@ -72,7 +70,6 @@ const Graph = ({
         .range([height, 0]);
 
     const lineGenerator = (data, target) => {
-        console.log(data[0]);
         return d3
             .line()
             .x((d) => xScale(Number(Number(d.distance).toFixed(0))))
