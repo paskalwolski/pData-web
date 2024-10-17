@@ -8,10 +8,16 @@ const Graph = ({
     secondaryLap,
     selectedPoint,
     setSelectedPoint,
+    graphRange,
+    setGraphRange,
     ...props
 }) => {
     const height = 200;
     const width = 500;
+
+    const [isSelecting, setIsSelecting] = useState(false);
+
+    const [startSelection, setStartSelection] = useState(null);
 
     const graphData = useMemo(() => {
         const data = targets.map((t) => {
@@ -52,12 +58,8 @@ const Graph = ({
     }, [graphData]);
 
     const xScale = useMemo(
-        () =>
-            d3
-                .scaleLinear()
-                .domain(d3.extent(primaryLap.lap_data, (data) => data.distance))
-                .range([0, width]),
-        [primaryLap.lap_number]
+        () => d3.scaleLinear().domain(graphRange).range([0, width]),
+        [primaryLap.lap_number, graphRange]
     );
 
     const bufferedDomain = [
@@ -82,6 +84,17 @@ const Graph = ({
     };
     const handleMouseLeave = () => {
         setSelectedPoint(null);
+    };
+
+    const handleMouseDown = (e) => {
+        setIsSelecting(true);
+        const x0 = xScale.invert(d3.pointer(e)[0]);
+        const i = d3.bisector((d) => d.distance).left(primaryLap.lap_data, x0);
+        setStartSelection(selectedPoint);
+    };
+    const handleMouseUp = (e) => {
+        setIsSelecting(false);
+        setGraphRange([startSelection, selectedPoint]);
     };
 
     const graphDistance =
@@ -137,6 +150,8 @@ const Graph = ({
                         width={width}
                         onMouseMove={handleMouseMove}
                         onMouseLeave={handleMouseLeave}
+                        onMouseDown={handleMouseDown}
+                        onMouseUp={handleMouseUp}
                     />
                 </g>
             </svg>

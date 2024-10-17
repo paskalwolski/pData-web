@@ -1,11 +1,22 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import GraphDisplay from "./GraphDisplay.component";
 import TrackDisplay from "./TrackDisplay.component";
 import Graph from "./Graph/Graph.component";
 import Track from "./Track/Track.component";
 
+import * as d3 from "d3";
+
 const LapData = ({ primaryLap, secondaryLap }) => {
     const [selectedPoint, setSelectedPoint] = useState(null);
+    const [graphRange, setGraphRange] = useState([0, 0]);
+
+    useEffect(() => {
+        if (primaryLap) {
+            setGraphRange(
+                d3.extent(primaryLap.lap_data, (data) => data.distance)
+            );
+        }
+    }, [primaryLap]);
     return (
         <div className="card" id="LapDataContainer">
             {primaryLap ? (
@@ -24,6 +35,8 @@ const LapData = ({ primaryLap, secondaryLap }) => {
                                 secondaryLap,
                                 selectedPoint,
                                 setSelectedPoint,
+                                graphRange,
+                                setGraphRange,
                             }}
                         ></Graph>
                         <Graph
@@ -36,9 +49,11 @@ const LapData = ({ primaryLap, secondaryLap }) => {
                                 secondaryLap,
                                 selectedPoint,
                                 setSelectedPoint,
+                                graphRange,
+                                setGraphRange,
                             }}
-                            ></Graph>
-                        <Graph
+                        ></Graph>
+                        {/* <Graph
                             {...{
                                 targets: [{ target: "steer", color: "purple" }],
                                 primaryLap,
@@ -46,7 +61,7 @@ const LapData = ({ primaryLap, secondaryLap }) => {
                                 selectedPoint,
                                 setSelectedPoint,
                             }}
-                            ></Graph>
+                        ></Graph>
                         <Graph
                             {...{
                                 targets: [
@@ -57,7 +72,7 @@ const LapData = ({ primaryLap, secondaryLap }) => {
                                 selectedPoint,
                                 setSelectedPoint,
                             }}
-                            ></Graph>
+                        ></Graph>
                         <Graph
                             {...{
                                 targets: [
@@ -68,7 +83,7 @@ const LapData = ({ primaryLap, secondaryLap }) => {
                                 selectedPoint,
                                 setSelectedPoint,
                             }}
-                        ></Graph>
+                        ></Graph> */}
                     </div>
                     <Track
                         {...{
@@ -76,6 +91,7 @@ const LapData = ({ primaryLap, secondaryLap }) => {
                             secondaryLap,
                             selectedPoint,
                             setSelectedPoint,
+                            graphRange,
                         }}
                     ></Track>
                 </>
