@@ -8,7 +8,7 @@ import * as d3 from "d3";
 
 const LapData = ({ primaryLap, secondaryLap }) => {
     const [selectedPoint, setSelectedPoint] = useState(null);
-    const [graphRange, setGraphRange] = useState([0, 0]);
+    const [graphRange, setGraphRange] = useState(null);
 
     useEffect(() => {
         if (primaryLap) {
@@ -16,10 +16,10 @@ const LapData = ({ primaryLap, secondaryLap }) => {
                 d3.extent(primaryLap.lap_data, (data) => data.distance)
             );
         }
-    }, [primaryLap]);
+    }, [primaryLap, secondaryLap]);
     return (
         <div className="card" id="LapDataContainer">
-            {primaryLap ? (
+            {graphRange ? (
                 <>
                     {/* <GraphDisplay
             {...{ primaryLap, selectedPoint, setSelectedPoint }}
