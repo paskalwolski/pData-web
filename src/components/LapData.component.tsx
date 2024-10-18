@@ -19,9 +19,6 @@ const LapData = ({ primaryLap, secondaryLap }) => {
         <div className="card" id="LapDataContainer">
             {graphRange ? (
                 <>
-                    {/* <GraphDisplay
-            {...{ primaryLap, selectedPoint, setSelectedPoint }}
-          ></GraphDisplay> */}
                     <div
                         id="graphContainer"
                         style={{ display: "flex", flexDirection: "column" }}
@@ -100,6 +97,7 @@ const LapData = ({ primaryLap, secondaryLap }) => {
                                 graphRange,
                                 setGraphRange,
                             }}
+                            stepped
                         ></Graph>
                     </div>
                     <Track

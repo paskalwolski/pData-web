@@ -10,6 +10,7 @@ const Graph = ({
     setSelectedPoint,
     graphRange,
     setGraphRange,
+    stepped,
     ...props
 }) => {
     const height = 200;
@@ -128,6 +129,7 @@ const Graph = ({
                     targets.map((t) => {
                         return (
                             <div
+                                key={`${t.secondary ? "secondary":"primary"}-${t.target}`}
                                 style={{
                                     display: "flex",
                                     justifyContent: "space-around",
@@ -178,6 +180,7 @@ const Graph = ({
                             <GraphLine
                                 key={`line-${i}`}
                                 {...{ target: g, xScale, yScale }}
+                                stepped
                             />
                         );
                     })}
