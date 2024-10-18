@@ -76,12 +76,20 @@ const Graph = ({
         [JSON.stringify(bufferedDomain)]
     ); // Hack to use the bufferedDomain list as a dep
 
+    const cleanSelectionRange = (selectionA, selectionB) => {
+        return [selectionA, selectionB].sort((a, b) => a - b);
+    };
+
     const handleMouseMove = (e) => {
         const x0 = xScale.invert(d3.pointer(e)[0]);
         // const i = d3.bisector((d) => d.distance).left(primaryLap.lap_data, x0);
         setSelectedPoint(x0.toFixed(0));
     };
     const handleMouseLeave = () => {
+        if (isSelecting) {
+            setGraphRange(cleanSelectionRange(startSelection, selectedPoint));
+            setIsSelecting(false);
+        }
         setSelectedPoint(null);
     };
 
@@ -94,7 +102,7 @@ const Graph = ({
     const handleMouseUp = (e) => {
         if (isSelecting) {
             setIsSelecting(false);
-            setGraphRange([startSelection, selectedPoint]);
+            setGraphRange(cleanSelectionRange(startSelection, selectedPoint));
         }
     };
 
@@ -198,6 +206,17 @@ const Graph = ({
                                 );
                             })}
                         </g>
+                    )}
+                    {isSelecting && (
+                        <rect
+                            opacity={0.8}
+                            fill={targets[0].color}
+                            strokeWidth={3}
+                            x1={xScale[startSelection]}
+                            x2={xScale[selectedPoint]}
+                            y1={yScale.range()[0]}
+                            y2={yScale.range()[0]}
+                        />
                     )}
                     <rect
                         style={{ pointerEvents: "all" }}
