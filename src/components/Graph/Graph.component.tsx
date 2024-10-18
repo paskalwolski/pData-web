@@ -63,18 +63,18 @@ const Graph = ({
 
     const bufferedDomain = [
         domainExtent[0] - Math.abs(0.2 * domainExtent[0]), // Make sure negative values are reduced
-        domainExtent[1] + Math.abs(domainExtent[1] * 1.1),
+        domainExtent[1] + Math.abs(domainExtent[1] * 0.1),
     ]; // Expand by ~10%
 
-    const yScale = useMemo(() => {
-        return (
+    const yScale = useMemo(
+        () =>
             d3
                 .scaleLinear()
                 // .domain([0, maxSpeed])
                 .domain(bufferedDomain)
-                .range([height, 0])
-        );
-    }, [JSON.stringify(bufferedDomain)]); // Hack to use the bufferedDomain list as a dep
+                .range([height, 0]),
+        [JSON.stringify(bufferedDomain)]
+    ); // Hack to use the bufferedDomain list as a dep
 
     const handleMouseMove = (e) => {
         const x0 = xScale.invert(d3.pointer(e)[0]);
@@ -102,14 +102,67 @@ const Graph = ({
         // Find the x value for this point
         selectedPoint ? xScale(selectedPoint) : xScale(0);
 
-    const getGraphValue = (data, target) => {
-        console.log("Searching for", target, "at", selectedPoint);
+    const getGraphValue = (data, target) =>
         // find the y value for this target type
-        return yScale(data[selectedPoint][target]);
-    };
+        yScale(data[selectedPoint][target]);
 
     return (
-        <div>
+        <div
+            style={{
+                border: `2px solid ${targets[0].color}`,
+                borderRadius: "5px",
+                margin: "2px",
+                padding: "5px",
+            }}
+        >
+            <div>
+                {graphData &&
+                    targets.map((t) => {
+                        return (
+                            <div
+                                style={{
+                                    display: "flex",
+                                    justifyContent: "space-around",
+                                }}
+                            >
+                                <div>{t.target}</div>
+                                <div>
+                                    Value:{" "}
+                                    {selectedPoint
+                                        ? primaryLap.lap_data[selectedPoint][
+                                              t.target
+                                          ].toFixed(2)
+                                        : "-"}
+                                </div>
+                                {secondaryLap && (
+                                    <>
+                                        <div>
+                                            Value:{" "}
+                                            {selectedPoint
+                                                ? secondaryLap.lap_data[
+                                                      selectedPoint
+                                                  ][t.target].toFixed(2)
+                                                : "-"}
+                                        </div>
+                                        <div>
+                                            Delta:{" "}
+                                            {selectedPoint
+                                                ? (
+                                                      primaryLap.lap_data[
+                                                          selectedPoint
+                                                      ][t.target] -
+                                                      secondaryLap.lap_data[
+                                                          selectedPoint
+                                                      ][t.target]
+                                                  ).toFixed(2)
+                                                : "-"}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        );
+                    })}
+            </div>
             <svg width={width} height={height}>
                 {graphData &&
                     graphData.map((g, i) => {

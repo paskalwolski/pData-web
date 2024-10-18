@@ -34,9 +34,9 @@ function App() {
 
     return (
         <>
-            <h1>
+            <h2>
                 {eventData.car} on {eventData.track} - {eventData.eventTime}
-            </h1>
+            </h2>
             <div
                 className="card"
                 style={{

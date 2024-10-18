@@ -26,9 +26,22 @@ const LapData = ({ primaryLap, secondaryLap }) => {
                         id="graphContainer"
                         style={{ display: "flex", flexDirection: "column" }}
                     >
+                        {/* {secondaryLap && (
+                            <TimingGraph
+                                {...{
+                                    targets: [{ target: "lapTime" }],
+                                    primaryLap,
+                                    secondaryLap,
+                                    selectedPoint,
+                                    setSelectedPoint,
+                                    graphRange,
+                                    setGraphRange,
+                                }}
+                            />
+                        )} */}
                         <Graph
                             {...{
-                                targets: [{ target: "speed" }],
+                                targets: [{ target: "speed", color: "blue" }],
                                 primaryLap,
                                 secondaryLap,
                                 selectedPoint,
@@ -51,13 +64,15 @@ const LapData = ({ primaryLap, secondaryLap }) => {
                                 setGraphRange,
                             }}
                         ></Graph>
-                        {/* <Graph
+                        <Graph
                             {...{
                                 targets: [{ target: "steer", color: "purple" }],
                                 primaryLap,
                                 secondaryLap,
                                 selectedPoint,
                                 setSelectedPoint,
+                                graphRange,
+                                setGraphRange,
                             }}
                         ></Graph>
                         <Graph
@@ -69,6 +84,8 @@ const LapData = ({ primaryLap, secondaryLap }) => {
                                 secondaryLap,
                                 selectedPoint,
                                 setSelectedPoint,
+                                graphRange,
+                                setGraphRange,
                             }}
                         ></Graph>
                         <Graph
@@ -80,8 +97,10 @@ const LapData = ({ primaryLap, secondaryLap }) => {
                                 secondaryLap,
                                 selectedPoint,
                                 setSelectedPoint,
+                                graphRange,
+                                setGraphRange,
                             }}
-                        ></Graph> */}
+                        ></Graph>
                     </div>
                     <Track
                         {...{
