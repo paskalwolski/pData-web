@@ -12,9 +12,7 @@ const LapData = ({ primaryLap, secondaryLap }) => {
 
     useEffect(() => {
         if (primaryLap) {
-            setGraphRange(
-                d3.extent(primaryLap.lap_data, (data) => data.distance)
-            );
+            setGraphRange([0, primaryLap.lap_data.length]);
         }
     }, [primaryLap, secondaryLap]);
     return (

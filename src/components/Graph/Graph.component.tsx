@@ -16,7 +16,6 @@ const Graph = ({
     const width = 500;
 
     const [isSelecting, setIsSelecting] = useState(false);
-
     const [startSelection, setStartSelection] = useState(null);
 
     const graphData = useMemo(() => {
@@ -24,9 +23,9 @@ const Graph = ({
             return {
                 target: t.target,
                 color: t.color ?? "steelblue",
-                data: primaryLap.lap_data.map((d) => ({
+                data: primaryLap.lap_data.map((d, i) => ({
                     [t.target]: d[t.target],
-                    distance: d["distance"],
+                    distance: i,
                 })),
             };
         });
@@ -37,9 +36,9 @@ const Graph = ({
                       target: t.target,
                       color: t.color ?? "steelblue",
                       secondary: true,
-                      data: secondaryLap.lap_data.map((d) => ({
+                      data: secondaryLap.lap_data.map((d, i) => ({
                           [t.target]: d[t.target],
-                          distance: d["distance"],
+                          distance: i,
                       })),
                   };
               })
@@ -55,11 +54,11 @@ const Graph = ({
             d3.min([e1[0], e2[0]]),
             d3.max([e1[1], e2[1]]),
         ]);
-    }, [graphData]);
+    }, [JSON.stringify(graphData)]);
 
     const xScale = useMemo(
         () => d3.scaleLinear().domain(graphRange).range([0, width]),
-        [primaryLap.lap_number, graphRange]
+        [primaryLap.lap_number, JSON.stringify(graphRange)]
     );
 
     const bufferedDomain = [
@@ -79,8 +78,8 @@ const Graph = ({
 
     const handleMouseMove = (e) => {
         const x0 = xScale.invert(d3.pointer(e)[0]);
-        const i = d3.bisector((d) => d.distance).left(primaryLap.lap_data, x0);
-        setSelectedPoint(i);
+        // const i = d3.bisector((d) => d.distance).left(primaryLap.lap_data, x0);
+        setSelectedPoint(x0.toFixed(0));
     };
     const handleMouseLeave = () => {
         setSelectedPoint(null);
@@ -88,19 +87,23 @@ const Graph = ({
 
     const handleMouseDown = (e) => {
         setIsSelecting(true);
-        const x0 = xScale.invert(d3.pointer(e)[0]);
-        const i = d3.bisector((d) => d.distance).left(primaryLap.lap_data, x0);
+        // const x0 = xScale.invert(d3.pointer(e)[0]);
+        // const i = d3.bisector((d) => d.distance).left(primaryLap.lap_data, x0);
         setStartSelection(selectedPoint);
     };
     const handleMouseUp = (e) => {
-        setIsSelecting(false);
-        setGraphRange([startSelection, selectedPoint]);
+        if (isSelecting) {
+            setIsSelecting(false);
+            setGraphRange([startSelection, selectedPoint]);
+        }
     };
 
     const graphDistance =
         // Find the x value for this point
-        selectedPoint ? xScale(primaryLap.lap_data[selectedPoint].distance) : 0;
+        selectedPoint ? xScale(selectedPoint) : xScale(0);
+
     const getGraphValue = (data, target) => {
+        console.log("Searching for", target, "at", selectedPoint);
         // find the y value for this target type
         return yScale(data[selectedPoint][target]);
     };

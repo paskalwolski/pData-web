@@ -3,10 +3,12 @@ import React, { useEffect } from "react";
 
 const GraphLine = React.memo(({ target, xScale, yScale }) => {
     const lineGenerator = () => {
-        return d3
+        const d = d3
             .line()
-            .x((d) => xScale(Number(Number(d.distance).toFixed(0))))
-            .y((d) => yScale(d[target.target]))(target.data);
+            .x((d) => xScale(d.distance))
+            .y((d) => yScale(d[target.target]))
+            .curve(d3.curveCatmullRom)(target.data);
+        return d;
     };
 
     return (
