@@ -11,6 +11,7 @@ const Graph = ({
     graphRange,
     setGraphRange,
     stepped,
+    fixed,
     ...props
 }) => {
     const height = 200;
@@ -129,7 +130,9 @@ const Graph = ({
                     targets.map((t) => {
                         return (
                             <div
-                                key={`${t.secondary ? "secondary":"primary"}-${t.target}`}
+                                key={`${
+                                    t.secondary ? "secondary" : "primary"
+                                }-${t.target}`}
                                 style={{
                                     display: "flex",
                                     justifyContent: "space-around",
@@ -141,7 +144,7 @@ const Graph = ({
                                     {selectedPoint
                                         ? primaryLap.lap_data[selectedPoint][
                                               t.target
-                                          ].toFixed(2)
+                                          ].toFixed(fixed)
                                         : "-"}
                                 </div>
                                 {secondaryLap && (
@@ -151,7 +154,7 @@ const Graph = ({
                                             {selectedPoint
                                                 ? secondaryLap.lap_data[
                                                       selectedPoint
-                                                  ][t.target].toFixed(2)
+                                                  ][t.target].toFixed(fixed)
                                                 : "-"}
                                         </div>
                                         <div>
@@ -164,7 +167,7 @@ const Graph = ({
                                                       secondaryLap.lap_data[
                                                           selectedPoint
                                                       ][t.target]
-                                                  ).toFixed(2)
+                                                  ).toFixed(fixed)
                                                 : "-"}
                                         </div>
                                     </>

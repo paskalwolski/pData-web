@@ -45,6 +45,7 @@ const LapData = ({ primaryLap, secondaryLap }) => {
                                 setSelectedPoint,
                                 graphRange,
                                 setGraphRange,
+                                fixed: 0,
                             }}
                         ></Graph>
                         <Graph
@@ -59,6 +60,7 @@ const LapData = ({ primaryLap, secondaryLap }) => {
                                 setSelectedPoint,
                                 graphRange,
                                 setGraphRange,
+                                fixed: 2,
                             }}
                         ></Graph>
                         <Graph
@@ -70,6 +72,7 @@ const LapData = ({ primaryLap, secondaryLap }) => {
                                 setSelectedPoint,
                                 graphRange,
                                 setGraphRange,
+                                fixed: 0,
                             }}
                         ></Graph>
                         <Graph
@@ -83,6 +86,7 @@ const LapData = ({ primaryLap, secondaryLap }) => {
                                 setSelectedPoint,
                                 graphRange,
                                 setGraphRange,
+                                fixed: 0,
                             }}
                         ></Graph>
                         <Graph
@@ -96,6 +100,7 @@ const LapData = ({ primaryLap, secondaryLap }) => {
                                 setSelectedPoint,
                                 graphRange,
                                 setGraphRange,
+                                fixed: 0,
                             }}
                             stepped
                         ></Graph>
