@@ -35,11 +35,6 @@ const Track = ({
         JSON.stringify(graphRange),
     ]);
 
-    const xScale = useMemo(() => {
-        console.log("X Scale Updated");
-        return d3.scaleLinear().domain(xDomain).range([0, width]);
-    }, [xDomain]);
-
     const yDomain = useMemo(() => {
         const dom = d3.extent(
             primaryLap.lap_data.slice(graphRange[0], graphRange[1]),
@@ -60,10 +55,22 @@ const Track = ({
         JSON.stringify(graphRange),
     ]);
 
+    // TODO:
+    const boundingDomain = useMemo(() => {
+        // Taking both domains, figure out which one covers a larger area - and apply the same
+        // 'zone' to keep a square aspect
+        const xDomRange = Number(xDomain[1]) - Number(xDomain[0]);
+        const yDomRange = Number(yDomain[1]) - Number(yDomain[0]);
+    }, [JSON.stringify(xDomain), JSON.stringify(yDomain)]);
+
+    const xScale = useMemo(() => {
+        return d3.scaleLinear().domain(xDomain).range([0, width]);
+    }, [JSON.stringify(xDomain)]);
+
     const yScale = useMemo(() => {
         console.log("Y domain Updated");
         return d3.scaleLinear().domain(yDomain).range([0, height]);
-    }, [yDomain]);
+    }, [JSON.stringify(yDomain)]);
 
     const setFocus = useMemo(
         // Factory which returns a function
