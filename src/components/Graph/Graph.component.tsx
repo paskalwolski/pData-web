@@ -215,13 +215,18 @@ const Graph = ({
                     )}
                     {isSelecting && (
                         <rect
-                            opacity={0.8}
+                            opacity={0.4}
                             fill={targets[0].color}
+                            stroke={"lightgray"}
                             strokeWidth={3}
-                            x1={xScale[startSelection]}
-                            x2={xScale[selectedPoint]}
-                            y1={yScale.range()[0]}
-                            y2={yScale.range()[0]}
+                            x={xScale(startSelection)}
+                            rx={5}
+                            y={yScale.range()[1]}
+                            ry={5}
+                            height={height}
+                            width={
+                                xScale(selectedPoint) - xScale(startSelection)
+                            }
                         />
                     )}
                     <rect

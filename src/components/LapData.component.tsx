@@ -11,10 +11,15 @@ const LapData = ({ primaryLap, secondaryLap }) => {
     const [graphRange, setGraphRange] = useState(null);
 
     useEffect(() => {
+        resetGraphZoom();
+    }, [primaryLap, secondaryLap]);
+
+    const resetGraphZoom = () => {
         if (primaryLap) {
             setGraphRange([0, primaryLap.lap_data.length]);
         }
-    }, [primaryLap, secondaryLap]);
+    };
+
     return (
         <div className="card" id="LapDataContainer">
             {graphRange ? (
@@ -23,19 +28,35 @@ const LapData = ({ primaryLap, secondaryLap }) => {
                         id="graphContainer"
                         style={{ display: "flex", flexDirection: "column" }}
                     >
-                        {/* {secondaryLap && (
-                            <TimingGraph
-                                {...{
-                                    targets: [{ target: "lapTime" }],
-                                    primaryLap,
-                                    secondaryLap,
-                                    selectedPoint,
-                                    setSelectedPoint,
-                                    graphRange,
-                                    setGraphRange,
+                        <div
+                            id={"graphDetails"}
+                            style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                            }}
+                        >
+                            <b>{graphRange[0]}m</b>
+                            <div
+                                id="selectionDetails"
+                                style={{
+                                    display: "flex",
+                                    justifyContent: "space-around",
+                                    alignItems: "center",
                                 }}
-                            />
-                        )} */}
+                            >
+                                <button
+                                    id={"resetButton"}
+                                    onClick={resetGraphZoom}
+                                >
+                                    Reset
+                                </button>
+                                <b>
+                                    Distance:{" "}
+                                    {selectedPoint ? selectedPoint : "-"}
+                                </b>
+                            </div>
+                            <b>{graphRange[1]}m</b>
+                        </div>
                         <Graph
                             {...{
                                 targets: [{ target: "speed", color: "blue" }],

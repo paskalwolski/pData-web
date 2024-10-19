@@ -32,6 +32,10 @@
   /* justify-content: center; */
 }
 
+#resetButton{
+  margin-right: 1em;
+}
+
 .pit{
   background-color: blue;
 }
