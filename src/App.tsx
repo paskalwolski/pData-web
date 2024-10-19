@@ -9,7 +9,8 @@ import EventSelector from "./components/EventSelector.component";
 
 function App() {
     const [primaryEventData, setPrimaryEventData] = useState(null);
-    const [secondaryEventData, setSecondaryEventData] = useState(exampleData);
+    const [isSelectingSecondary, setSelectingSecondary] = useState(false);
+    const [secondaryEventData, setSecondaryEventData] = useState(null);
     const [primaryLap, setPrimaryLap] = useState(null);
     const [secondaryLap, setSecondaryLap] = useState(null);
 
@@ -52,14 +53,35 @@ function App() {
                                     onClick: setPrimaryLap,
                                 }}
                             />
-                            {secondaryEventData && (
-                                <LapSelector
-                                    {...{
-                                        eventData: secondaryEventData,
-                                        onClick: setSecondaryLap,
+                            {secondaryEventData && <button>Swap Events</button>}
+                            <div
+                                style={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                }}
+                            >
+                                {secondaryEventData && (
+                                    <LapSelector
+                                        {...{
+                                            eventData: secondaryEventData,
+                                            onClick: setSecondaryLap,
+                                        }}
+                                    />
+                                )}
+                                <button
+                                    className="card"
+                                    style={{
+                                        fontSize: "x-large",
+                                        padding: "3px 3px",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        margin: "2px",
                                     }}
-                                />
-                            )}
+                                    onClick={() => setSelectingSecondary(true)}
+                                >
+                                    +
+                                </button>
+                            </div>
                         </div>
                     </>
                 ) : (
@@ -69,7 +91,15 @@ function App() {
                     </div>
                 )}
             </div>
-
+            {isSelectingSecondary && (
+                <EventSelector
+                    {...{
+                        setEvent: setSecondaryEventData,
+                        existingEventData: primaryEventData,
+                        setSelectingSecondary,
+                    }}
+                />
+            )}
             {primaryEventData && <LapData {...{ primaryLap, secondaryLap }} />}
         </>
     );

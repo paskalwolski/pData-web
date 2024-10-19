@@ -1,6 +1,10 @@
 import { useState } from "react";
 
-const EventSelector = ({ setEvent, isSecondary, existingEventData }) => {
+const EventSelector = ({
+    setEvent,
+    existingEventData,
+    setSelectingSecondary,
+}) => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [parsedFileData, setParsedFileData] = useState(null);
     const [error, setError] = useState(null);
@@ -35,6 +39,7 @@ const EventSelector = ({ setEvent, isSecondary, existingEventData }) => {
 
     return (
         <div
+            className="card"
             style={{
                 display: "flex",
                 flexDirection: "column",
@@ -55,10 +60,25 @@ const EventSelector = ({ setEvent, isSecondary, existingEventData }) => {
             >
                 {selectedFile ? "Change Selected Event" : "Select Event +"}
             </label>
+            {setSelectingSecondary && (
+                <button
+                    onClick={() => {
+                        setEvent(existingEventData);
+                        if (setSelectingSecondary) {
+                            setSelectingSecondary(false);
+                        }
+                    }}
+                >
+                    Use Primary Event
+                </button>
+            )}
             {selectedFile && (
                 <button
                     onClick={() => {
                         setEvent(parsedFileData);
+                        if (setSelectingSecondary) {
+                            setSelectingSecondary(false);
+                        }
                     }}
                     style={{
                         border: "2px solid darkgreen",
@@ -67,7 +87,8 @@ const EventSelector = ({ setEvent, isSecondary, existingEventData }) => {
                         borderRadius: "5px",
                     }}
                 >
-                    Confirm {isSecondary ? "Secondary" : "Primary"} Event
+                    Confirm {setSelectingSecondary ? "Secondary" : "Primary"}{" "}
+                    Event
                 </button>
             )}
             {error && (
