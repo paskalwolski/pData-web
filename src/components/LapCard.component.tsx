@@ -21,8 +21,11 @@ const LapCard = ({ lapData, isFastestLap, ...props }) => {
     };
 
     return (
-        <div onClick={lapData.discard ? null : props?.onClick}>
-            {<div className={getLapClass(lapData)}>{lapData.lap_number + 1}</div>}
+        <div
+            className={getLapClass(lapData)}
+            onClick={lapData.discard ? null : props?.onClick}
+        >
+            {lapData.lap_number + 1}
         </div>
     );
 };

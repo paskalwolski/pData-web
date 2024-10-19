@@ -4,9 +4,12 @@ import "./App.css";
 import { exampleData } from "./assets/data";
 import LapCard from "./components/LapCard.component";
 import LapData from "./components/LapData.component";
+import LapSelector from "./components/LapSelector.component";
+import EventSelector from "./components/EventSelector.component";
 
 function App() {
-    const eventData = exampleData;
+    const [primaryEventData, setPrimaryEventData] = useState(null);
+    const [secondaryEventData, setSecondaryEventData] = useState(exampleData);
     const [primaryLap, setPrimaryLap] = useState(null);
     const [secondaryLap, setSecondaryLap] = useState(null);
 
@@ -21,70 +24,53 @@ function App() {
         }
     }, [secondaryLap]);
 
-    const sanitizeLap = (lap) => {
-        lap.lap_data.reduce((oLap, nLap, i) => {
-            if (!nLap) {
-                lap.lap_data[i] = oLap;
-                return oLap;
-            }
-            return nLap;
-        });
-        return lap;
-    };
-
     return (
         <>
-            <h2>
-                {eventData.car} on {eventData.track} - {eventData.eventTime}
-            </h2>
             <div
                 className="card"
                 style={{
                     display: "flex",
-                    flexDirection: "row",
+                    flexDirection: "column",
                     justifyContent: "space-between",
                 }}
             >
-                <div id="primaryLapSelector" style={{ display: "flex" }}>
-                    {eventData.laps.map((lap, i) => {
-                        return (
-                            <LapCard
-                                key={i}
+                {primaryEventData ? (
+                    <>
+                        <b>
+                            {primaryEventData.car} on {primaryEventData.track}
+                        </b>
+                        <div
+                            style={{
+                                display: "flex",
+                                flexDirection: "row",
+                                justifyContent: "space-between",
+                            }}
+                        >
+                            <LapSelector
                                 {...{
-                                    lapData: lap,
-                                    isFastestLap:
-                                        lap?.lap_number ===
-                                        eventData.fastestLap,
-                                }}
-                                onClick={() => {
-                                    setPrimaryLap(sanitizeLap(lap));
+                                    eventData: primaryEventData,
+                                    onClick: setPrimaryLap,
                                 }}
                             />
-                        );
-                    })}
-                </div>
-                {primaryLap && (
-                    <div id="secondaryLapSelector" style={{ display: "flex" }}>
-                        {eventData.laps.map((lap, i) => {
-                            return (
-                                <LapCard
-                                    key={i}
+                            {secondaryEventData && (
+                                <LapSelector
                                     {...{
-                                        lapData: lap,
-                                        isFastestLap:
-                                            lap?.lap_number ===
-                                            eventData.fastestLap,
-                                    }}
-                                    onClick={() => {
-                                        setSecondaryLap(sanitizeLap(lap));
+                                        eventData: secondaryEventData,
+                                        onClick: setSecondaryLap,
                                     }}
                                 />
-                            );
-                        })}
+                            )}
+                        </div>
+                    </>
+                ) : (
+                    <div>
+                        <h3>Welcome to pData</h3>
+                        <EventSelector setEvent={setPrimaryEventData} />
                     </div>
                 )}
             </div>
-            <LapData {...{ primaryLap, secondaryLap }} />
+
+            {primaryEventData && <LapData {...{ primaryLap, secondaryLap }} />}
         </>
     );
 }
