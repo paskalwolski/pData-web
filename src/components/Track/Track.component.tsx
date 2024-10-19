@@ -56,21 +56,44 @@ const Track = ({
     ]);
 
     // TODO:
-    const boundingDomain = useMemo(() => {
+    const boundingDomains = useMemo(() => {
         // Taking both domains, figure out which one covers a larger area - and apply the same
         // 'zone' to keep a square aspect
         const xDomRange = Number(xDomain[1]) - Number(xDomain[0]);
         const yDomRange = Number(yDomain[1]) - Number(yDomain[0]);
+        if (xDomRange > yDomRange) {
+            // X is bounding - convert y to use the same aspect
+            const shift = Math.round(xDomRange / 2);
+            const midYPoint = Number(yDomain[0]) + Math.round(yDomRange / 2);
+            const boundYDomain = [midYPoint - shift, midYPoint + shift];
+            return [xDomain, boundYDomain];
+        } else if (yDomRange > xDomRange) {
+            // Y is bounding
+            const shift = Math.round(yDomRange / 2);
+            const midXPoint = Number(xDomain[0]) + Math.round(xDomRange / 2);
+            const boundXDomain = [midXPoint - shift, midXPoint + shift];
+            return [boundXDomain, yDomain];
+        } else {
+            // THey're miraculously the same
+            return [xDomain, yDomain];
+        }
     }, [JSON.stringify(xDomain), JSON.stringify(yDomain)]);
 
+    // Confirm aspect Ratio
+    // useEffect(() => {
+    //     const a =
+    //         (boundingDomains[0][1] - boundingDomains[0][0]) /
+    //         (boundingDomains[1][1] - boundingDomains[1][0]);
+    //     console.log("Aspect: ", a);
+    // }, [JSON.stringify(boundingDomains)]);
+
     const xScale = useMemo(() => {
-        return d3.scaleLinear().domain(xDomain).range([0, width]);
-    }, [JSON.stringify(xDomain)]);
+        return d3.scaleLinear().domain(boundingDomains[0]).range([0, width]);
+    }, [JSON.stringify(boundingDomains)]);
 
     const yScale = useMemo(() => {
-        console.log("Y domain Updated");
-        return d3.scaleLinear().domain(yDomain).range([0, height]);
-    }, [JSON.stringify(yDomain)]);
+        return d3.scaleLinear().domain(boundingDomains[1]).range([0, height]);
+    }, [JSON.stringify(boundingDomains)]);
 
     const setFocus = useMemo(
         // Factory which returns a function
