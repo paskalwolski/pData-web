@@ -1,5 +1,6 @@
+// @ts-nocheck
 import * as d3 from "d3";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import GraphLine from "./GraphLine.component";
 
 const Graph = ({

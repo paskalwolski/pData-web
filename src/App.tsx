@@ -1,8 +1,7 @@
+// @ts-nocheck
 import { useState, useEffect } from "react";
 import "./App.css";
 
-import { exampleData } from "./assets/data";
-import LapCard from "./components/LapCard.component";
 import LapData from "./components/LapData.component";
 import LapSelector from "./components/LapSelector.component";
 import EventSelector from "./components/EventSelector.component";

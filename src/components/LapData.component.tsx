@@ -1,10 +1,8 @@
+// @ts-nocheck
 import { useEffect, useState } from "react";
-import GraphDisplay from "./GraphDisplay.component";
-import TrackDisplay from "./TrackDisplay.component";
 import Graph from "./Graph/Graph.component";
 import Track from "./Track/Track.component";
 
-import * as d3 from "d3";
 
 const LapData = ({ primaryLap, secondaryLap }) => {
     const [selectedPoint, setSelectedPoint] = useState(null);

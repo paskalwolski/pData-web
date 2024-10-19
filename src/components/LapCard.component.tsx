@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 const LapCard = ({ lapData, isFastestLap, ...props }) => {
     const getLapClass = (lap) => {
         let classname = "card";
