@@ -15,7 +15,7 @@ const Graph = ({
     ...props
 }) => {
     const height = 200;
-    const width = 500;
+    const width = 800;
 
     const [isSelecting, setIsSelecting] = useState(false);
     const [startSelection, setStartSelection] = useState(null);
