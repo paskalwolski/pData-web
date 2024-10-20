@@ -85,8 +85,12 @@ const Graph = ({
 
     const handleMouseMove = (e) => {
         const x0 = xScale.invert(d3.pointer(e)[0]);
-        // const i = d3.bisector((d) => d.distance).left(primaryLap.lap_data, x0);
-        setSelectedPoint(x0.toFixed(0));
+        if (x0 >= 0 && x0 <= primaryLap.lap_data.length) {
+            // const i = d3.bisector((d) => d.distance).left(primaryLap.lap_data, x0);
+            setSelectedPoint(x0.toFixed(0));
+        } else {
+            setSelectedPoint(null);
+        }
     };
     const handleMouseLeave = () => {
         if (isSelecting) {
