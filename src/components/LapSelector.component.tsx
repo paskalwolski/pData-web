@@ -1,6 +1,8 @@
+import { useState } from "react";
 import LapCard from "./LapCard.component";
 
-const LapSelector = ({ eventData, onClick }) => {
+const LapSelector = ({ eventData, selectLap }) => {
+    const [selectedLap, setSelectedLap] = useState(null);
     const sanitizeLap = (lap) => {
         lap.lap_data.reduce((oLap, nLap, i) => {
             if (!nLap) {
@@ -22,9 +24,11 @@ const LapSelector = ({ eventData, onClick }) => {
                             lapData: lap,
                             isFastestLap:
                                 lap?.lap_number === eventData.fastestLap,
+                            isSelected: lap.lap_number == selectedLap,
                         }}
                         onClick={() => {
-                            onClick(sanitizeLap(lap));
+                            setSelectedLap(lap.lap_number);
+                            selectLap(sanitizeLap(lap));
                         }}
                     />
                 );

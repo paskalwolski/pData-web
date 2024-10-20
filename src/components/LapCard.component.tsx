@@ -1,4 +1,4 @@
-const LapCard = ({ lapData, isFastestLap, ...props }) => {
+const LapCard = ({ lapData, isFastestLap, isSelected, ...props }) => {
     const getLapClass = (lap) => {
         let classname = "card";
         if (isFastestLap) {
@@ -20,7 +20,7 @@ const LapCard = ({ lapData, isFastestLap, ...props }) => {
 
     return (
         <div
-            className={getLapClass(lapData)}
+            className={`${getLapClass(lapData)} ${isSelected && "selected"}`}
             onClick={lapData.discard ? null : props?.onClick}
         >
             {lapData.lap_number + 1}

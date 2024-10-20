@@ -49,7 +49,7 @@ function App() {
                             <LapSelector
                                 {...{
                                     eventData: primaryEventData,
-                                    onClick: setPrimaryLap,
+                                    selectLap: setPrimaryLap,
                                 }}
                             />
                             {secondaryEventData && <button>Swap Events</button>}
@@ -63,7 +63,7 @@ function App() {
                                     <LapSelector
                                         {...{
                                             eventData: secondaryEventData,
-                                            onClick: setSecondaryLap,
+                                            selectLap: setSecondaryLap,
                                         }}
                                     />
                                 )}

@@ -1,65 +1,74 @@
 #root {
-  width: 96%;
-  margin: 0 auto;
-  text-align: center;
+    width: 96%;
+    margin: 0 auto;
+    text-align: center;
 }
 
 @keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+    a:nth-of-type(2) .logo {
+        animation: logo-spin infinite 20s linear;
+    }
 }
 
 .card {
-  padding: 0.4em;
-  border: 2px solid lightgrey;
-  border-radius: 5px;
-  margin: 0.2em;
-  display: flex;
-  flex-direction: row;
+    padding: 5px;
+    border: 2px solid lightgrey;
+    border-radius: 5px;
+    margin: 5px;
+    display: flex;
+    flex-direction: row;
+    box-sizing: border-box;
+    border-color: gray;
 }
+
 #LapDataContainer {
-  padding: 1em;
-  /* justify-content: center; */
+    padding: 1em;
+    /* justify-content: center; */
 }
 
-#resetButton{
-  margin-right: 1em;
+#resetButton {
+    margin-right: 1em;
 }
 
-.pit{
-  background-color: blue;
+.pit {
+    background-color: blue;
 }
 
 .valid {
-  background-color: green;
+    background-color: green;
 }
 
-.invalid{
-  background-color: red;
+.invalid {
+    background-color: red;
 }
+
 .discard {
-  filter:brightness(0.5);
+    filter: brightness(0.5);
 }
 
 .fastest {
-  background-color: purple;
+    background-color: purple;
+}
+
+.selected {
+    border-color: lightgray;
 }
 
 .secondary {
-  filter: saturate(0.4);
+    filter: saturate(0.4);
 }
 
 #lapSelector {
-  display: flex;
-  flex-direction: row;
+    display: flex;
+    flex-direction: row;
 }
