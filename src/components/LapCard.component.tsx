@@ -1,4 +1,10 @@
-const LapCard = ({ lapData, isFastestLap, isSelected, ...props }) => {
+const LapCard = ({
+    lapData,
+    isFastestLap,
+    isSelected,
+    timeDisplay,
+    ...props
+}) => {
     const getLapClass = (lap) => {
         let classname = "card";
         if (isFastestLap) {
@@ -22,8 +28,9 @@ const LapCard = ({ lapData, isFastestLap, isSelected, ...props }) => {
         <div
             className={`${getLapClass(lapData)} ${isSelected && "selected"}`}
             onClick={lapData.discard ? null : props?.onClick}
+            style={{ flexDirection: "column" }}
         >
-            {lapData.lap_number + 1}
+            <div>{timeDisplay || lapData.lap_number + 1}</div>
         </div>
     );
 };

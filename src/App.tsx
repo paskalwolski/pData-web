@@ -50,6 +50,7 @@ function App() {
                                 {...{
                                     eventData: primaryEventData,
                                     selectLap: setPrimaryLap,
+                                    selectedLap: primaryLap,
                                 }}
                             />
                             {secondaryEventData && <button>Swap Events</button>}
@@ -64,6 +65,7 @@ function App() {
                                         {...{
                                             eventData: secondaryEventData,
                                             selectLap: setSecondaryLap,
+                                            selectedLap: secondaryLap,
                                         }}
                                     />
                                 )}
