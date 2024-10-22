@@ -16,6 +16,9 @@ const LapSelector = ({ eventData, selectLap, selectedLap }) => {
     };
 
     const getTimeDelta = (time, i) => {
+        if (!time) {
+            return i;
+        }
         // selectedLap or fastest lap? Show time
         // no selectedLap? show time
         // otherwsise, show delta
@@ -26,7 +29,6 @@ const LapSelector = ({ eventData, selectLap, selectedLap }) => {
             } else {
                 const comparisonTime = selectedLap.lap_time;
                 const delta = (comparisonTime - time) / 1000;
-                console.log(comparisonTime, time);
                 if (delta < 0) {
                     return `${delta.toFixed(3)}`;
                 } else {
@@ -52,7 +54,7 @@ const LapSelector = ({ eventData, selectLap, selectedLap }) => {
                             isSelected: lap.lap_number == selectedLap,
                             timeDisplay: lap.discard
                                 ? null
-                                : getTimeDelta(lap.lap_time, i),
+                                : getTimeDelta(lap?.lap_time, i),
                         }}
                         onClick={() => {
                             setSelectedLapNumber(lap.lap_number);

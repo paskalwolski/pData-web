@@ -53,7 +53,6 @@ function App() {
                                     selectedLap: primaryLap,
                                 }}
                             />
-                            {secondaryEventData && <button>Swap Events</button>}
                             <div
                                 style={{
                                     display: "flex",
