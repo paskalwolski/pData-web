@@ -1,7 +1,8 @@
 // @ts-nocheck
 import * as d3 from "d3";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import TrackLine from "./TrackLine.component";
+import { bufferDomain } from "./utils";
 
 const Track = ({
     primaryLap,
@@ -13,8 +14,25 @@ const Track = ({
     const [focusPos, setFocusPos] = useState(null);
     const [transform, setTransform] = useState(d3.zoomIdentity);
 
-    const height = 500;
-    const width = 500;
+    const [height, setHeight] = useState(500);
+    const [width, setWidth] = useState(500);
+    const trackContainer = useRef();
+
+    const getTrackContainerSize = () => {
+        const newDim = trackContainer.current.clientWidth;
+        setWidth(newDim);
+        setHeight(newDim);
+    };
+
+    useEffect(() => {
+        // detect 'width' and 'height' on render
+        getTrackContainerSize();
+        // listen for resize changes, and detect dimensions again when they change
+        window.addEventListener("resize", getTrackContainerSize);
+        // cleanup event listener
+        return () =>
+            window.removeEventListener("resize", getTrackContainerSize);
+    }, []);
 
     const xDomain = useMemo(() => {
         const dom = d3.extent(
@@ -60,6 +78,7 @@ const Track = ({
     const boundingDomains = useMemo(() => {
         // Taking both domains, figure out which one covers a larger area - and apply the same
         // 'zone' to keep a square aspect
+        let selectedDomains = [xDomain, yDomain];
         const xDomRange = Number(xDomain[1]) - Number(xDomain[0]);
         const yDomRange = Number(yDomain[1]) - Number(yDomain[0]);
         if (xDomRange > yDomRange) {
@@ -67,17 +86,17 @@ const Track = ({
             const shift = Math.round(xDomRange / 2);
             const midYPoint = Number(yDomain[0]) + Math.round(yDomRange / 2);
             const boundYDomain = [midYPoint - shift, midYPoint + shift];
-            return [xDomain, boundYDomain];
+            selectedDomains = [xDomain, boundYDomain];
         } else if (yDomRange > xDomRange) {
             // Y is bounding
             const shift = Math.round(yDomRange / 2);
             const midXPoint = Number(xDomain[0]) + Math.round(xDomRange / 2);
             const boundXDomain = [midXPoint - shift, midXPoint + shift];
-            return [boundXDomain, yDomain];
-        } else {
-            // THey're miraculously the same
-            return [xDomain, yDomain];
+            selectedDomains = [boundXDomain, yDomain];
         }
+        // If they're miraculously the same, use the original domains
+        const bufferedDomains = selectedDomains.map((d) => bufferDomain(d));
+        return bufferedDomains;
     }, [JSON.stringify(xDomain), JSON.stringify(yDomain)]);
 
     // Confirm aspect Ratio
@@ -90,11 +109,11 @@ const Track = ({
 
     const xScale = useMemo(() => {
         return d3.scaleLinear().domain(boundingDomains[0]).range([0, width]);
-    }, [JSON.stringify(boundingDomains)]);
+    }, [JSON.stringify(boundingDomains), width, height]);
 
     const yScale = useMemo(() => {
         return d3.scaleLinear().domain(boundingDomains[1]).range([0, height]);
-    }, [JSON.stringify(boundingDomains)]);
+    }, [JSON.stringify(boundingDomains), width, height]);
 
     const setFocus = useMemo(
         // Factory which returns a function
@@ -128,7 +147,7 @@ const Track = ({
     }, [selectedPoint]);
 
     return (
-        <div>
+        <div id="trackContainer" ref={trackContainer}>
             <svg
                 width={width}
                 height={height}

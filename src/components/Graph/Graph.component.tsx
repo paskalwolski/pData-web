@@ -1,6 +1,6 @@
 // @ts-nocheck
 import * as d3 from "d3";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import GraphLine from "./GraphLine.component";
 
 const Graph = ({
@@ -15,8 +15,24 @@ const Graph = ({
     fixed,
     ...props
 }) => {
-    const height = 200;
-    const width = 800;
+    const graphContainer = useRef();
+    const [height, setHeight] = useState(200);
+    const [width, setWidth] = useState(10);
+
+    const getGraphContainerSize = () => {
+        const newWidth = graphContainer.current.clientWidth;
+        setWidth(newWidth);
+    };
+
+    useEffect(() => {
+        // detect 'width' and 'height' on render
+        getGraphContainerSize();
+        // listen for resize changes, and detect dimensions again when they change
+        window.addEventListener("resize", getGraphContainerSize);
+        // cleanup event listener
+        return () =>
+            window.removeEventListener("resize", getGraphContainerSize);
+    }, []);
 
     const [isSelecting, setIsSelecting] = useState(false);
     const [startSelection, setStartSelection] = useState(null);
@@ -61,7 +77,7 @@ const Graph = ({
 
     const xScale = useMemo(
         () => d3.scaleLinear().domain(graphRange).range([0, width]),
-        [primaryLap.lap_number, JSON.stringify(graphRange)]
+        [primaryLap.lap_number, JSON.stringify(graphRange), width, height]
     );
 
     const bufferedDomain = [
@@ -76,7 +92,7 @@ const Graph = ({
                 // .domain([0, maxSpeed])
                 .domain(bufferedDomain)
                 .range([height, 0]),
-        [JSON.stringify(bufferedDomain)]
+        [JSON.stringify(bufferedDomain), width, height]
     ); // Hack to use the bufferedDomain list as a dep
 
     const cleanSelectionRange = (selectionA, selectionB) => {
@@ -181,71 +197,74 @@ const Graph = ({
                         );
                     })}
             </div>
-            <svg width={width} height={height}>
-                {graphData &&
-                    graphData.map((g, i) => {
-                        return (
-                            <GraphLine
-                                key={`line-${i}`}
-                                {...{ target: g, xScale, yScale }}
-                                stepped
-                            />
-                        );
-                    })}
-                <g>
-                    {selectedPoint && (
-                        <g>
-                            <line
-                                x1={graphDistance}
-                                x2={graphDistance}
-                                y1={yScale.range()[0]}
-                                y2={yScale.range()[1]}
-                                stroke="gray"
-                                strokeWidth={2}
+            <div id="graphContainer" ref={graphContainer}>
+                <svg width={width} height={height}>
+                    {graphData &&
+                        graphData.map((g, i) => {
+                            return (
+                                <GraphLine
+                                    key={`line-${i}`}
+                                    {...{ target: g, xScale, yScale }}
+                                    stepped
+                                />
+                            );
+                        })}
+                    <g>
+                        {selectedPoint && (
+                            <g>
+                                <line
+                                    x1={graphDistance}
+                                    x2={graphDistance}
+                                    y1={yScale.range()[0]}
+                                    y2={yScale.range()[1]}
+                                    stroke="gray"
+                                    strokeWidth={2}
+                                    opacity={0.4}
+                                />
+                                {graphData.map((g, i) => {
+                                    return (
+                                        <circle
+                                            cx={graphDistance}
+                                            cy={getGraphValue(g.data, g.target)}
+                                            opacity={1}
+                                            r={4}
+                                            fill={g.color ?? "darkgray"}
+                                            key={`mark-${g.target}-${i}`}
+                                        />
+                                    );
+                                })}
+                            </g>
+                        )}
+                        {isSelecting && (
+                            <rect
                                 opacity={0.4}
+                                fill={targets[0].color}
+                                stroke={"lightgray"}
+                                strokeWidth={3}
+                                x={xScale(startSelection)}
+                                rx={5}
+                                y={yScale.range()[1]}
+                                ry={5}
+                                height={height}
+                                width={
+                                    xScale(selectedPoint) -
+                                    xScale(startSelection)
+                                }
                             />
-                            {graphData.map((g, i) => {
-                                return (
-                                    <circle
-                                        cx={graphDistance}
-                                        cy={getGraphValue(g.data, g.target)}
-                                        opacity={1}
-                                        r={4}
-                                        fill={g.color ?? "darkgray"}
-                                        key={`mark-${g.target}-${i}`}
-                                    />
-                                );
-                            })}
-                        </g>
-                    )}
-                    {isSelecting && (
+                        )}
                         <rect
-                            opacity={0.4}
-                            fill={targets[0].color}
-                            stroke={"lightgray"}
-                            strokeWidth={3}
-                            x={xScale(startSelection)}
-                            rx={5}
-                            y={yScale.range()[1]}
-                            ry={5}
+                            style={{ pointerEvents: "all" }}
+                            fill="none"
                             height={height}
-                            width={
-                                xScale(selectedPoint) - xScale(startSelection)
-                            }
+                            width={width}
+                            onMouseMove={handleMouseMove}
+                            onMouseLeave={handleMouseLeave}
+                            onMouseDown={handleMouseDown}
+                            onMouseUp={handleMouseUp}
                         />
-                    )}
-                    <rect
-                        style={{ pointerEvents: "all" }}
-                        fill="none"
-                        height={height}
-                        width={width}
-                        onMouseMove={handleMouseMove}
-                        onMouseLeave={handleMouseLeave}
-                        onMouseDown={handleMouseDown}
-                        onMouseUp={handleMouseUp}
-                    />
-                </g>
-            </svg>
+                    </g>
+                </svg>
+            </div>
         </div>
     );
 };

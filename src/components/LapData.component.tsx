@@ -24,8 +24,7 @@ const LapData = ({ primaryLap, secondaryLap }) => {
                 // console.log("Primary Time", i, primaryLap.lap_data[i].lapTime);
                 // console.log("Secondary Time", i, lt.lapTime);
                 return {
-                    timedelta:
-                        (lt.lapTime - primaryLap.lap_data[i].lapTime) / 1000,
+                    timedelta: lt.lapTime - primaryLap.lap_data[i].lapTime,
                     distance: i,
                 };
             });
@@ -43,8 +42,14 @@ const LapData = ({ primaryLap, secondaryLap }) => {
             {graphRange ? (
                 <>
                     <div
-                        id="graphContainer"
-                        style={{ display: "flex", flexDirection: "column" }}
+                        id="graphSectionContainer"
+                        style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            flexGrow: 3,
+                            flexShrink: 1,
+                            maxWidth: "60%",
+                        }}
                     >
                         <div
                             id={"graphDetails"}
@@ -162,15 +167,26 @@ const LapData = ({ primaryLap, secondaryLap }) => {
                             stepped
                         ></Graph>
                     </div>
-                    <Track
-                        {...{
-                            primaryLap,
-                            secondaryLap,
-                            selectedPoint,
-                            setSelectedPoint,
-                            graphRange,
+                    <div
+                        id="trackSectionContainer"
+                        style={{
+                            flexGrow: 4,
+                            maxWidth: "40%",
+                            display: "flex",
+                            flexDirection: "column",
+                            justifyContent: "center",
                         }}
-                    ></Track>
+                    >
+                        <Track
+                            {...{
+                                primaryLap,
+                                secondaryLap,
+                                selectedPoint,
+                                setSelectedPoint,
+                                graphRange,
+                            }}
+                        ></Track>
+                    </div>
                 </>
             ) : (
                 <>Select a Lap to Get Started</>
