@@ -32,7 +32,7 @@ const LapSelector = ({ eventData, selectLap, selectedLap }) => {
         // no selectedLap? show time
         // otherwsise, show delta
         if (selectedLap) {
-            if (i === selectedLap.lap_number || i === eventData.fastestLap) {
+            if (i === selectedLap.lap_number) {
                 const displayTime = millisToRaceDuration(time);
                 return displayTime;
             } else {

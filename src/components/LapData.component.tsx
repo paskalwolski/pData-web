@@ -24,7 +24,7 @@ const LapData = ({ primaryLap, secondaryLap }) => {
                 // console.log("Primary Time", i, primaryLap.lap_data[i].lapTime);
                 // console.log("Secondary Time", i, lt.lapTime);
                 return {
-                    timedelta: lt.lapTime - primaryLap.lap_data[i].lapTime,
+                    timedelta: lt.lapTime - primaryLap.lap_data[i].lapTime / 1000, // Convert deltas to millis correctly
                     distance: i,
                 };
             });
