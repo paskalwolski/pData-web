@@ -5,6 +5,15 @@ import { millisToRaceDuration } from "../utils";
 const LapSelector = ({ eventData, selectLap, selectedLap }) => {
     const [selectedLapNumber, setSelectedLapNumber] = useState(null);
     const sanitizeLap = (lap) => {
+        if (!lap.lap_data[0]) {
+            // First data entry is empty - try find the next valid one
+            let lapTracker = 1;
+            while (lap.lap_data[lapTracker]) {
+                lapTracker++;
+            }
+            // Found a non-Null entry! Use it
+            lap.lap_data[0] = lap.lap_data[lapTracker];
+        }
         lap.lap_data.reduce((oLap, nLap, i) => {
             if (!nLap) {
                 lap.lap_data[i] = oLap;
