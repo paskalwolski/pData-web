@@ -147,7 +147,10 @@ const Track = ({
     }, [selectedPoint]);
 
     return (
-        <div id="trackContainer" ref={trackContainer}>
+        <div
+            id="trackContainer"
+            ref={trackContainer}
+        >
             <svg
                 width={width}
                 height={height}
