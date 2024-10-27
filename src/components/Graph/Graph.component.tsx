@@ -103,7 +103,7 @@ const Graph = ({
         const x0 = xScale.invert(d3.pointer(e)[0]);
         if (x0 >= 0 && x0 <= primaryLap.lap_data.length) {
             // const i = d3.bisector((d) => d.distance).left(primaryLap.lap_data, x0);
-            setSelectedPoint(x0.toFixed(0));
+            setSelectedPoint(Number(x0.toFixed(0)));
         } else {
             setSelectedPoint(null);
         }
@@ -239,16 +239,21 @@ const Graph = ({
                             <rect
                                 opacity={0.4}
                                 fill={targets[0].color}
-                                stroke={"lightgray"}
-                                strokeWidth={3}
-                                x={xScale(startSelection)}
+                                x={
+                                    startSelection < selectedPoint
+                                        ? xScale(startSelection)
+                                        : xScale(selectedPoint)
+                                }
                                 rx={5}
                                 y={yScale.range()[1]}
                                 ry={5}
                                 height={height}
                                 width={
-                                    xScale(selectedPoint) -
-                                    xScale(startSelection)
+                                    startSelection < selectedPoint
+                                        ? xScale(selectedPoint) -
+                                          xScale(startSelection)
+                                        : xScale(startSelection) -
+                                          xScale(selectedPoint)
                                 }
                             />
                         )}
