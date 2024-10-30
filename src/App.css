@@ -21,10 +21,10 @@
 }
 
 .card {
-    padding: 5px;
+    padding: 2px;
     border: 2px solid lightgrey;
     border-radius: 5px;
-    margin: 5px;
+    margin: 5px 3px;
     display: flex;
     flex-direction: row;
     box-sizing: border-box;

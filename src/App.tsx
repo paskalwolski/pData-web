@@ -23,15 +23,22 @@ function App() {
             console.log(`Secondary Lap ${secondaryLap.lap_number}`);
         }
     }, [secondaryLap]);
+    useEffect(() => {
+        setPrimaryLap(null);
+    }, [primaryEventData]);
+    useEffect(() => {
+        setSecondaryLap(null);
+    }, [secondaryEventData]);
 
     return (
-        <>
+        <div style={{ maxHeight: "100vh", overflow: "auto" }}>
             <div
                 className="card"
                 style={{
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "space-between",
+                    flexShrink: 0,
                 }}
             >
                 {primaryEventData ? (
@@ -44,19 +51,42 @@ function App() {
                                 display: "flex",
                                 flexDirection: "row",
                                 justifyContent: "space-between",
+                                gap: "10px",
                             }}
                         >
-                            <LapSelector
-                                {...{
-                                    eventData: primaryEventData,
-                                    selectLap: setPrimaryLap,
-                                    selectedLap: primaryLap,
-                                }}
-                            />
                             <div
                                 style={{
                                     display: "flex",
-                                    flexDirection: "column",
+                                    flexGrow: 1,
+                                    overflowX: "scroll",
+                                    maxWidth:
+                                        primaryEventData && secondaryEventData
+                                            ? "50%"
+                                            : "100%",
+                                }}
+                            >
+                                <LapSelector
+                                    {...{
+                                        eventData: primaryEventData,
+                                        selectLap: setPrimaryLap,
+                                        selectedLap: primaryLap,
+                                        isComparison:
+                                            primaryLap && secondaryLap
+                                                ? true
+                                                : false,
+                                    }}
+                                />
+                            </div>
+                            <div
+                                style={{
+                                    display: "flex",
+                                    flexDirection: "row",
+                                    flexGrow: 1,
+                                    overflowX: "scroll",
+                                    maxWidth:
+                                        primaryEventData && secondaryEventData
+                                            ? "50%"
+                                            : "100%",
                                 }}
                             >
                                 {secondaryEventData && (
@@ -65,6 +95,10 @@ function App() {
                                             eventData: secondaryEventData,
                                             selectLap: setSecondaryLap,
                                             selectedLap: secondaryLap,
+                                            isComparison:
+                                                primaryLap && secondaryLap
+                                                    ? true
+                                                    : false,
                                         }}
                                     />
                                 )}
@@ -101,7 +135,7 @@ function App() {
                 />
             )}
             {primaryEventData && <LapData {...{ primaryLap, secondaryLap }} />}
-        </>
+        </div>
     );
 }
 

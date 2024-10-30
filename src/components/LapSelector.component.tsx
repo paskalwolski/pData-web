@@ -2,8 +2,7 @@ import { useState } from "react";
 import LapCard from "./LapCard.component";
 import { millisToRaceDuration } from "../utils";
 
-const LapSelector = ({ eventData, selectLap, selectedLap }) => {
-    const [selectedLapNumber, setSelectedLapNumber] = useState(null);
+const LapSelector = ({ eventData, selectLap, selectedLap, isComparison }) => {
     const sanitizeLap = (lap) => {
         if (!lap.lap_data[0]) {
             // First data entry is empty - try find the next valid one
@@ -26,28 +25,19 @@ const LapSelector = ({ eventData, selectLap, selectedLap }) => {
 
     const getTimeDelta = (time, i) => {
         if (!time) {
+            // Show only the lap number
             return i;
         }
-        // selectedLap or fastest lap? Show time
-        // no selectedLap? show time
-        // otherwsise, show delta
         if (selectedLap) {
-            if (i === selectedLap.lap_number) {
-                const displayTime = millisToRaceDuration(time);
-                return displayTime;
-            } else {
-                const comparisonTime = selectedLap.lap_time;
-                const delta = (comparisonTime - time) / 1000;
-                if (delta < 0) {
-                    return `${delta.toFixed(3)}`;
-                } else {
-                    return `+${delta.toFixed(3)}`;
-                }
+            if (i == selectedLap.lap_number) {
+                // Don't show a zero delta
+                return null;
             }
-        } else {
-            const displayTime = millisToRaceDuration(time);
-            return displayTime;
+            const delta = (time - selectedLap.lap_time) / 1000;
+            return delta > 0 ? `+${delta.toFixed(3)}` : delta.toFixed(3);
         }
+        // No selected lap - don't show the gap
+        return null;
     };
 
     return (
@@ -66,7 +56,6 @@ const LapSelector = ({ eventData, selectLap, selectedLap }) => {
                                 : getTimeDelta(lap?.lap_time, i),
                         }}
                         onClick={() => {
-                            setSelectedLapNumber(lap.lap_number);
                             selectLap(sanitizeLap(lap));
                         }}
                     />

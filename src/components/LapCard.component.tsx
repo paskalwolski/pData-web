@@ -1,3 +1,5 @@
+import { millisToRaceDuration } from "../utils";
+
 const LapCard = ({
     lapData,
     isFastestLap,
@@ -30,7 +32,8 @@ const LapCard = ({
             onClick={lapData.discard ? null : props?.onClick}
             style={{ flexDirection: "column" }}
         >
-            <div>{timeDisplay || lapData.lap_number + 1}</div>
+            <div>{millisToRaceDuration(lapData.lap_time)}</div>
+            <div>{timeDisplay}</div>
         </div>
     );
 };
