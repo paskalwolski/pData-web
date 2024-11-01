@@ -5,6 +5,7 @@ import "./App.css";
 import LapData from "./components/LapData.component";
 import LapSelector from "./components/LapSelector.component";
 import EventSelector from "./components/EventSelector.component";
+import SessionSelector from "./components/SessionSelector.component";
 
 function App() {
     const [primaryEventData, setPrimaryEventData] = useState(null);
@@ -121,7 +122,8 @@ function App() {
                 ) : (
                     <div>
                         <h3>Welcome to pData</h3>
-                        <EventSelector setEvent={setPrimaryEventData} />
+                        {/* <EventSelector setEvent={setPrimaryEventData} /> */}
+                        <SessionSelector setSession={setPrimaryEventData} />
                     </div>
                 )}
             </div>
