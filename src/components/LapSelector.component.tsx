@@ -53,7 +53,7 @@ const LapSelector = ({ eventData, selectLap, selectedLap, isComparison }) => {
                             isSelected: lap.lap_number == selectedLap,
                             timeDisplay: lap.discard
                                 ? null
-                                : getTimeDelta(lap?.lap_time, i),
+                                : getTimeDelta(lap?.lap_time, lap?.lap_number),
                         }}
                         onClick={() => {
                             selectLap(sanitizeLap(lap));
