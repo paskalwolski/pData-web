@@ -83,6 +83,7 @@ function App() {
                                 style={{
                                     display: "flex",
                                     flexDirection: "row",
+                                    justifyContent: "end",
                                     flexGrow: 1,
                                     overflowX: "scroll",
                                     maxWidth:
@@ -97,6 +98,7 @@ function App() {
                                             eventData: secondaryEventData,
                                             selectLap: setSecondaryLap,
                                             selectedLap: secondaryLap,
+                                            isSecondary: true,
                                             isComparison:
                                                 primaryLap && secondaryLap
                                                     ? true
@@ -117,6 +119,25 @@ function App() {
                                 >
                                     +
                                 </button>
+                                {secondaryEventData && (
+                                    <button
+                                        className="card"
+                                        style={{
+                                            fontSize: "x-large",
+                                            padding: "3px 3px",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            margin: "2px",
+                                            backgroundColor: "palevioletred",
+                                            color: "white",
+                                        }}
+                                        onClick={() =>
+                                            setSecondaryEventData(null)
+                                        }
+                                    >
+                                        X
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </>
@@ -129,12 +150,18 @@ function App() {
                 )}
             </div>
             {isSelectingSecondary && (
-                <EventSelector
-                    {...{
-                        setEvent: setSecondaryEventData,
-                        existingEventData: primaryEventData,
-                        setSelectingSecondary,
-                    }}
+                // <EventSelector
+                //     {...{
+                //         setEvent: setSecondaryEventData,
+                //         existingEventData: primaryEventData,
+                //         setSelectingSecondary,
+                //     }}
+                // />
+                <SessionSelector
+                    setSession={setSecondaryEventData}
+                    track={primaryEventData.track}
+                    car={primaryEventData.car}
+                    setSelecting={setSelectingSecondary}
                 />
             )}
             {primaryEventData && <LapData {...{ primaryLap, secondaryLap }} />}

@@ -24,7 +24,7 @@ const firebaseConfig = {
 const firebase = initializeApp(firebaseConfig);
 const db = getFirestore(firebase);
 
-const SessionSelector = ({ setSession, track, car }) => {
+const SessionSelector = ({ setSession, track, car, setSelecting }) => {
     const [filteredSessions, setFilteredSessions] = useState(null);
     const [sessionCount, setSessionCount] = useState(null);
     const [selectedSessionId, setSelectedSessionId] = useState(null);
@@ -92,6 +92,7 @@ const SessionSelector = ({ setSession, track, car }) => {
                 lapList.push(lap.data());
             });
             setSession({ ...selectedSession, laps: lapList });
+            setSelecting(false);
         };
         handleSelectedSessionId();
     }, [selectedSessionId]);
@@ -105,19 +106,47 @@ const SessionSelector = ({ setSession, track, car }) => {
                 maxHeight: "50%",
             }}
         >
-            <div style={{ alignSelf: "start", padding: "0.2em 1em 0.2em 1em" }}>
-                {track ? `Select a session for ${track}:` : "Select a Session:"}
-            </div>
-            {car && (
-                <div>
-                    <input
-                        id="carFilterCheck"
-                        type={"checkBox"}
-                        onChange={() => setFilterByCar(!filterByCar)}
-                    />
-                    <label htmlFor="carFilterCheck">Filter by Car</label>
+            <div
+                style={{
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "space-between",
+                }}
+            >
+                <div
+                    style={{
+                        alignSelf: "start",
+                        padding: "0.2em 1em 0.2em 1em",
+                    }}
+                >
+                    {track
+                        ? `Select a session for ${track}:`
+                        : "Select a Session:"}
                 </div>
-            )}
+                {car && (
+                    <div
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            marginRight: "1em",
+                        }}
+                    >
+                        <div style={{ margin: "0 1em" }}>
+                            <input
+                                id="carFilterCheck"
+                                type={"checkBox"}
+                                onChange={() => setFilterByCar(!filterByCar)}
+                            />
+                            <label htmlFor="carFilterCheck">
+                                Filter by Car
+                            </label>
+                        </div>
+                        <button onClick={() => setSelecting(false)}>
+                            Cancel
+                        </button>
+                    </div>
+                )}
+            </div>
             {filteredSessions && (
                 <>
                     {filteredSessions.map((session, i) => {

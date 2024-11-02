@@ -41,7 +41,11 @@ const LapSelector = ({ eventData, selectLap, selectedLap, isComparison }) => {
     };
 
     return (
-        <div style={{ display: "flex" }}>
+        <div
+            style={{
+                display: "flex",
+            }}
+        >
             {eventData.laps.map((lap, i) => {
                 return (
                     <LapCard
