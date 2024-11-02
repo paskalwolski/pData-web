@@ -32,7 +32,7 @@ function App() {
     }, [secondaryEventData]);
 
     return (
-        <div style={{ maxHeight: "100vh", overflow: "auto" }}>
+        <div style={{ height: "100vh", maxHeight: "100vh", overflow: "auto" }}>
             <div
                 className="card"
                 style={{
@@ -40,6 +40,7 @@ function App() {
                     flexDirection: "column",
                     justifyContent: "space-between",
                     flexShrink: 0,
+                    padding: "1em",
                 }}
             >
                 {primaryEventData ? (
