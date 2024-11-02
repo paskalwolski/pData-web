@@ -49,14 +49,22 @@
 
 .pit {
     background-color: blue;
+    color: whitesmoke;
 }
 
 .valid {
     background-color: green;
+    color: whitesmoke;
+}
+
+.warn {
+    background-color: darkgoldenrod;
+    color: whitesmoke;
 }
 
 .invalid {
     background-color: red;
+    color: whitesmoke;
 }
 
 .discard {
@@ -65,7 +73,7 @@
 
 .fastest {
     background-color: purple;
-    color: white;
+    color: whitesmoke;
 }
 
 .selected {

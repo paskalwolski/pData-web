@@ -11,6 +11,7 @@ import {
     limit,
     getCountFromServer,
 } from "firebase/firestore";
+import { millisToRaceDuration } from "../utils";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDnFq6i1fT8dfPCNNO6HD9Fo05RtZDBQmk",
@@ -32,6 +33,7 @@ const SessionSelector = ({ setSession, track, car, setSelecting }) => {
 
     useEffect(() => {
         const getAvailableSessions = async () => {
+            setFilteredSessions(null);
             console.log("Got DB", db.app.name);
             const sessionCol = collection(db, "sessions");
             // Get the total session count info
@@ -68,7 +70,7 @@ const SessionSelector = ({ setSession, track, car, setSelecting }) => {
         };
 
         getAvailableSessions();
-    }, []);
+    }, [filterByCar]);
 
     useEffect(() => {
         if (!selectedSessionId) {
@@ -92,7 +94,7 @@ const SessionSelector = ({ setSession, track, car, setSelecting }) => {
                 lapList.push(lap.data());
             });
             setSession({ ...selectedSession, laps: lapList });
-            setSelecting(false);
+            setSelecting && setSelecting(false);
         };
         handleSelectedSessionId();
     }, [selectedSessionId]);
@@ -178,19 +180,28 @@ const SessionSelector = ({ setSession, track, car, setSelecting }) => {
                                     <h4 style={{ margin: "0.5em 1em" }}>
                                         {session.sessionType.toUpperCase()}
                                     </h4>
-                                    <h5 className="pill">{session.track}</h5>
-                                    <h5 className="pill">{session.car}</h5>
-                                    <h5 className="pill">
-                                        {session?.user ?? "Unknown Driver"}
+                                    <h5 className="pill pit">
+                                        {session.track}
+                                    </h5>
+                                    <h5 className="pill invalid">
+                                        {session.car}
+                                    </h5>
+                                    <h5 className="pill valid">
+                                        {session?.driver ?? "Unknown Driver"}
                                     </h5>
                                     <h5 className="pill fastest">
-                                        {session?.fastestTime ?? "Unknown Time"}
+                                        {millisToRaceDuration(
+                                            session?.fastestLapTime
+                                        ) ?? "Unknown Time"}
+                                    </h5>
+                                    <h5 className="pill warn">
+                                        {session?.lapCount ?? 0} Laps
                                     </h5>
                                 </div>
                                 <div style={{ marginRight: "1em" }}>
-                                    {new Date(
-                                        session.sessionTime
-                                    ).toLocaleDateString("en-za")}
+                                    {session.sessionTime
+                                        .toDate()
+                                        .toLocaleDateString("en-za")}
                                 </div>
                             </div>
                         );
