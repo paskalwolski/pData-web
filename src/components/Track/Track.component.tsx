@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState, useRef } from "react";
 import TrackLine from "./TrackLine.component";
 import { bufferDomain } from "./utils";
 
+import TrackImage from "../../assets/vhe_interlagos gp.png";
+
 const Track = ({
     primaryLap,
     secondaryLap,
@@ -17,6 +19,14 @@ const Track = ({
     const [height, setHeight] = useState(500);
     const [width, setWidth] = useState(500);
     const trackContainer = useRef();
+
+    const rawImage = new Image();
+    rawImage.src = TrackImage;
+    console.log(rawImage.naturalWidth, rawImage.naturalHeight);
+    const [imgWidth, imgHeight] = [
+        rawImage.naturalWidth,
+        rawImage.naturalHeight,
+    ];
 
     const getTrackContainerSize = () => {
         const newDim = trackContainer.current.clientWidth;
@@ -107,8 +117,11 @@ const Track = ({
     //     console.log("Aspect: ", a);
     // }, [JSON.stringify(boundingDomains)]);
 
+    const preScale 
+
     const xScale = useMemo(() => {
         return d3.scaleLinear().domain(boundingDomains[0]).range([0, width]);
+        // return d3.scaleLinear().domain([0, imgWidth]).range([0, imgWidth]);
     }, [JSON.stringify(boundingDomains), width, height]);
 
     const yScale = useMemo(() => {
@@ -146,53 +159,55 @@ const Track = ({
         setFocus(selectedPoint);
     }, [selectedPoint]);
 
+    console.log(TrackImage);
+
     return (
-        <div
-            id="trackContainer"
-            ref={trackContainer}
-        >
-            <svg
-                width={width}
-                height={height}
-                style={{ margin: "10px" }}
-                onWheel={handleZoom}
-            >
-                <g
-                    transform={`translate(${transform.x}, ${transform.y}) scale(${transform.k}, ${transform.k})`}
+        <>
+            <div id="trackContainer" ref={trackContainer}>
+                <svg
+                    width={width}
+                    height={height}
+                    // style={{ margin: "10px" }}
+                    onWheel={handleZoom}
                 >
-                    {secondaryLap && ( // Ensure the secondary lap is rendered below
+                    <image href={TrackImage} width={width} height={height} />
+                    <g
+                        transform={`translate(${transform.x}, ${transform.y}) scale(${transform.k}, ${transform.k})`}
+                    >
+                        {secondaryLap && ( // Ensure the secondary lap is rendered below
+                            <TrackLine
+                                {...{
+                                    data: secondaryLap.lap_data,
+                                    xScale,
+                                    yScale,
+                                    setFocus,
+                                    secondary: true,
+                                }}
+                            />
+                        )}
                         <TrackLine
                             {...{
-                                data: secondaryLap.lap_data,
+                                data: primaryLap.lap_data,
                                 xScale,
                                 yScale,
                                 setFocus,
-                                secondary: true,
+                                secondary: false,
                             }}
                         />
-                    )}
-                    <TrackLine
-                        {...{
-                            data: primaryLap.lap_data,
-                            xScale,
-                            yScale,
-                            setFocus,
-                            secondary: false,
-                        }}
-                    />
-                    {focusPos && (
-                        <circle
-                            r={3}
-                            fill={"red"}
-                            stroke={"red"}
-                            strokeWidth={2}
-                            cx={focusPos[0]}
-                            cy={focusPos[1]}
-                        />
-                    )}
-                </g>
-            </svg>
-        </div>
+                        {focusPos && (
+                            <circle
+                                r={3}
+                                fill={"red"}
+                                stroke={"red"}
+                                strokeWidth={2}
+                                cx={focusPos[0]}
+                                cy={focusPos[1]}
+                            />
+                        )}
+                    </g>
+                </svg>
+            </div>
+        </>
     );
 };
 
