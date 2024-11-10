@@ -28,7 +28,7 @@ const LapCard = ({
 
     return (
         <div
-            className={`${getLapClass(lapData)} ${isSelected && "selected"}`}
+            className={`${getLapClass(lapData)} ${isSelected && "selected"} highlight`}
             onClick={lapData.discard ? null : props?.onClick}
             style={{ flexDirection: "column" }}
         >
