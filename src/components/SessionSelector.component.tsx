@@ -10,6 +10,10 @@ import {
     orderBy,
     limit,
     getCountFromServer,
+    deleteDoc,
+    doc,
+    getDoc,
+    updateDoc,
 } from "firebase/firestore";
 import { millisToRaceDuration } from "../utils";
 import SessionSelectorActions from "./SessionSelectorAction.component";
@@ -107,11 +111,60 @@ const SessionSelector = ({
         handleSelectedSessionId();
     }, [selectedSessionId]);
 
-    const handleSessionDelete = (sessionId) => {
+    const handleSessionDelete = async (sessionId) => {
         console.log("Deleting", sessionId);
+
+        const lapCollection = collection(db, "laps");
+        const lapQuery = query(
+            lapCollection,
+            where("session", "==", sessionId)
+        );
+        const lapSnapshot = await getDocs(lapQuery);
+        const lapDeletes = lapSnapshot.docs.map((lapSnap) =>
+            deleteDoc(doc(lapCollection, lapSnap.id))
+        );
+        const sessionCollection = collection(db, "sessions");
+        const sessionDelete = deleteDoc(doc(sessionCollection, sessionId));
+
+        await Promise.all([...lapDeletes, sessionDelete]);
+        console.log("Deleted Session Details");
+        setFilteredSessions(
+            filteredSessions.filter((session) => session.id != sessionId)
+        );
     };
-    const handleSessionTrim = (sessionId) => {
+
+    const handleSessionTrim = async (sessionId) => {
         console.log("Trimming", sessionId);
+
+        const sessionCollection = collection(db, "sessions");
+        const sessionDoc = doc(sessionCollection, sessionId);
+        const sessionSnap = await getDoc(sessionDoc);
+        const sessionData = sessionSnap.data();
+        const fastestLapNumber = sessionData?.fastestLap;
+        const sessionUpdate = updateDoc(sessionDoc, { lapCount: 1 });
+
+        const lapCollection = collection(db, "laps");
+        const lapQuery = query(
+            lapCollection,
+            where("session", "==", sessionId),
+            where("lap_number", "!=", fastestLapNumber)
+        );
+        const lapSnapshot = await getDocs(lapQuery);
+        const lapDeletes = lapSnapshot.docs.map((lapSnap) =>
+            deleteDoc(doc(lapCollection, lapSnap.id))
+        );
+
+        setFilteredSessions(
+            filteredSessions.map((session) => {
+                if (session.id == sessionId) {
+                    return { ...session, lapCount: 1 };
+                } else {
+                    return session;
+                }
+            })
+        );
+
+        await Promise.all([sessionUpdate, ...lapDeletes]);
     };
 
     return (
