@@ -169,7 +169,7 @@ function App() {
                     </>
                 ) : (
                     <div>
-                        <h1>Welcome to pData</h1>
+                        <h1 style={{color: "whitesmoke"}}>Welcome to pData</h1>
                     </div>
                 )}
             </div>
