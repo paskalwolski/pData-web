@@ -4,22 +4,6 @@
     text-align: center;
 }
 
-@keyframes logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-    a:nth-of-type(2) .logo {
-        animation: logo-spin infinite 20s linear;
-    }
-}
-
 .card {
     padding: 2px;
     border: 2px solid lightgrey;
@@ -69,6 +53,7 @@
 
 .discard {
     filter: brightness(0.5);
+    cursor: not-allowed !important;
 }
 
 .fastest {
@@ -87,4 +72,43 @@
 #lapSelector {
     display: flex;
     flex-direction: row;
+}
+
+.icon {
+    padding-top: 0.2em;
+}
+
+.highlight:hover {
+    cursor: pointer;
+    border-color: white;
+    transition: border-color 600ms;
+}
+
+.sessionSelect:hover {
+    border-color: white;
+    color: white;
+    cursor: pointer;
+    transition: border-color 600ms;
+}
+.sessionDetail {
+    opacity: 0;
+    transition: opacity 10ms;
+    /* border: 2px solid gray; */
+    /* background-color: #242424; */
+    /* color: whitesmoke; */
+    /* transition: background-color 3000ms; */
+}
+.sessionSelect:hover .sessionDetail {
+    opacity: 1;
+    transition: opacity 500ms;
+}
+.sessionDetail button.destroyAction:hover {
+    background-color: darkred;
+    transition: background-color 200ms;
+    border: 3px solid whitesmoke;
+}
+.sessionDetail button.cancelAction:hover {
+    background-color: green;
+    transition: background-color 200ms;
+    border: 3px solid whitesmoke;
 }

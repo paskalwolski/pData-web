@@ -10,8 +10,13 @@ import {
     orderBy,
     limit,
     getCountFromServer,
+    deleteDoc,
+    doc,
+    getDoc,
+    updateDoc,
 } from "firebase/firestore";
 import { millisToRaceDuration } from "../utils";
+import SessionSelectorActions from "./SessionSelectorAction.component";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDnFq6i1fT8dfPCNNO6HD9Fo05RtZDBQmk",
@@ -25,7 +30,14 @@ const firebaseConfig = {
 const firebase = initializeApp(firebaseConfig);
 const db = getFirestore(firebase);
 
-const SessionSelector = ({ setSession, track, car, setSelecting }) => {
+const SessionSelector = ({
+    setSession,
+    track,
+    car,
+    setSelecting,
+    isPrimary,
+    required,
+}) => {
     const [filteredSessions, setFilteredSessions] = useState(null);
     const [sessionCount, setSessionCount] = useState(null);
     const [selectedSessionId, setSelectedSessionId] = useState(null);
@@ -99,13 +111,70 @@ const SessionSelector = ({ setSession, track, car, setSelecting }) => {
         handleSelectedSessionId();
     }, [selectedSessionId]);
 
+    const handleSessionDelete = async (sessionId) => {
+        console.log("Deleting", sessionId);
+
+        const lapCollection = collection(db, "laps");
+        const lapQuery = query(
+            lapCollection,
+            where("session", "==", sessionId)
+        );
+        const lapSnapshot = await getDocs(lapQuery);
+        const lapDeletes = lapSnapshot.docs.map((lapSnap) =>
+            deleteDoc(doc(lapCollection, lapSnap.id))
+        );
+        const sessionCollection = collection(db, "sessions");
+        const sessionDelete = deleteDoc(doc(sessionCollection, sessionId));
+
+        await Promise.all([...lapDeletes, sessionDelete]);
+        console.log("Deleted Session Details");
+        setFilteredSessions(
+            filteredSessions.filter((session) => session.id != sessionId)
+        );
+    };
+
+    const handleSessionTrim = async (sessionId) => {
+        console.log("Trimming", sessionId);
+
+        const sessionCollection = collection(db, "sessions");
+        const sessionDoc = doc(sessionCollection, sessionId);
+        const sessionSnap = await getDoc(sessionDoc);
+        const sessionData = sessionSnap.data();
+        const fastestLapNumber = sessionData?.fastestLap;
+        const sessionUpdate = updateDoc(sessionDoc, { lapCount: 1 });
+
+        const lapCollection = collection(db, "laps");
+        const lapQuery = query(
+            lapCollection,
+            where("session", "==", sessionId),
+            where("lap_number", "!=", fastestLapNumber)
+        );
+        const lapSnapshot = await getDocs(lapQuery);
+        const lapDeletes = lapSnapshot.docs.map((lapSnap) =>
+            deleteDoc(doc(lapCollection, lapSnap.id))
+        );
+
+        setFilteredSessions(
+            filteredSessions.map((session) => {
+                if (session.id == sessionId) {
+                    return { ...session, lapCount: 1 };
+                } else {
+                    return session;
+                }
+            })
+        );
+
+        await Promise.all([sessionUpdate, ...lapDeletes]);
+    };
+
     return (
         <div
             className="card"
             style={{
                 flexDirection: "column",
+                flex: 1,
                 alignItems: "center",
-                maxHeight: "50%",
+                maxHeight: "100em",
             }}
         >
             <div
@@ -125,14 +194,14 @@ const SessionSelector = ({ setSession, track, car, setSelecting }) => {
                         ? `Select a session for ${track}:`
                         : "Select a Session:"}
                 </div>
-                {car && (
-                    <div
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            marginRight: "1em",
-                        }}
-                    >
+                <div
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        marginRight: "1em",
+                    }}
+                >
+                    {car && (
                         <div style={{ margin: "0 1em" }}>
                             <input
                                 id="carFilterCheck"
@@ -143,70 +212,109 @@ const SessionSelector = ({ setSession, track, car, setSelecting }) => {
                                 Filter by Car
                             </label>
                         </div>
+                    )}
+                    {!required && (
                         <button onClick={() => setSelecting(false)}>
                             Cancel
                         </button>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
             {filteredSessions && (
                 <>
-                    {filteredSessions.map((session, i) => {
-                        return (
-                            <div
-                                className="card"
-                                id={session.id}
-                                key={session.id}
-                                onClick={(e) => {
-                                    console.log(
-                                        "Selecting",
-                                        e.currentTarget.id
-                                    );
-                                    setSelectedSessionId(e.currentTarget.id);
-                                }}
-                                style={{
-                                    width: "100%",
-                                    alignItems: "center",
-                                    maxWidth: "96%",
-                                    justifyContent: "space-between",
-                                }}
-                            >
+                    <div
+                        style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            overflowY: "auto",
+                            minHeight: "100px",
+                            width: "100%",
+                            alignItems: "center",
+                        }}
+                    >
+                        {filteredSessions.map((session, i) => {
+                            return (
                                 <div
+                                    className="card sessionSelect"
+                                    id={session.id}
+                                    key={session.id}
+                                    onClick={(e) => {
+                                        if (isPrimary) {
+                                        }
+                                        setSelectedSessionId(
+                                            e.currentTarget.id
+                                        );
+                                    }}
                                     style={{
-                                        display: "flex",
+                                        width: "90%",
                                         alignItems: "center",
+                                        justifyContent: "space-between",
                                     }}
                                 >
-                                    <h4 style={{ margin: "0.5em 1em" }}>
-                                        {session.sessionType.toUpperCase()}
-                                    </h4>
-                                    <h5 className="pill pit">
-                                        {session.track}
-                                    </h5>
-                                    <h5 className="pill invalid">
-                                        {session.car}
-                                    </h5>
-                                    <h5 className="pill valid">
-                                        {session?.driver ?? "Unknown Driver"}
-                                    </h5>
-                                    <h5 className="pill fastest">
-                                        {millisToRaceDuration(
-                                            session?.fastestLapTime
-                                        ) ?? "Unknown Time"}
-                                    </h5>
-                                    <h5 className="pill warn">
-                                        {session?.lapCount ?? 0} Laps
-                                    </h5>
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                        }}
+                                    >
+                                        <h4 style={{ margin: "0.5em 1em" }}>
+                                            {session.sessionType.toUpperCase()}
+                                        </h4>
+                                        <h5 className="pill pit">
+                                            {session.track}
+                                        </h5>
+                                        <h5 className="pill invalid">
+                                            {session.car}
+                                        </h5>
+                                        <h5 className="pill valid">
+                                            {session?.driver ??
+                                                "Unknown Driver"}
+                                        </h5>
+                                        <h5 className="pill fastest">
+                                            {millisToRaceDuration(
+                                                session?.fastestLapTime
+                                            ) ?? "Unknown Time"}
+                                        </h5>
+                                        <h5 className="pill warn">
+                                            {session?.lapCount ?? 0} Laps
+                                        </h5>
+                                    </div>
+                                    <div
+                                        style={{
+                                            marginRight: "0.4em",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "space-between",
+                                        }}
+                                    >
+                                        <SessionSelectorActions
+                                            sessionId={session.id}
+                                            trimAction={handleSessionTrim}
+                                            deleteAction={handleSessionDelete}
+                                        />
+                                        {/* <SessionSelectorAction
+                                            sessionId={session.id}
+                                            Icon={TbWindowMinimize}
+                                            action={handleSessionTrim}
+                                            title={"Trim Slower Laps"}
+                                        />
+                                        <button
+                                            className="sessionDetail icon"
+                                            onClick={handleSessionDelete}
+                                            title="Delete Session"
+                                        >
+                                            <TbTrashXFilled />
+                                        </button> */}
+                                        <div style={{ margin: "0.2em" }}>
+                                            {session.sessionTime
+                                                .toDate()
+                                                .toLocaleDateString("en-za")}
+                                        </div>
+                                    </div>
                                 </div>
-                                <div style={{ marginRight: "1em" }}>
-                                    {session.sessionTime
-                                        .toDate()
-                                        .toLocaleDateString("en-za")}
-                                </div>
-                            </div>
-                        );
-                    })}
-
+                            );
+                        })}
+                    </div>
                     <em>
                         Showing {filteredSessions.length} of {sessionCount}{" "}
                         Sessions

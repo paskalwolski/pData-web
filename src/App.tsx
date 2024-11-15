@@ -7,8 +7,11 @@ import LapSelector from "./components/LapSelector.component";
 import EventSelector from "./components/EventSelector.component";
 import SessionSelector from "./components/SessionSelector.component";
 
+import { TbListSearch, TbPlaylistAdd, TbPlaylistX } from "react-icons/tb";
+
 function App() {
     const [primaryEventData, setPrimaryEventData] = useState(null);
+    const [isSelectingPrimary, setSelectingPrimary] = useState(true);
     const [isSelectingSecondary, setSelectingSecondary] = useState(false);
     const [secondaryEventData, setSecondaryEventData] = useState(null);
     const [primaryLap, setPrimaryLap] = useState(null);
@@ -30,6 +33,9 @@ function App() {
     useEffect(() => {
         setSecondaryLap(null);
     }, [secondaryEventData]);
+    useEffect(() => {
+        setSelectingSecondary(false);
+    }, [isSelectingPrimary]);
 
     return (
         <div style={{ height: "100vh", maxHeight: "100vh", overflow: "auto" }}>
@@ -67,6 +73,20 @@ function App() {
                                             : "100%",
                                 }}
                             >
+                                <button
+                                    style={{
+                                        fontSize: "large",
+                                        padding: "3px 3px",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        margin: "2px",
+                                    }}
+                                    onClick={() => {
+                                        setSelectingPrimary(true);
+                                    }}
+                                >
+                                    <TbListSearch />
+                                </button>
                                 <LapSelector
                                     {...{
                                         eventData: primaryEventData,
@@ -106,36 +126,42 @@ function App() {
                                         }}
                                     />
                                 )}
-                                <button
-                                    className="card"
-                                    style={{
-                                        fontSize: "x-large",
-                                        padding: "3px 3px",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        margin: "2px",
-                                    }}
-                                    onClick={() => setSelectingSecondary(true)}
-                                >
-                                    +
-                                </button>
-                                {secondaryEventData && (
+                                {!isSelectingPrimary && (
                                     <button
-                                        className="card"
                                         style={{
-                                            fontSize: "x-large",
+                                            fontSize: "large",
                                             padding: "3px 3px",
                                             display: "flex",
                                             alignItems: "center",
                                             margin: "2px",
-                                            backgroundColor: "palevioletred",
-                                            color: "white",
+                                        }}
+                                        onClick={() =>
+                                            setSelectingSecondary(true)
+                                        }
+                                    >
+                                        {secondaryEventData ? (
+                                            <TbListSearch />
+                                        ) : (
+                                            <TbPlaylistAdd />
+                                        )}
+                                    </button>
+                                )}
+                                {secondaryEventData && (
+                                    <button
+                                        style={{
+                                            fontSize: "large",
+                                            padding: "3px 3px",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            margin: "2px",
+                                            backgroundColor: "darkred",
+                                            color: "whitesmoke",
                                         }}
                                         onClick={() =>
                                             setSecondaryEventData(null)
                                         }
                                     >
-                                        X
+                                        <TbPlaylistX />
                                     </button>
                                 )}
                             </div>
@@ -143,20 +169,21 @@ function App() {
                     </>
                 ) : (
                     <div>
-                        <h3>Welcome to pData</h3>
-                        {/* <EventSelector setEvent={setPrimaryEventData} /> */}
-                        <SessionSelector setSession={setPrimaryEventData} />
+                        <h1 style={{color: "whitesmoke"}}>Welcome to pData</h1>
                     </div>
                 )}
             </div>
+            {isSelectingPrimary && (
+                <SessionSelector
+                    setSession={setPrimaryEventData}
+                    setSelecting={setSelectingPrimary}
+                    car={secondaryEventData?.car ?? null}
+                    track={secondaryEventData?.track ?? null}
+                    isPrimary={true}
+                    required={primaryEventData == null}
+                />
+            )}
             {isSelectingSecondary && (
-                // <EventSelector
-                //     {...{
-                //         setEvent: setSecondaryEventData,
-                //         existingEventData: primaryEventData,
-                //         setSelectingSecondary,
-                //     }}
-                // />
                 <SessionSelector
                     setSession={setSecondaryEventData}
                     track={primaryEventData.track}
