@@ -46,7 +46,6 @@ const SessionSelector = ({
     useEffect(() => {
         const getAvailableSessions = async () => {
             setFilteredSessions(null);
-            console.log("Got DB", db.app.name);
             const sessionCol = collection(db, "sessions");
             // Get the total session count info
             const count = getCountFromServer(sessionCol).then(
@@ -71,13 +70,10 @@ const SessionSelector = ({
                 count,
                 sessionSnapshot,
             ]);
-            console.log("Got Docs:", sessionSnap.size);
             const sessionList = [];
             sessionSnap.forEach((session) => {
                 sessionList.push({ id: session.id, ...session.data() });
             });
-            console.log("Ready to set data");
-            console.log(sessionList);
             setFilteredSessions(sessionList);
         };
 
@@ -105,7 +101,11 @@ const SessionSelector = ({
             laps.forEach((lap) => {
                 lapList.push(lap.data());
             });
-            setSession({ ...selectedSession, laps: lapList });
+            setSession({
+                ...selectedSession,
+                laps: lapList,
+                sessionId: selectedSessionId,
+            });
             setSelecting && setSelecting(false);
         };
         handleSelectedSessionId();

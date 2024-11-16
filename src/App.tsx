@@ -29,10 +29,10 @@ function App() {
     }, [secondaryLap]);
     useEffect(() => {
         setPrimaryLap(null);
-    }, [primaryEventData]);
+    }, [primaryEventData?.sessionId]);
     useEffect(() => {
         setSecondaryLap(null);
-    }, [secondaryEventData]);
+    }, [secondaryEventData?.sessionId]);
     useEffect(() => {
         setSelectingSecondary(false);
     }, [isSelectingPrimary]);
@@ -82,7 +82,9 @@ function App() {
                                         margin: "2px",
                                     }}
                                     onClick={() => {
-                                        setSelectingPrimary(true);
+                                        setSelectingPrimary(
+                                            !isSelectingPrimary
+                                        );
                                     }}
                                 >
                                     <TbListSearch />
@@ -136,7 +138,9 @@ function App() {
                                             margin: "2px",
                                         }}
                                         onClick={() =>
-                                            setSelectingSecondary(true)
+                                            setSelectingSecondary(
+                                                !isSelectingSecondary
+                                            )
                                         }
                                     >
                                         {secondaryEventData ? (
@@ -169,7 +173,9 @@ function App() {
                     </>
                 ) : (
                     <div>
-                        <h1 style={{color: "whitesmoke"}}>Welcome to pData</h1>
+                        <h1 style={{ color: "whitesmoke" }}>
+                            Welcome to pData
+                        </h1>
                     </div>
                 )}
             </div>
@@ -191,7 +197,7 @@ function App() {
                     setSelecting={setSelectingSecondary}
                 />
             )}
-            {primaryEventData && <LapData {...{ primaryLap, secondaryLap }} />}
+            {primaryLap && <LapData {...{ primaryLap, secondaryLap }} />}
         </div>
     );
 }
