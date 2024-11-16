@@ -1,6 +1,4 @@
-import { useState } from "react";
 import LapCard from "./LapCard.component";
-import { millisToRaceDuration } from "../utils";
 
 const LapSelector = ({ eventData, selectLap, selectedLap, isComparison }) => {
     const sanitizeLap = (lap) => {
