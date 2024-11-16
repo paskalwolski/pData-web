@@ -7,7 +7,7 @@ const LapSelector = ({ eventData, selectLap, selectedLap, isComparison }) => {
         if (!lap.lap_data[0]) {
             // First data entry is empty - try find the next valid one
             let lapTracker = 1;
-            while (lap.lap_data[lapTracker]) {
+            while (!lap?.lap_data[lapTracker]) {
                 lapTracker++;
             }
             // Found a non-Null entry! Use it
