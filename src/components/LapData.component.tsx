@@ -36,7 +36,6 @@ const LapData = ({ primaryLap, secondaryLap }) => {
                     distance: i,
                 };
             });
-            console.log(fakeLapData);
             return {
                 lap_number: primaryLap.lap_number ?? secondaryLap.lap_number,
                 lap_data: fakeLapData,
