@@ -7,7 +7,12 @@ import LapSelector from "./components/LapSelector.component";
 import EventSelector from "./components/EventSelector.component";
 import SessionSelector from "./components/SessionSelector.component";
 
-import { TbListSearch, TbPlaylistAdd, TbPlaylistX } from "react-icons/tb";
+import {
+    TbArrowAutofitRight,
+    TbListSearch,
+    TbPlaylistAdd,
+    TbPlaylistX,
+} from "react-icons/tb";
 
 function App() {
     const [primaryEventData, setPrimaryEventData] = useState(null);
@@ -89,6 +94,24 @@ function App() {
                                 >
                                     <TbListSearch />
                                 </button>
+                                {!isSelectingPrimary && !secondaryEventData && (
+                                    <button
+                                        style={{
+                                            fontSize: "large",
+                                            padding: "3px 3px",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            margin: "2px",
+                                        }}
+                                        onClick={() => {
+                                            setSecondaryEventData(
+                                                primaryEventData
+                                            );
+                                        }}
+                                    >
+                                        <TbArrowAutofitRight />
+                                    </button>
+                                )}
                                 <LapSelector
                                     {...{
                                         eventData: primaryEventData,
