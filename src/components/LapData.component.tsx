@@ -37,11 +37,11 @@ const LapData = ({ primaryLap, secondaryLap }) => {
                 };
             });
             return {
-                lap_number: primaryLap.lap_number ?? secondaryLap.lap_number,
+                lap_number: primaryLap.lap_number + secondaryLap.lap_number, // Fake number so that it changes if either lapnum changes
                 lap_data: fakeLapData,
             };
         } else {
-            return { lap_data: [] };
+            return { lap_number: 0, lap_data: [] };
         }
     }, [primaryLap?.lap_number, secondaryLap?.lap_number]);
 
