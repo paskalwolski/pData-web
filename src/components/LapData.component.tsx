@@ -20,19 +20,23 @@ const LapData = ({ primaryLap, secondaryLap }) => {
     const deltaLap = useMemo(() => {
         if (primaryLap && secondaryLap) {
             // Confirm two laps, then create a fake lap object to plot the delta
+            let lastValid = 0;
             const fakeLapData = secondaryLap.lap_data.map((lt, i) => {
-                // console.log("Primary Time", i, primaryLap.lap_data[i].lapTime);
-                // console.log("Secondary Time", i, lt.lapTime);
+                let timedelta = Number(
+                    (
+                        (primaryLap.lap_data[Number(i)].lapTime - lt.lapTime) /
+                        1000
+                    ).toFixed(2) // Limit the delta to 2 precision points, but keep it as a number
+                ); // Convert deltas to millis correctly
+                timedelta = timedelta < 1 ? timedelta : lastValid;
+                lastValid = timedelta;
+
                 return {
-                    timedelta: Number(
-                        (
-                            (primaryLap.lap_data[i].lapTime - lt.lapTime) /
-                            1000
-                        ).toFixed(2) // Limit the delta to 2 precision points, but keep it as a number
-                    ), // Convert deltas to millis correctly
+                    timedelta: timedelta,
                     distance: i,
                 };
             });
+            console.log(fakeLapData);
             return {
                 lap_number: primaryLap.lap_number ?? secondaryLap.lap_number,
                 lap_data: fakeLapData,
