@@ -9,6 +9,7 @@ import SessionSelector from "./components/SessionSelector.component";
 
 import {
     TbArrowAutofitRight,
+    TbArrowsDiff,
     TbListSearch,
     TbPlaylistAdd,
     TbPlaylistX,
@@ -51,7 +52,7 @@ function App() {
                     flexDirection: "column",
                     justifyContent: "space-between",
                     flexShrink: 0,
-                    padding: "1em",
+                    padding: "1em 0.4em",
                 }}
             >
                 {primaryEventData ? (
@@ -64,9 +65,39 @@ function App() {
                                 display: "flex",
                                 flexDirection: "row",
                                 justifyContent: "space-between",
-                                gap: "10px",
+                                gap: "5px",
                             }}
                         >
+                            <button
+                                style={{
+                                    fontSize: "large",
+                                    padding: "3px 3px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    margin: "2px",
+                                }}
+                                onClick={() => {
+                                    setSelectingPrimary(!isSelectingPrimary);
+                                }}
+                            >
+                                <TbListSearch />
+                            </button>
+                            {!isSelectingPrimary && !secondaryEventData && (
+                                <button
+                                    style={{
+                                        fontSize: "large",
+                                        padding: "3px 3px",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        margin: "2px",
+                                    }}
+                                    onClick={() => {
+                                        setSecondaryEventData(primaryEventData);
+                                    }}
+                                >
+                                    <TbArrowAutofitRight />
+                                </button>
+                            )}
                             <div
                                 style={{
                                     display: "flex",
@@ -78,40 +109,6 @@ function App() {
                                             : "100%",
                                 }}
                             >
-                                <button
-                                    style={{
-                                        fontSize: "large",
-                                        padding: "3px 3px",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        margin: "2px",
-                                    }}
-                                    onClick={() => {
-                                        setSelectingPrimary(
-                                            !isSelectingPrimary
-                                        );
-                                    }}
-                                >
-                                    <TbListSearch />
-                                </button>
-                                {!isSelectingPrimary && !secondaryEventData && (
-                                    <button
-                                        style={{
-                                            fontSize: "large",
-                                            padding: "3px 3px",
-                                            display: "flex",
-                                            alignItems: "center",
-                                            margin: "2px",
-                                        }}
-                                        onClick={() => {
-                                            setSecondaryEventData(
-                                                primaryEventData
-                                            );
-                                        }}
-                                    >
-                                        <TbArrowAutofitRight />
-                                    </button>
-                                )}
                                 <LapSelector
                                     {...{
                                         eventData: primaryEventData,
@@ -124,6 +121,36 @@ function App() {
                                     }}
                                 />
                             </div>
+                            {primaryEventData &&
+                                secondaryEventData &&
+                                !isSelectingPrimary &&
+                                !isSelectingSecondary && (
+                                    <button
+                                        style={{
+                                            fontSize: "large",
+                                            padding: "3px 3px",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            margin: "2px",
+                                        }}
+                                        onClick={() => {
+                                            const [temp_prim, temp_sec] = [
+                                                primaryEventData,
+                                                secondaryEventData,
+                                            ];
+                                            const [lap_prim, lap_sec] = [
+                                                primaryLap,
+                                                secondaryLap,
+                                            ];
+                                            setPrimaryEventData(temp_sec);
+                                            setSecondaryEventData(temp_prim);
+                                            setPrimaryLap(lap_sec);
+                                            setSecondaryLap(lap_prim);
+                                        }}
+                                    >
+                                        <TbArrowsDiff />
+                                    </button>
+                                )}
                             <div
                                 style={{
                                     display: "flex",
@@ -151,47 +178,45 @@ function App() {
                                         }}
                                     />
                                 )}
-                                {!isSelectingPrimary && (
-                                    <button
-                                        style={{
-                                            fontSize: "large",
-                                            padding: "3px 3px",
-                                            display: "flex",
-                                            alignItems: "center",
-                                            margin: "2px",
-                                        }}
-                                        onClick={() =>
-                                            setSelectingSecondary(
-                                                !isSelectingSecondary
-                                            )
-                                        }
-                                    >
-                                        {secondaryEventData ? (
-                                            <TbListSearch />
-                                        ) : (
-                                            <TbPlaylistAdd />
-                                        )}
-                                    </button>
-                                )}
-                                {secondaryEventData && (
-                                    <button
-                                        style={{
-                                            fontSize: "large",
-                                            padding: "3px 3px",
-                                            display: "flex",
-                                            alignItems: "center",
-                                            margin: "2px",
-                                            backgroundColor: "darkred",
-                                            color: "whitesmoke",
-                                        }}
-                                        onClick={() =>
-                                            setSecondaryEventData(null)
-                                        }
-                                    >
-                                        <TbPlaylistX />
-                                    </button>
-                                )}
                             </div>
+                            {!isSelectingPrimary && (
+                                <button
+                                    style={{
+                                        fontSize: "large",
+                                        padding: "3px 3px",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        margin: "2px",
+                                    }}
+                                    onClick={() =>
+                                        setSelectingSecondary(
+                                            !isSelectingSecondary
+                                        )
+                                    }
+                                >
+                                    {secondaryEventData ? (
+                                        <TbListSearch />
+                                    ) : (
+                                        <TbPlaylistAdd />
+                                    )}
+                                </button>
+                            )}
+                            {secondaryEventData && (
+                                <button
+                                    style={{
+                                        fontSize: "large",
+                                        padding: "3px 3px",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        margin: "2px",
+                                        backgroundColor: "darkred",
+                                        color: "whitesmoke",
+                                    }}
+                                    onClick={() => setSecondaryEventData(null)}
+                                >
+                                    <TbPlaylistX />
+                                </button>
+                            )}
                         </div>
                     </>
                 ) : (
