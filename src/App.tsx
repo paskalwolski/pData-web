@@ -4,7 +4,6 @@ import "./App.css";
 
 import LapData from "./components/LapData.component";
 import LapSelector from "./components/LapSelector.component";
-import EventSelector from "./components/EventSelector.component";
 import SessionSelector from "./components/SessionSelector.component";
 
 import {
@@ -16,10 +15,10 @@ import {
 } from "react-icons/tb";
 
 function App() {
-    const [primaryEventData, setPrimaryEventData] = useState(null);
+    const [primarySessionData, setPrimarySessionData] = useState(null);
     const [isSelectingPrimary, setSelectingPrimary] = useState(true);
     const [isSelectingSecondary, setSelectingSecondary] = useState(false);
-    const [secondaryEventData, setSecondaryEventData] = useState(null);
+    const [secondarySessionData, setSecondarySessionData] = useState(null);
     const [primaryLap, setPrimaryLap] = useState(null);
     const [secondaryLap, setSecondaryLap] = useState(null);
 
@@ -35,10 +34,10 @@ function App() {
     }, [secondaryLap]);
     useEffect(() => {
         setPrimaryLap(null);
-    }, [primaryEventData?.sessionId]);
+    }, [primarySessionData?.sessionId]);
     useEffect(() => {
         setSecondaryLap(null);
-    }, [secondaryEventData?.sessionId]);
+    }, [secondarySessionData?.sessionId]);
     useEffect(() => {
         setSelectingSecondary(false);
     }, [isSelectingPrimary]);
@@ -55,10 +54,10 @@ function App() {
                     padding: "1em 0.4em",
                 }}
             >
-                {primaryEventData ? (
+                {primarySessionData ? (
                     <>
                         <b>
-                            {primaryEventData.car} on {primaryEventData.track}
+                            {primarySessionData.car} on {primarySessionData.track}
                         </b>
                         <div
                             style={{
@@ -82,7 +81,7 @@ function App() {
                             >
                                 <TbListSearch />
                             </button>
-                            {!isSelectingPrimary && !secondaryEventData && (
+                            {!isSelectingPrimary && !secondarySessionData && (
                                 <button
                                     style={{
                                         fontSize: "large",
@@ -92,7 +91,7 @@ function App() {
                                         margin: "2px",
                                     }}
                                     onClick={() => {
-                                        setSecondaryEventData(primaryEventData);
+                                        setSecondarySessionData(primarySessionData);
                                     }}
                                 >
                                     <TbArrowAutofitRight />
@@ -104,14 +103,14 @@ function App() {
                                     flexGrow: 1,
                                     overflowX: "scroll",
                                     maxWidth:
-                                        primaryEventData && secondaryEventData
+                                        primarySessionData && secondarySessionData
                                             ? "50%"
                                             : "100%",
                                 }}
                             >
                                 <LapSelector
                                     {...{
-                                        eventData: primaryEventData,
+                                        sessionData: primarySessionData,
                                         selectLap: setPrimaryLap,
                                         selectedLap: primaryLap,
                                         isComparison:
@@ -121,8 +120,8 @@ function App() {
                                     }}
                                 />
                             </div>
-                            {primaryEventData &&
-                                secondaryEventData &&
+                            {primarySessionData &&
+                                secondarySessionData &&
                                 !isSelectingPrimary &&
                                 !isSelectingSecondary && (
                                     <button
@@ -135,15 +134,15 @@ function App() {
                                         }}
                                         onClick={() => {
                                             const [temp_prim, temp_sec] = [
-                                                primaryEventData,
-                                                secondaryEventData,
+                                                primarySessionData,
+                                                secondarySessionData,
                                             ];
                                             const [lap_prim, lap_sec] = [
                                                 primaryLap,
                                                 secondaryLap,
                                             ];
-                                            setPrimaryEventData(temp_sec);
-                                            setSecondaryEventData(temp_prim);
+                                            setPrimarySessionData(temp_sec);
+                                            setSecondarySessionData(temp_prim);
                                             setPrimaryLap(lap_sec);
                                             setSecondaryLap(lap_prim);
                                         }}
@@ -159,15 +158,15 @@ function App() {
                                     flexGrow: 1,
                                     overflowX: "scroll",
                                     maxWidth:
-                                        primaryEventData && secondaryEventData
+                                        primarySessionData && secondarySessionData
                                             ? "50%"
                                             : "100%",
                                 }}
                             >
-                                {secondaryEventData && (
+                                {secondarySessionData && (
                                     <LapSelector
                                         {...{
-                                            eventData: secondaryEventData,
+                                            sessionData: secondarySessionData,
                                             selectLap: setSecondaryLap,
                                             selectedLap: secondaryLap,
                                             isSecondary: true,
@@ -194,14 +193,14 @@ function App() {
                                         )
                                     }
                                 >
-                                    {secondaryEventData ? (
+                                    {secondarySessionData ? (
                                         <TbListSearch />
                                     ) : (
                                         <TbPlaylistAdd />
                                     )}
                                 </button>
                             )}
-                            {secondaryEventData && (
+                            {secondarySessionData && (
                                 <button
                                     style={{
                                         fontSize: "large",
@@ -212,7 +211,7 @@ function App() {
                                         backgroundColor: "darkred",
                                         color: "whitesmoke",
                                     }}
-                                    onClick={() => setSecondaryEventData(null)}
+                                    onClick={() => setSecondarySessionData(null)}
                                 >
                                     <TbPlaylistX />
                                 </button>
@@ -229,18 +228,18 @@ function App() {
             </div>
             {isSelectingPrimary && (
                 <SessionSelector
-                    setSession={setPrimaryEventData}
+                    setSession={setPrimarySessionData}
                     setSelecting={setSelectingPrimary}
-                    car={secondaryEventData?.car ?? null}
-                    track={secondaryEventData?.track ?? null}
-                    required={primaryEventData == null}
+                    car={secondarySessionData?.car ?? null}
+                    track={secondarySessionData?.track ?? null}
+                    required={primarySessionData == null}
                 />
             )}
             {isSelectingSecondary && (
                 <SessionSelector
-                    setSession={setSecondaryEventData}
-                    track={primaryEventData.track}
-                    car={primaryEventData.car}
+                    setSession={setSecondarySessionData}
+                    track={primarySessionData.track}
+                    car={primarySessionData.car}
                     setSelecting={setSelectingSecondary}
                 />
             )}

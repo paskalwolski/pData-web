@@ -1,6 +1,6 @@
 import LapCard from "./LapCard.component";
 
-const LapSelector = ({ eventData, selectLap, selectedLap, isComparison }) => {
+const LapSelector = ({ sessionData, selectLap, selectedLap, isComparison }) => {
     const sanitizeLap = (lap) => {
         if (!lap.lap_data[0]) {
             // First data entry is empty - try find the next valid one
@@ -40,14 +40,14 @@ const LapSelector = ({ eventData, selectLap, selectedLap, isComparison }) => {
                 display: "flex",
             }}
         >
-            {eventData.laps.map((lap, i) => {
+            {sessionData.laps.map((lap, i) => {
                 return (
                     <LapCard
                         key={lap.lapId}
                         {...{
                             lapData: lap,
                             isFastestLap:
-                                lap?.lap_number === eventData.fastestLap, //TODO: Change the fastest lap storage
+                                lap?.lap_number === sessionData.fastestLap, //TODO: Change the fastest lap storage
                             isSelected: lap.lapId== selectedLap?.lapId,
                             timeDisplay: lap.discard
                                 ? null
