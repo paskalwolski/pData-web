@@ -63,7 +63,7 @@ const Graph = ({
               })
             : [];
         return [...data, ...secondaryData];
-    }, [primaryLap?.lap_number, secondaryLap?.lap_number]);
+    }, [primaryLap?.lapId, secondaryLap?.lapId]);
 
     const domainExtent = useMemo(() => {
         const eList = graphData.map((g) => {
@@ -77,7 +77,7 @@ const Graph = ({
 
     const xScale = useMemo(
         () => d3.scaleLinear().domain(graphRange).range([0, width]),
-        [primaryLap.lap_number, JSON.stringify(graphRange), width, height]
+        [primaryLap.lapId, JSON.stringify(graphRange), width, height]
     );
 
     const bufferedDomain = [

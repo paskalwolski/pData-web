@@ -21,13 +21,9 @@ const LapSelector = ({ eventData, selectLap, selectedLap, isComparison }) => {
         return lap;
     };
 
-    const getTimeDelta = (time, i) => {
-        if (!time) {
-            // Show only the lap number
-            return i;
-        }
+    const getTimeDelta = (time, id) => {
         if (selectedLap) {
-            if (i == selectedLap.lap_number) {
+            if (id == selectedLap.lapId) {
                 // Don't show a zero delta
                 return null;
             }
@@ -47,15 +43,15 @@ const LapSelector = ({ eventData, selectLap, selectedLap, isComparison }) => {
             {eventData.laps.map((lap, i) => {
                 return (
                     <LapCard
-                        key={i}
+                        key={lap.lapId}
                         {...{
                             lapData: lap,
                             isFastestLap:
-                                lap?.lap_number === eventData.fastestLap,
-                            isSelected: lap.lap_number == selectedLap,
+                                lap?.lap_number === eventData.fastestLap, //TODO: Change the fastest lap storage
+                            isSelected: lap.lapId== selectedLap?.lapId,
                             timeDisplay: lap.discard
                                 ? null
-                                : getTimeDelta(lap?.lap_time, lap?.lap_number),
+                                : getTimeDelta(lap?.lap_time, lap?.lapId),
                         }}
                         onClick={() => {
                             selectLap(sanitizeLap(lap));

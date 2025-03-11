@@ -25,12 +25,12 @@ function App() {
 
     useEffect(() => {
         if (primaryLap !== null) {
-            console.log(`Primary Lap ${primaryLap.lap_number}`);
+            console.log(`Primary Lap ${primaryLap.lapId}`);
         }
     }, [primaryLap]);
     useEffect(() => {
         if (secondaryLap !== null) {
-            console.log(`Secondary Lap ${secondaryLap.lap_number}`);
+            console.log(`Secondary Lap ${secondaryLap.lapId}`);
         }
     }, [secondaryLap]);
     useEffect(() => {
@@ -233,7 +233,6 @@ function App() {
                     setSelecting={setSelectingPrimary}
                     car={secondaryEventData?.car ?? null}
                     track={secondaryEventData?.track ?? null}
-                    isPrimary={true}
                     required={primaryEventData == null}
                 />
             )}

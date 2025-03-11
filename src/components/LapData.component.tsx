@@ -39,11 +39,12 @@ const LapData = ({ primaryLap, secondaryLap }) => {
             return {
                 lap_number: primaryLap.lap_number + secondaryLap.lap_number, // Fake number so that it changes if either lapnum changes
                 lap_data: fakeLapData,
+                lapId: primaryLap.lapId + secondaryLap.lapId
             };
         } else {
-            return { lap_number: 0, lap_data: [] };
+            return { lap_number: 0, lap_data: [], lapId: "0"};
         }
-    }, [primaryLap?.lap_number, secondaryLap?.lap_number]);
+    }, [primaryLap?.lapId, secondaryLap?.lapId]);
 
     return (
         <div className="card" id="LapDataContainer">

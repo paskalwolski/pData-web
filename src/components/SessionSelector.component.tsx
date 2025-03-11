@@ -35,7 +35,6 @@ const SessionSelector = ({
     track,
     car,
     setSelecting,
-    isPrimary,
     required,
 }) => {
     const [filteredSessions, setFilteredSessions] = useState(null);
@@ -99,7 +98,7 @@ const SessionSelector = ({
             const laps = await getDocs(lapQuery);
             const lapList = [];
             laps.forEach((lap) => {
-                lapList.push(lap.data());
+                lapList.push({ ...lap.data(), lapId: lap.id });
             });
             setSession({
                 ...selectedSession,
@@ -239,10 +238,9 @@ const SessionSelector = ({
                                     id={session.id}
                                     key={session.id}
                                     onClick={(e) => {
-                                        if (isPrimary) {
-                                        }
                                         setSelectedSessionId(
-                                            e.currentTarget.id
+                                            // e.currentTarget.id
+                                            session.id
                                         );
                                     }}
                                     style={{

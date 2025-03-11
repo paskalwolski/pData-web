@@ -32,8 +32,9 @@ const LapCard = ({
             onClick={lapData.discard ? null : props?.onClick}
             style={{ flexDirection: "column" }}
         >
+            <div style={{fontSize: "0.6em", padding: 0, marginBottom: 0}}><em>Lap {lapData.lap_number}</em></div>
             <div>{millisToRaceDuration(lapData.lap_time)}</div>
-            <div>{timeDisplay}</div>
+            <div style={{fontSize: "0.8em"}}><em>{timeDisplay}</em></div>
         </div>
     );
 };

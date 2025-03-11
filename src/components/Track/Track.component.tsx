@@ -49,8 +49,8 @@ const Track = ({
         }
         return dom;
     }, [
-        primaryLap.lap_number,
-        secondaryLap?.lap_number,
+        primaryLap.lapId,
+        secondaryLap?.lapId,
         JSON.stringify(graphRange),
     ]);
 
@@ -69,8 +69,8 @@ const Track = ({
         }
         return dom;
     }, [
-        primaryLap.lap_number,
-        secondaryLap?.lap_number,
+        primaryLap.lapId,
+        secondaryLap?.lapId,
         JSON.stringify(graphRange),
     ]);
 
