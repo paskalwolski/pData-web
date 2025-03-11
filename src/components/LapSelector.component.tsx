@@ -1,13 +1,11 @@
-import { useState } from "react";
 import LapCard from "./LapCard.component";
-import { millisToRaceDuration } from "../utils";
 
-const LapSelector = ({ eventData, selectLap, selectedLap, isComparison }) => {
+const LapSelector = ({ sessionData, selectLap, selectedLap, isComparison }) => {
     const sanitizeLap = (lap) => {
         if (!lap.lap_data[0]) {
             // First data entry is empty - try find the next valid one
             let lapTracker = 1;
-            while (lap.lap_data[lapTracker]) {
+            while (!lap?.lap_data[lapTracker]) {
                 lapTracker++;
             }
             // Found a non-Null entry! Use it
@@ -23,13 +21,9 @@ const LapSelector = ({ eventData, selectLap, selectedLap, isComparison }) => {
         return lap;
     };
 
-    const getTimeDelta = (time, i) => {
-        if (!time) {
-            // Show only the lap number
-            return i;
-        }
+    const getTimeDelta = (time, id) => {
         if (selectedLap) {
-            if (i == selectedLap.lap_number) {
+            if (id == selectedLap.lapId) {
                 // Don't show a zero delta
                 return null;
             }
@@ -46,18 +40,18 @@ const LapSelector = ({ eventData, selectLap, selectedLap, isComparison }) => {
                 display: "flex",
             }}
         >
-            {eventData.laps.map((lap, i) => {
+            {sessionData.laps.map((lap, i) => {
                 return (
                     <LapCard
-                        key={i}
+                        key={lap.lapId}
                         {...{
                             lapData: lap,
                             isFastestLap:
-                                lap?.lap_number === eventData.fastestLap,
-                            isSelected: lap.lap_number == selectedLap,
+                                lap?.lap_number === sessionData.fastestLap, //TODO: Change the fastest lap storage
+                            isSelected: lap.lapId== selectedLap?.lapId,
                             timeDisplay: lap.discard
                                 ? null
-                                : getTimeDelta(lap?.lap_time, lap?.lap_number),
+                                : getTimeDelta(lap?.lap_time, lap?.lapId),
                         }}
                         onClick={() => {
                             selectLap(sanitizeLap(lap));

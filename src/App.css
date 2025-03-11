@@ -63,6 +63,7 @@
 
 .selected {
     border-color: lightgray;
+    font-weight: 800;
 }
 
 .secondary {

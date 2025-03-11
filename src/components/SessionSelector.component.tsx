@@ -14,6 +14,8 @@ import {
     doc,
     getDoc,
     updateDoc,
+    startAfter,
+    endBefore,
 } from "firebase/firestore";
 import { millisToRaceDuration } from "../utils";
 import SessionSelectorActions from "./SessionSelectorAction.component";
@@ -35,52 +37,77 @@ const SessionSelector = ({
     track,
     car,
     setSelecting,
-    isPrimary,
     required,
 }) => {
+    const pageSize = 10;
     const [filteredSessions, setFilteredSessions] = useState(null);
     const [sessionCount, setSessionCount] = useState(null);
     const [selectedSessionId, setSelectedSessionId] = useState(null);
     const [filterByCar, setFilterByCar] = useState(false);
+    const [pageNumber, setPageNumber] = useState(0);
+    const [maxPageNumber, setMaxPageNumber] = useState(0);
+    const [firstSession, setFirstSession] = useState(null);
+    const [lastSession, setLastSession] = useState(null);
+
+    const getAvailableSessions = async (startAt = null, endAt = null) => {
+        setFilteredSessions(null);
+        const sessionCol = collection(db, "sessions");
+        // // Get the total session count info
+        // const sessionCountSnap = await getCountFromServer(sessionCol);
+        // const count = sessionCountSnap.data().count;
+        // setSessionCount(count);
+
+        // Start building the actual session query
+        let sessionQuery = query(sessionCol, orderBy("sessionTime", "desc"));
+        if (track) {
+            sessionQuery = query(sessionQuery, where("track", "==", track));
+        }
+        if (filterByCar) {
+            sessionQuery = query(sessionQuery, where("car", "==", car));
+        }
+        const availableCount = await (
+            await getCountFromServer(sessionQuery)
+        ).data().count;
+        setSessionCount(availableCount);
+        setMaxPageNumber(Math.floor(availableCount - 1 / pageSize));
+
+        if (startAt) {
+            sessionQuery = query(sessionQuery, startAfter(startAt));
+        }
+        if (endAt) {
+            sessionQuery = query(sessionQuery, endBefore(endAt));
+        }
+        sessionQuery = query(sessionQuery, limit(pageSize));
+        const sessionSnap = await getDocs(sessionQuery);
+
+        const sessionList = [];
+        sessionSnap.forEach((session) => {
+            sessionList.push({ id: session.id, ...session.data() });
+        });
+        setFilteredSessions(sessionList);
+        setFirstSession(sessionSnap.docs[0]);
+        setLastSession(sessionSnap.docs[sessionSnap.size - 1]);
+    };
+
+    const handlePageBack = () => {
+        if (pageNumber == 0) {
+            // Shouldn't have been able to click - exiting
+            return;
+        }
+        setPageNumber(pageNumber - 1);
+        getAvailableSessions(null, firstSession);
+    };
+
+    const handlePageForward = () => {
+        if (pageNumber == maxPageNumber) {
+            // Shouldn't have been able to click - exiting
+            return;
+        }
+        setPageNumber(pageNumber + 1);
+        getAvailableSessions(lastSession, null);
+    };
 
     useEffect(() => {
-        const getAvailableSessions = async () => {
-            setFilteredSessions(null);
-            console.log("Got DB", db.app.name);
-            const sessionCol = collection(db, "sessions");
-            // Get the total session count info
-            const count = getCountFromServer(sessionCol).then(
-                (sessionCountSnap) => {
-                    setSessionCount(sessionCountSnap.data().count);
-                }
-            );
-            // Start building the actual session query
-            let sessionQuery = query(
-                sessionCol,
-                orderBy("sessionTime", "desc"),
-                limit(10)
-            );
-            if (track) {
-                sessionQuery = query(sessionQuery, where("track", "==", track));
-            }
-            if (filterByCar) {
-                sessionQuery = query(sessionQuery, where("car", "==", car));
-            }
-            const sessionSnapshot = getDocs(sessionQuery);
-            const [_, sessionSnap] = await Promise.all([
-                count,
-                sessionSnapshot,
-            ]);
-            console.log("Got Docs:", sessionSnap.size);
-            const sessionList = [];
-            sessionSnap.forEach((session) => {
-                sessionList.push({ id: session.id, ...session.data() });
-            });
-            console.log("Ready to set data");
-            console.log(sessionList);
-            setFilteredSessions(sessionList);
-        };
-
         getAvailableSessions();
     }, [filterByCar]);
 
@@ -103,9 +130,13 @@ const SessionSelector = ({
             const laps = await getDocs(lapQuery);
             const lapList = [];
             laps.forEach((lap) => {
-                lapList.push(lap.data());
+                lapList.push({ ...lap.data(), lapId: lap.id });
             });
-            setSession({ ...selectedSession, laps: lapList });
+            setSession({
+                ...selectedSession,
+                laps: lapList,
+                sessionId: selectedSessionId,
+            });
             setSelecting && setSelecting(false);
         };
         handleSelectedSessionId();
@@ -128,9 +159,8 @@ const SessionSelector = ({
 
         await Promise.all([...lapDeletes, sessionDelete]);
         console.log("Deleted Session Details");
-        setFilteredSessions(
-            filteredSessions.filter((session) => session.id != sessionId)
-        );
+        // Trigger Session Reload
+        getAvailableSessions(firstSession);
     };
 
     const handleSessionTrim = async (sessionId) => {
@@ -154,17 +184,9 @@ const SessionSelector = ({
             deleteDoc(doc(lapCollection, lapSnap.id))
         );
 
-        setFilteredSessions(
-            filteredSessions.map((session) => {
-                if (session.id == sessionId) {
-                    return { ...session, lapCount: 1 };
-                } else {
-                    return session;
-                }
-            })
-        );
-
         await Promise.all([sessionUpdate, ...lapDeletes]);
+        // Trigger Session Reload
+        getAvailableSessions(firstSession);
     };
 
     return (
@@ -239,10 +261,9 @@ const SessionSelector = ({
                                     id={session.id}
                                     key={session.id}
                                     onClick={(e) => {
-                                        if (isPrimary) {
-                                        }
                                         setSelectedSessionId(
-                                            e.currentTarget.id
+                                            // e.currentTarget.id
+                                            session.id
                                         );
                                     }}
                                     style={{
@@ -315,10 +336,18 @@ const SessionSelector = ({
                             );
                         })}
                     </div>
-                    <em>
-                        Showing {filteredSessions.length} of {sessionCount}{" "}
-                        Sessions
-                    </em>
+                    <div>
+                        {pageNumber > 0 && (
+                            <button onClick={handlePageBack}>Back</button>
+                        )}
+                        <em>
+                            Showing {pageNumber * pageSize + 1} to{" "}
+                            {filteredSessions.length} of {sessionCount} Sessions
+                        </em>
+                        {pageNumber < maxPageNumber && (
+                            <button onClick={handlePageForward}>Forward</button>
+                        )}
+                    </div>
                 </>
             )}
         </div>
