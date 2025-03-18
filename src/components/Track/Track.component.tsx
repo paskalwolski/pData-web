@@ -15,6 +15,7 @@ const Track = ({
 }) => {
     const [focusPos, setFocusPos] = useState(null);
     const [transform, setTransform] = useState(d3.zoomIdentity);
+    const [viewBox, setViewBox] = useState("0 0 0 0");
 
     const IMG_WIDTH = 2173 + 20;
     const IMG_HEIGHT = 597 + 20;
@@ -32,17 +33,6 @@ const Track = ({
         setWidth(newDim);
         setHeight(newDim);
     };
-
-    console.log("\n\n");
-
-    console.log("XDOM: ", 0 - X_OFFSET, IMG_WIDTH - X_OFFSET);
-    console.log("YDOM: ", 0 - Y_OFFSET, IMG_HEIGHT - Y_OFFSET);
-
-    console.log("ASP: ", aspect);
-    console.log("XRAN: ", 0, width);
-    const yOffset = height * aspect;
-    console.log("YOFF: ", yOffset);
-    console.log("YRAN: ", yOffset);
 
     useEffect(() => {
         // detect 'width' and 'height' on render
@@ -67,7 +57,6 @@ const Track = ({
             dom[0] = d3.min([dom[0], secDom[0]]);
             dom[1] = d3.max([dom[1], secDom[1]]);
         }
-        console.log("XDOM: ", dom);
         return dom;
     }, [primaryLap.lapId, secondaryLap?.lapId, JSON.stringify(graphRange)]);
 
@@ -84,45 +73,8 @@ const Track = ({
             dom[0] = d3.min([dom[0], secDom[0]]);
             dom[1] = d3.max([dom[1], secDom[1]]);
         }
-        console.log("YDOM: ", dom);
         return dom;
     }, [primaryLap.lapId, secondaryLap?.lapId, JSON.stringify(graphRange)]);
-
-    // TODO:
-    const boundingDomains = useMemo(() => {
-        // Taking both domains, figure out which one covers a larger area - and apply the same
-        // 'zone' to keep a square aspect
-        let selectedDomains = [xDomain, yDomain];
-        const xDomRange = Number(xDomain[1]) - Number(xDomain[0]);
-        const yDomRange = Number(yDomain[1]) - Number(yDomain[0]);
-        // console.log("XRAN:", xDomRange);
-        // console.log("YRAN:", yDomRange);
-        if (xDomRange > yDomRange) {
-            // X is bounding - convert y to use the same aspect
-            const shift = Math.round(xDomRange / 2);
-            const midYPoint = Number(yDomain[0]) + Math.round(yDomRange / 2);
-            const boundYDomain = [midYPoint - shift, midYPoint + shift];
-            selectedDomains = [xDomain, boundYDomain];
-        } else if (yDomRange > xDomRange) {
-            // Y is bounding
-            const shift = Math.round(yDomRange / 2);
-            const midXPoint = Number(xDomain[0]) + Math.round(xDomRange / 2);
-            const boundXDomain = [midXPoint - shift, midXPoint + shift];
-            selectedDomains = [boundXDomain, yDomain];
-        }
-        // If they're miraculously the same, use the original domains
-        // const bufferedDomains = selectedDomains.map((d) => bufferDomain(d));
-        // return bufferedDomains;
-        return selectedDomains;
-    }, [JSON.stringify(xDomain), JSON.stringify(yDomain)]);
-
-    // Confirm aspect Ratio
-    // useEffect(() => {
-    //     const a =
-    //         (boundingDomains[0][1] - boundingDomains[0][0]) /
-    //         (boundingDomains[1][1] - boundingDomains[1][0]);
-    //     console.log("Aspect: ", a);
-    // }, [JSON.stringify(boundingDomains)]);
 
     const xScale = useMemo(() => {
         // return d3.scaleLinear().domain(boundingDomains[0]).range([0, width]);
@@ -132,7 +84,7 @@ const Track = ({
             .scaleLinear()
             .domain([0 - X_OFFSET, IMG_WIDTH - X_OFFSET])
             .range([0, width]);
-    }, [JSON.stringify(boundingDomains), width, height]);
+    }, [width, height]);
 
     const yScale = useMemo(() => {
         // return d3.scaleLinear().domain(boundingDomains[1]).range([0, height]);
@@ -144,7 +96,7 @@ const Track = ({
                 height * 0.5 - yOffset * 0.5,
                 height * 0.5 + yOffset * 0.5,
             ]);
-    }, [JSON.stringify(boundingDomains), width, height]);
+    }, [width, height]);
 
     const setFocus = useMemo(
         // Factory which returns a function
@@ -177,6 +129,61 @@ const Track = ({
         setFocus(selectedPoint);
     }, [selectedPoint]);
 
+    useEffect(() => {
+        console.log("GRAN: ", graphRange);
+        // Selection Context
+        const start = graphRange[0];
+        // TODO: Why adjust for last meter?
+        const end = graphRange[1];
+
+        const startPos = primaryLap.lap_data[start];
+        let minX = startPos.pos[0];
+        let maxX = startPos.pos[0];
+        let minY = startPos.pos[2];
+        let maxY = startPos.pos[2];
+
+        console.log("BASE", minX, maxX, minY, maxY);
+
+        primaryLap.lap_data.slice(start, end).map((lapData, i) => {
+            const [posX, _, posY] = lapData.pos;
+            if (posX < minX) {
+                minX = posX;
+            }
+            if (posX > maxX) {
+                maxX = posX;
+            }
+            if (posY < minY) {
+                minY = posY;
+            }
+            if (posY > maxY) {
+                maxY = posY;
+            }
+        });
+
+        console.log("BOUND", minX, maxX, minY, maxY);
+        
+        const scaledXStart = xScale(minX);
+        const scaledYStart = yScale(minY);
+
+        const scaledXEnd = xScale(maxX);
+        const scaledYEnd = yScale(maxY);
+
+        // Normalise to increasing values
+        const normalXStart = Math.min(scaledXStart, scaledXEnd);
+        const normalYStart = Math.min(scaledYStart, scaledYEnd);
+        const normalWidth = Math.abs(scaledXEnd - scaledXStart);
+        const normalHeight = Math.abs(scaledYEnd - scaledYStart);
+
+        console.log(
+            "VB: ",
+            `${normalXStart} ${normalYStart} ${normalWidth} ${normalHeight}`
+        );
+
+        setViewBox(
+            `${normalXStart} ${normalYStart} ${normalWidth} ${normalHeight}`
+        );
+    }, [JSON.stringify(graphRange), height, width]);
+
     return (
         <>
             <div id="trackContainer" ref={trackContainer}>
@@ -185,10 +192,15 @@ const Track = ({
                     height={height}
                     style={{ margin: "10px" }}
                     onWheel={handleZoom}
+                    viewBox={viewBox}
                 >
-                    <image href={TrackImage} width={width} height={height} />
+                    <image
+                        href={TrackImage}
+                        width={width}
+                        height={height}
+                    />
                     <g
-                        transform={`translate(${transform.x}, ${transform.y}) scale(${transform.k}, ${transform.k})`}
+                    // transform={`translate(${transform.x}, ${transform.y}) scale(${transform.k}, ${transform.k})`}
                     >
                         {secondaryLap && ( // Ensure the secondary lap is rendered below
                             <TrackLine
