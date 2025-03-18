@@ -2,7 +2,6 @@
 import * as d3 from "d3";
 import { useEffect, useMemo, useState, useRef } from "react";
 import TrackLine from "./TrackLine.component";
-import { bufferDomain } from "./utils";
 
 import TrackImage from "../../assets/map.png";
 
@@ -14,7 +13,6 @@ const Track = ({
     graphRange,
 }) => {
     const [focusPos, setFocusPos] = useState(null);
-    const [transform, setTransform] = useState(d3.zoomIdentity);
     const [viewBox, setViewBox] = useState("0 0 0 0");
 
     const IMG_WIDTH = 2173 + 20;
@@ -44,58 +42,39 @@ const Track = ({
             window.removeEventListener("resize", getTrackContainerSize);
     }, []);
 
-    const xDomain = useMemo(() => {
-        const dom = d3.extent(
-            primaryLap.lap_data.slice(graphRange[0], graphRange[1]),
-            (data) => data.pos[0]
-        );
-        if (secondaryLap) {
-            const secDom = d3.extent(
-                secondaryLap.lap_data.slice(graphRange[0], graphRange[1]),
-                (data) => data.pos[0]
-            );
-            dom[0] = d3.min([dom[0], secDom[0]]);
-            dom[1] = d3.max([dom[1], secDom[1]]);
+    const getRange = (bound: number, offset: number) => {
+        if (offset != 0) {
+            // This axis needs to be centered
+            return [(bound - offset) * 0.5, (bound + offset) * 0.5];
+        } else {
+            // No centering needed - returning full range
+            return [0, bound];
         }
-        return dom;
-    }, [primaryLap.lapId, secondaryLap?.lapId, JSON.stringify(graphRange)]);
-
-    const yDomain = useMemo(() => {
-        const dom = d3.extent(
-            primaryLap.lap_data.slice(graphRange[0], graphRange[1]),
-            (data) => data.pos[2]
-        );
-        if (secondaryLap) {
-            const secDom = d3.extent(
-                secondaryLap.lap_data.slice(graphRange[0], graphRange[1]),
-                (data) => data.pos[2]
-            );
-            dom[0] = d3.min([dom[0], secDom[0]]);
-            dom[1] = d3.max([dom[1], secDom[1]]);
-        }
-        return dom;
-    }, [primaryLap.lapId, secondaryLap?.lapId, JSON.stringify(graphRange)]);
+    };
 
     const xScale = useMemo(() => {
-        // return d3.scaleLinear().domain(boundingDomains[0]).range([0, width]);
-        // if (aspect>=1){ xoffset=} else {xoffset=0})
         const xOffset = aspect > 1 ? height * aspect : 0;
-        return d3
-            .scaleLinear()
-            .domain([0 - X_OFFSET, IMG_WIDTH - X_OFFSET])
-            .range([0, width]);
+        return (
+            d3
+                .scaleLinear()
+                .domain([0 - X_OFFSET, IMG_WIDTH - X_OFFSET])
+                // .range([0, width]);
+                .range(getRange(width, xOffset))
+        );
     }, [width, height]);
 
     const yScale = useMemo(() => {
-        // return d3.scaleLinear().domain(boundingDomains[1]).range([0, height]);
         const yOffset = aspect < 1 ? width * aspect : 0;
-        return d3
-            .scaleLinear()
-            .domain([0 - Y_OFFSET, IMG_HEIGHT - Y_OFFSET])
-            .range([
-                height * 0.5 - yOffset * 0.5,
-                height * 0.5 + yOffset * 0.5,
-            ]);
+        return (
+            d3
+                .scaleLinear()
+                .domain([0 - Y_OFFSET, IMG_HEIGHT - Y_OFFSET])
+                // .range([
+                //     height * 0.5 - yOffset * 0.5,
+                //     height * 0.5 + yOffset * 0.5,
+                // ]);
+                .range(getRange(height, yOffset))
+        );
     }, [width, height]);
 
     const setFocus = useMemo(
@@ -161,7 +140,7 @@ const Track = ({
         });
 
         console.log("BOUND", minX, maxX, minY, maxY);
-        
+
         const scaledXStart = xScale(minX);
         const scaledYStart = yScale(minY);
 
@@ -194,11 +173,7 @@ const Track = ({
                     onWheel={handleZoom}
                     viewBox={viewBox}
                 >
-                    <image
-                        href={TrackImage}
-                        width={width}
-                        height={height}
-                    />
+                    <image href={TrackImage} width={width} height={height} />
                     <g
                     // transform={`translate(${transform.x}, ${transform.y}) scale(${transform.k}, ${transform.k})`}
                     >
