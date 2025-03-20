@@ -194,7 +194,21 @@ const Track = ({
                     // onWheel={handleZoom}
                     viewBox={viewBox}
                 >
-                    <image href={IMG_URL} width={width} height={height} />
+                    <defs>
+                        <mask id="track-mask">
+                            <image
+                                href={IMG_URL}
+                                width={width}
+                                height={height}
+                            />
+                        </mask>
+                    </defs>
+                    <rect
+                        width={width}
+                        height={height}
+                        fill="darkgray"
+                        mask={"url(#track-mask)"}
+                    ></rect>
                     <g>
                         {secondaryLap && ( // Ensure the secondary lap is rendered below
                             <TrackLine
