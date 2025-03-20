@@ -64,8 +64,7 @@ const LapData = ({ primaryLap, secondaryLap, trackName }) => {
                             display: "flex",
                             flexDirection: "column",
                             flexGrow: 3,
-                            flexShrink: 1,
-                            maxWidth: "60%",
+                            maxWidth: "50%",
                         }}
                     >
                         <div
@@ -188,7 +187,8 @@ const LapData = ({ primaryLap, secondaryLap, trackName }) => {
                         id="trackSectionContainer"
                         style={{
                             flexGrow: 4,
-                            maxWidth: "40%",
+                            maxWidth: "50%",
+                            maxHeight: "100%",
                         }}
                     >
                         {trackData && (
