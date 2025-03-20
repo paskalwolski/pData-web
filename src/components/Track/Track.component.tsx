@@ -31,10 +31,6 @@ const Track = ({
     const Y_OFFSET = Number(trackData?.yOffset ?? 0);
     const IMG_URL = trackData?.url ?? "";
 
-    useEffect(() => {
-        console.log("DIMS", IMG_WIDTH, IMG_HEIGHT, X_OFFSET, Y_OFFSET);
-    }, [IMG_WIDTH, IMG_HEIGHT, X_OFFSET, Y_OFFSET]);
-
     const trackContainer = useRef();
 
     const aspect = IMG_HEIGHT / IMG_WIDTH;
@@ -86,7 +82,6 @@ const Track = ({
     }, [width, height, aspect, IMG_WIDTH]);
 
     const yScale = useMemo(() => {
-        console.log("SCALE UPDATE");
         const yOffset = aspect < 1 ? width * aspect : 0;
         return (
             d3
@@ -132,7 +127,6 @@ const Track = ({
     }, [selectedPoint]);
 
     useEffect(() => {
-        console.log("GRAN: ", graphRange);
         // Selection Context
         const start = graphRange[0];
         // TODO: Why adjust for last meter?
@@ -143,8 +137,6 @@ const Track = ({
         let maxX = startPos.pos[0];
         let minY = startPos.pos[2];
         let maxY = startPos.pos[2];
-
-        // console.log("BASE", minX, maxX, minY, maxY);
 
         primaryLap.lap_data.slice(start, end).map((lapData) => {
             const [posX, posY] = [lapData.pos[0], lapData.pos[2]];
@@ -168,7 +160,7 @@ const Track = ({
         maxX += margin;
         maxY += margin;
 
-        console.log("BOUND", minX, maxX, minY, maxY);
+        // console.log("BOUND", minX, maxX, minY, maxY);
 
         const scaledXStart = xScale(minX);
         const scaledYStart = yScale(minY);
@@ -182,10 +174,10 @@ const Track = ({
         const normalWidth = Math.abs(scaledXEnd - scaledXStart);
         const normalHeight = Math.abs(scaledYEnd - scaledYStart);
 
-        console.log(
-            "VB: ",
-            `${normalXStart} ${normalYStart} ${normalWidth} ${normalHeight}`
-        );
+        // console.log(
+        //     "VB: ",
+        //     `${normalXStart} ${normalYStart} ${normalWidth} ${normalHeight}`
+        // );
 
         setViewBox(
             `${normalXStart} ${normalYStart} ${normalWidth} ${normalHeight}`
@@ -203,9 +195,7 @@ const Track = ({
                     viewBox={viewBox}
                 >
                     <image href={IMG_URL} width={width} height={height} />
-                    <g
-                    // transform={`translate(${transform.x}, ${transform.y}) scale(${transform.k}, ${transform.k})`}
-                    >
+                    <g>
                         {secondaryLap && ( // Ensure the secondary lap is rendered below
                             <TrackLine
                                 {...{
