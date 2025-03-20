@@ -3,34 +3,56 @@ import * as d3 from "d3";
 import { useEffect, useMemo, useState, useRef } from "react";
 import TrackLine from "./TrackLine.component";
 
-import TrackImage from "../../assets/map.png";
+// import TrackImage from "../../assets/map.png";
 
 const Track = ({
     primaryLap,
     secondaryLap,
+    trackData,
     selectedPoint,
     setSelectedPoint,
     graphRange,
 }) => {
     const [focusPos, setFocusPos] = useState(null);
-    const [viewBox, setViewBox] = useState("0 0 0 0");
 
-    const IMG_WIDTH = 2173 + 20;
-    const IMG_HEIGHT = 597 + 20;
-    const X_OFFSET = 1176.15710449219;
-    const Y_OFFSET = 301.185638427734;
+    const margin = 10;
+    const [containerHeight, setContainerHeight] = useState(500);
+    const [containerWidth, setContainerWidth] = useState(500);
 
-    const [height, setHeight] = useState(500);
-    const [width, setWidth] = useState(500);
+    const [width, setWidth] = useState(containerWidth - margin);
+    const [height, setHeight] = useState(containerHeight - margin);
+
+    const [viewBox, setViewBox] = useState(`0 0 ${width} ${height}`);
+
+    // Extract track values, adding fixed margins
+    const IMG_WIDTH = Number(trackData.width ?? width);
+    const IMG_HEIGHT = Number(trackData.height ?? height);
+    const X_OFFSET = Number(trackData.xOffset ?? 0);
+    const Y_OFFSET = Number(trackData?.yOffset ?? 0);
+    const IMG_URL = trackData?.url ?? "";
+
+    useEffect(() => {
+        console.log("DIMS", IMG_WIDTH, IMG_HEIGHT, X_OFFSET, Y_OFFSET);
+    }, [IMG_WIDTH, IMG_HEIGHT, X_OFFSET, Y_OFFSET]);
+
     const trackContainer = useRef();
 
     const aspect = IMG_HEIGHT / IMG_WIDTH;
 
     const getTrackContainerSize = () => {
         const newDim = trackContainer.current.clientWidth;
-        setWidth(newDim);
-        setHeight(newDim);
+        setContainerWidth(newDim);
+        setContainerHeight(newDim);
     };
+
+    useEffect(() => {
+        setHeight(containerHeight - 2 * margin);
+        // console.log("SETHEIGHT", containerHeight, containerHeight - 2 * margin);
+    }, [containerHeight]);
+    useEffect(() => {
+        setWidth(containerWidth - 2 * margin);
+        // console.log("SETWIDTH", containerWidth, containerWidth - 2 * margin);
+    }, [containerWidth]);
 
     useEffect(() => {
         // detect 'width' and 'height' on render
@@ -61,9 +83,10 @@ const Track = ({
                 // .range([0, width]);
                 .range(getRange(width, xOffset))
         );
-    }, [width, height]);
+    }, [width, height, aspect, IMG_WIDTH]);
 
     const yScale = useMemo(() => {
+        console.log("SCALE UPDATE");
         const yOffset = aspect < 1 ? width * aspect : 0;
         return (
             d3
@@ -75,7 +98,7 @@ const Track = ({
                 // ]);
                 .range(getRange(height, yOffset))
         );
-    }, [width, height]);
+    }, [width, height, aspect, IMG_HEIGHT]);
 
     const setFocus = useMemo(
         // Factory which returns a function
@@ -87,18 +110,18 @@ const Track = ({
         [xScale, yScale]
     );
 
-    const handleZoom = (e: React.WheelEvent<SVGSVGElement>) => {
-        //     console.log(e.deltaY < 0 ? "Zooming In" : "Zooming Out");
-        //     const delta = e.deltaY < 0 ? 1.01 : 0.99;
-        //     const newK = transform.k * delta;
-        //     const svg = e.currentTarget as SVGElement;
-        //     const boundingRect = svg.getBoundingClientRect();
-        //     const svgX = e.clientX - boundingRect.left;
-        //     const svgY = e.clientY - boundingRect.top;
-        //     const newX = svgX - transform.x * delta;
-        //     const newY = svgY - transform.y * delta;
-        //     setTransform({ k: newK, x: newX, y: newY });
-    };
+    // const handleZoom = (e: React.WheelEvent<SVGSVGElement>) => {
+    //     console.log(e.deltaY < 0 ? "Zooming In" : "Zooming Out");
+    //     const delta = e.deltaY < 0 ? 1.01 : 0.99;
+    //     const newK = transform.k * delta;
+    //     const svg = e.currentTarget as SVGElement;
+    //     const boundingRect = svg.getBoundingClientRect();
+    //     const svgX = e.clientX - boundingRect.left;
+    //     const svgY = e.clientY - boundingRect.top;
+    //     const newX = svgX - transform.x * delta;
+    //     const newY = svgY - transform.y * delta;
+    //     setTransform({ k: newK, x: newX, y: newY });
+    // };
 
     useEffect(() => {
         if (!selectedPoint) {
@@ -121,10 +144,10 @@ const Track = ({
         let minY = startPos.pos[2];
         let maxY = startPos.pos[2];
 
-        console.log("BASE", minX, maxX, minY, maxY);
+        // console.log("BASE", minX, maxX, minY, maxY);
 
-        primaryLap.lap_data.slice(start, end).map((lapData, i) => {
-            const [posX, _, posY] = lapData.pos;
+        primaryLap.lap_data.slice(start, end).map((lapData) => {
+            const [posX, posY] = [lapData.pos[0], lapData.pos[2]];
             if (posX < minX) {
                 minX = posX;
             }
@@ -138,6 +161,12 @@ const Track = ({
                 maxY = posY;
             }
         });
+
+        // Add MARGIN to the viewbox
+        minX -= margin;
+        minY -= margin;
+        maxX += margin;
+        maxY += margin;
 
         console.log("BOUND", minX, maxX, minY, maxY);
 
@@ -167,13 +196,13 @@ const Track = ({
         <>
             <div id="trackContainer" ref={trackContainer}>
                 <svg
-                    width={width}
-                    height={height}
-                    style={{ margin: "10px" }}
-                    onWheel={handleZoom}
+                    width={containerWidth}
+                    height={containerHeight}
+                    style={{ margin: "0.1em" }}
+                    // onWheel={handleZoom}
                     viewBox={viewBox}
                 >
-                    <image href={TrackImage} width={width} height={height} />
+                    <image href={IMG_URL} width={width} height={height} />
                     <g
                     // transform={`translate(${transform.x}, ${transform.y}) scale(${transform.k}, ${transform.k})`}
                     >

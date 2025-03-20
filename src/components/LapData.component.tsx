@@ -2,10 +2,12 @@
 import { useEffect, useState, useMemo } from "react";
 import Graph from "./Graph/Graph.component";
 import Track from "./Track/Track.component";
+import { getTrackData } from "../firebase";
 
-const LapData = ({ primaryLap, secondaryLap }) => {
+const LapData = ({ primaryLap, secondaryLap, trackName }) => {
     const [selectedPoint, setSelectedPoint] = useState(null);
     const [graphRange, setGraphRange] = useState(null);
+    const [trackData, setTrackData] = useState(null);
 
     useEffect(() => {
         resetGraphZoom();
@@ -39,12 +41,18 @@ const LapData = ({ primaryLap, secondaryLap }) => {
             return {
                 lap_number: primaryLap.lap_number + secondaryLap.lap_number, // Fake number so that it changes if either lapnum changes
                 lap_data: fakeLapData,
-                lapId: primaryLap.lapId + secondaryLap.lapId
+                lapId: primaryLap.lapId + secondaryLap.lapId,
             };
         } else {
-            return { lap_number: 0, lap_data: [], lapId: "0"};
+            return { lap_number: 0, lap_data: [], lapId: "0" };
         }
     }, [primaryLap?.lapId, secondaryLap?.lapId]);
+
+    useEffect(() => {
+        getTrackData(trackName).then((data) => {
+            setTrackData(data);
+        });
+    }, [trackName]);
 
     return (
         <div className="card" id="LapDataContainer">
@@ -183,15 +191,18 @@ const LapData = ({ primaryLap, secondaryLap }) => {
                             maxWidth: "40%",
                         }}
                     >
-                        <Track
-                            {...{
-                                primaryLap,
-                                secondaryLap,
-                                selectedPoint,
-                                setSelectedPoint,
-                                graphRange,
-                            }}
-                        ></Track>
+                        {trackData && (
+                            <Track
+                                {...{
+                                    primaryLap,
+                                    secondaryLap,
+                                    trackData,
+                                    selectedPoint,
+                                    setSelectedPoint,
+                                    graphRange,
+                                }}
+                            ></Track>
+                        )}
                     </div>
                 </>
             ) : (

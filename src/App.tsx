@@ -243,7 +243,7 @@ function App() {
                     setSelecting={setSelectingSecondary}
                 />
             )}
-            {primaryLap && <LapData {...{ primaryLap, secondaryLap }} />}
+            {primaryLap && <LapData {...{ primaryLap, secondaryLap, trackName: primarySessionData.track}} />}
         </div>
     );
 }

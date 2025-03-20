@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
-
-import { initializeApp } from "firebase/app";
+import {db} from "../firebase"
 import {
-    getFirestore,
     collection,
     getDocs,
     query,
@@ -20,17 +18,6 @@ import {
 import { millisToRaceDuration } from "../utils";
 import SessionSelectorActions from "./SessionSelectorAction.component";
 
-const firebaseConfig = {
-    apiKey: "AIzaSyDnFq6i1fT8dfPCNNO6HD9Fo05RtZDBQmk",
-    authDomain: "tidy-jetty-437707-n7.firebaseapp.com",
-    projectId: "tidy-jetty-437707-n7",
-    storageBucket: "tidy-jetty-437707-n7.firebasestorage.app",
-    messagingSenderId: "888243745906",
-    appId: "1:888243745906:web:085e1c0b74f595ba4c7eeb",
-};
-
-const firebase = initializeApp(firebaseConfig);
-const db = getFirestore(firebase);
 
 const SessionSelector = ({
     setSession,
@@ -120,7 +107,7 @@ const SessionSelector = ({
         );
 
         const lapCollection = collection(db, "laps");
-        let lapQuery = query(
+        const lapQuery = query(
             lapCollection,
             where("session", "==", selectedSessionId),
             orderBy("lap_number", "asc")
@@ -254,7 +241,7 @@ const SessionSelector = ({
                             alignItems: "center",
                         }}
                     >
-                        {filteredSessions.map((session, i) => {
+                        {filteredSessions.map((session) => {
                             return (
                                 <div
                                     className="card sessionSelect"
