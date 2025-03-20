@@ -189,6 +189,7 @@ const LapData = ({ primaryLap, secondaryLap, trackName }) => {
                             flexGrow: 4,
                             maxWidth: "50%",
                             maxHeight: "100%",
+                            position: "relative",
                         }}
                     >
                         {trackData && (

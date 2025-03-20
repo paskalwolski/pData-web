@@ -186,7 +186,11 @@ const Track = ({
 
     return (
         <>
-            <div id="trackContainer" ref={trackContainer}>
+            <div
+                id="trackContainer"
+                ref={trackContainer}
+                style={{ position: "sticky", top: 0, left: 0 }}
+            >
                 <svg
                     width={containerWidth}
                     height={containerHeight}
