@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState, useEffect } from "react";
 import "./App.css";
 
@@ -15,6 +14,8 @@ import {
 } from "react-icons/tb";
 
 function App() {
+    // Instead of having top-level state, extract this to a SessionProvider + SessionContext
+    // And then use hooks to get data where needed ie. {primaryData, primaryLap, secondaryData} = useSessionData()
     const [primarySessionData, setPrimarySessionData] = useState(null);
     const [isSelectingPrimary, setSelectingPrimary] = useState(true);
     const [isSelectingSecondary, setSelectingSecondary] = useState(false);
@@ -57,7 +58,11 @@ function App() {
                 {primarySessionData ? (
                     <>
                         <b>
-                            {primarySessionData.car} on {primarySessionData.track}
+                            {primarySessionData.car} (
+                            {primarySessionData.driver})
+                            {secondarySessionData &&
+                                `vs ${secondarySessionData.car} (${secondarySessionData.driver})`}
+                            on {primarySessionData.track}
                         </b>
                         <div
                             style={{
@@ -91,7 +96,9 @@ function App() {
                                         margin: "2px",
                                     }}
                                     onClick={() => {
-                                        setSecondarySessionData(primarySessionData);
+                                        setSecondarySessionData(
+                                            primarySessionData
+                                        );
                                     }}
                                 >
                                     <TbArrowAutofitRight />
@@ -103,7 +110,8 @@ function App() {
                                     flexGrow: 1,
                                     overflowX: "scroll",
                                     maxWidth:
-                                        primarySessionData && secondarySessionData
+                                        primarySessionData &&
+                                        secondarySessionData
                                             ? "50%"
                                             : "100%",
                                 }}
@@ -158,7 +166,8 @@ function App() {
                                     flexGrow: 1,
                                     overflowX: "scroll",
                                     maxWidth:
-                                        primarySessionData && secondarySessionData
+                                        primarySessionData &&
+                                        secondarySessionData
                                             ? "50%"
                                             : "100%",
                                 }}
@@ -211,7 +220,9 @@ function App() {
                                         backgroundColor: "darkred",
                                         color: "whitesmoke",
                                     }}
-                                    onClick={() => setSecondarySessionData(null)}
+                                    onClick={() =>
+                                        setSecondarySessionData(null)
+                                    }
                                 >
                                     <TbPlaylistX />
                                 </button>
@@ -219,10 +230,9 @@ function App() {
                         </div>
                     </>
                 ) : (
-                    <div>
-                        <h1 style={{ color: "whitesmoke" }}>
-                            Welcome to pData
-                        </h1>
+                    <div style={{ color: "whitesmoke" }}>
+                        <h1>Welcome to pData</h1>
+                        <h5>Select a session below to start your analysis</h5>
                     </div>
                 )}
             </div>
@@ -241,9 +251,18 @@ function App() {
                     track={primarySessionData.track}
                     car={primarySessionData.car}
                     setSelecting={setSelectingSecondary}
+                    required={false}
                 />
             )}
-            {primaryLap && <LapData {...{ primaryLap, secondaryLap, trackName: primarySessionData.track}} />}
+            {primaryLap && (
+                <LapData
+                    {...{
+                        primaryLap,
+                        secondaryLap,
+                        trackName: primarySessionData.track,
+                    }}
+                />
+            )}
         </div>
     );
 }

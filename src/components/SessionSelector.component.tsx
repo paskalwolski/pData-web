@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import {db} from "../firebase"
+import { useCallback, useEffect, useState } from "react";
+import { db } from "../firebase";
 import {
     collection,
     getDocs,
@@ -18,7 +18,6 @@ import {
 import { millisToRaceDuration } from "../utils";
 import SessionSelectorActions from "./SessionSelectorAction.component";
 
-
 const SessionSelector = ({
     setSession,
     track,
@@ -36,67 +35,73 @@ const SessionSelector = ({
     const [firstSession, setFirstSession] = useState(null);
     const [lastSession, setLastSession] = useState(null);
 
-    const getAvailableSessions = async (startAt = null, endAt = null) => {
-        setFilteredSessions(null);
-        const sessionCol = collection(db, "sessions");
-        // // Get the total session count info
-        // const sessionCountSnap = await getCountFromServer(sessionCol);
-        // const count = sessionCountSnap.data().count;
-        // setSessionCount(count);
+    const getAvailableSessions = useCallback(
+        async (startAt = null, endAt = null) => {
+            setFilteredSessions(null);
+            const sessionCol = collection(db, "sessions");
+            // // Get the total session count info
+            // const sessionCountSnap = await getCountFromServer(sessionCol);
+            // const count = sessionCountSnap.data().count;
+            // setSessionCount(count);
 
-        // Start building the actual session query
-        let sessionQuery = query(sessionCol, orderBy("sessionTime", "desc"));
-        if (track) {
-            sessionQuery = query(sessionQuery, where("track", "==", track));
-        }
-        if (filterByCar) {
-            sessionQuery = query(sessionQuery, where("car", "==", car));
-        }
-        const availableCount = await (
-            await getCountFromServer(sessionQuery)
-        ).data().count;
-        setSessionCount(availableCount);
-        setMaxPageNumber(Math.floor(availableCount - 1 / pageSize));
+            // Start building the actual session query
+            let sessionQuery = query(
+                sessionCol,
+                orderBy("sessionTime", "desc")
+            );
+            if (track) {
+                sessionQuery = query(sessionQuery, where("track", "==", track));
+            }
+            if (filterByCar) {
+                sessionQuery = query(sessionQuery, where("car", "==", car));
+            }
+            const availableCount = await (
+                await getCountFromServer(sessionQuery)
+            ).data().count;
+            setSessionCount(availableCount);
+            setMaxPageNumber(Math.floor(availableCount - 1 / pageSize));
 
-        if (startAt) {
-            sessionQuery = query(sessionQuery, startAfter(startAt));
-        }
-        if (endAt) {
-            sessionQuery = query(sessionQuery, endBefore(endAt));
-        }
-        sessionQuery = query(sessionQuery, limit(pageSize));
-        const sessionSnap = await getDocs(sessionQuery);
+            if (startAt) {
+                sessionQuery = query(sessionQuery, startAfter(startAt));
+            }
+            if (endAt) {
+                sessionQuery = query(sessionQuery, endBefore(endAt));
+            }
+            sessionQuery = query(sessionQuery, limit(pageSize));
+            const sessionSnap = await getDocs(sessionQuery);
 
-        const sessionList = [];
-        sessionSnap.forEach((session) => {
-            sessionList.push({ id: session.id, ...session.data() });
-        });
-        setFilteredSessions(sessionList);
-        setFirstSession(sessionSnap.docs[0]);
-        setLastSession(sessionSnap.docs[sessionSnap.size - 1]);
-    };
+            const sessionList = [];
+            sessionSnap.forEach((session) => {
+                sessionList.push({ id: session.id, ...session.data() });
+            });
+            setFilteredSessions(sessionList);
+            setFirstSession(sessionSnap.docs[0]);
+            setLastSession(sessionSnap.docs[sessionSnap.size - 1]);
+        },
+        [car, filterByCar, track]
+    );
 
-    const handlePageBack = () => {
+    const handlePageBack = useCallback(() => {
         if (pageNumber == 0) {
             // Shouldn't have been able to click - exiting
             return;
         }
         setPageNumber(pageNumber - 1);
         getAvailableSessions(null, firstSession);
-    };
+    }, [firstSession, getAvailableSessions, pageNumber]);
 
-    const handlePageForward = () => {
+    const handlePageForward = useCallback(() => {
         if (pageNumber == maxPageNumber) {
             // Shouldn't have been able to click - exiting
             return;
         }
         setPageNumber(pageNumber + 1);
         getAvailableSessions(lastSession, null);
-    };
+    }, [getAvailableSessions, lastSession, maxPageNumber, pageNumber]);
 
     useEffect(() => {
         getAvailableSessions();
-    }, [filterByCar]);
+    }, [filterByCar, getAvailableSessions]);
 
     useEffect(() => {
         if (!selectedSessionId) {
@@ -124,57 +129,65 @@ const SessionSelector = ({
                 laps: lapList,
                 sessionId: selectedSessionId,
             });
-            setSelecting && setSelecting(false);
+            if (setSelecting) {
+                setSelecting(false);
+            }
         };
         handleSelectedSessionId();
-    }, [selectedSessionId]);
+    }, [filteredSessions, selectedSessionId, setSelecting, setSession]);
 
-    const handleSessionDelete = async (sessionId) => {
-        console.log("Deleting", sessionId);
+    const handleSessionDelete = useCallback(
+        async (sessionId) => {
+            console.log("Deleting", sessionId);
 
-        const lapCollection = collection(db, "laps");
-        const lapQuery = query(
-            lapCollection,
-            where("session", "==", sessionId)
-        );
-        const lapSnapshot = await getDocs(lapQuery);
-        const lapDeletes = lapSnapshot.docs.map((lapSnap) =>
-            deleteDoc(doc(lapCollection, lapSnap.id))
-        );
-        const sessionCollection = collection(db, "sessions");
-        const sessionDelete = deleteDoc(doc(sessionCollection, sessionId));
+            const lapCollection = collection(db, "laps");
+            const lapQuery = query(
+                lapCollection,
+                where("session", "==", sessionId)
+            );
+            const lapSnapshot = await getDocs(lapQuery);
+            const lapDeletes = lapSnapshot.docs.map((lapSnap) =>
+                deleteDoc(doc(lapCollection, lapSnap.id))
+            );
+            const sessionCollection = collection(db, "sessions");
+            const sessionDelete = deleteDoc(doc(sessionCollection, sessionId));
 
-        await Promise.all([...lapDeletes, sessionDelete]);
-        console.log("Deleted Session Details");
-        // Trigger Session Reload
-        getAvailableSessions(firstSession);
-    };
+            await Promise.all([...lapDeletes, sessionDelete]);
+            console.log("Deleted Session Details");
+            // Trigger Session Reload
+            getAvailableSessions(firstSession);
+        },
+        [firstSession, getAvailableSessions]
+    );
 
-    const handleSessionTrim = async (sessionId) => {
-        console.log("Trimming", sessionId);
+    const handleSessionTrim = useCallback(
+        async (sessionId) => {
+            console.log("Trimming", sessionId);
 
-        const sessionCollection = collection(db, "sessions");
-        const sessionDoc = doc(sessionCollection, sessionId);
-        const sessionSnap = await getDoc(sessionDoc);
-        const sessionData = sessionSnap.data();
-        const fastestLapNumber = sessionData?.fastestLap;
-        const sessionUpdate = updateDoc(sessionDoc, { lapCount: 1 });
+            const sessionCollection = collection(db, "sessions");
+            const sessionDoc = doc(sessionCollection, sessionId);
+            const sessionSnap = await getDoc(sessionDoc);
+            const sessionData = sessionSnap.data();
+            const fastestLapNumber = sessionData?.fastestLap;
+            const sessionUpdate = updateDoc(sessionDoc, { lapCount: 1 });
 
-        const lapCollection = collection(db, "laps");
-        const lapQuery = query(
-            lapCollection,
-            where("session", "==", sessionId),
-            where("lap_number", "!=", fastestLapNumber)
-        );
-        const lapSnapshot = await getDocs(lapQuery);
-        const lapDeletes = lapSnapshot.docs.map((lapSnap) =>
-            deleteDoc(doc(lapCollection, lapSnap.id))
-        );
+            const lapCollection = collection(db, "laps");
+            const lapQuery = query(
+                lapCollection,
+                where("session", "==", sessionId),
+                where("lap_number", "!=", fastestLapNumber)
+            );
+            const lapSnapshot = await getDocs(lapQuery);
+            const lapDeletes = lapSnapshot.docs.map((lapSnap) =>
+                deleteDoc(doc(lapCollection, lapSnap.id))
+            );
 
-        await Promise.all([sessionUpdate, ...lapDeletes]);
-        // Trigger Session Reload
-        getAvailableSessions(firstSession);
-    };
+            await Promise.all([sessionUpdate, ...lapDeletes]);
+            // Trigger Session Reload
+            getAvailableSessions(firstSession);
+        },
+        [firstSession, getAvailableSessions]
+    );
 
     return (
         <div
@@ -247,11 +260,8 @@ const SessionSelector = ({
                                     className="card sessionSelect"
                                     id={session.id}
                                     key={session.id}
-                                    onClick={(e) => {
-                                        setSelectedSessionId(
-                                            // e.currentTarget.id
-                                            session.id
-                                        );
+                                    onClick={() => {
+                                        setSelectedSessionId(session.id);
                                     }}
                                     style={{
                                         width: "90%",
