@@ -8,7 +8,9 @@ import {onRequest} from "firebase-functions/v2/https";
 import {initializeApp as initializeApp} from "firebase-admin/app";
 import {getFirestore} from "firebase-admin/firestore";
 import {getStorage} from "firebase-admin/storage";
-import {FastestLapRef, LapPayload, SessionPayload} from "./types";
+import {FastestLapRef, LapPayload} from "./types";
+
+const EXPIRY_HOURS = 24;
 
 const adminApp = initializeApp();
 const firestore = getFirestore();
@@ -109,84 +111,88 @@ export const handleSessionSubmit = onRequest(async (request, response) => {
 
 export const handleLap = onRequest(async (request, response) => {
   const lapPayload: LapPayload = await request.body;
+  const {sessionData} = lapPayload;
+  const {driver, car, track, sessionTime, sessionType, trackSession} = sessionData;
 
-  if (!lapPayload.sessionId) {
-    response.send({dropped: true, reason: "no session id provided"});
+  const baseLapFields = {
+    lapNumber: lapPayload.lapNumber,
+    lapTime: lapPayload.lapTime,
+    isValid: lapPayload.isValid,
+    isPit: lapPayload.isPit,
+    lapData: lapPayload.lapData,
+    driver,
+    car,
+    track,
+    sessionTime,
+    sessionType,
+  };
+
+  if (!trackSession || sessionType !== "RACE") {
+    // State A — top-3 tracking (all non-session laps, and non-RACE session laps)
+    const expiresAt = new Date(Date.now() + EXPIRY_HOURS * 60 * 60 * 1000);
+    const lapRef = firestore.collection("test_laps").doc();
+    await lapRef.set({...baseLapFields, expiresAt});
+
+    const driverRef = firestore.collection("drivers").doc(driver);
+    const bestLapsRef = driverRef
+      .collection("best_laps").doc(track)
+      .collection("cars").doc(car);
+
+    await firestore.runTransaction(async (transaction) => {
+      const carSnap = await transaction.get(bestLapsRef);
+      const laps: FastestLapRef[] = carSnap.exists ?
+        (carSnap.data()?.laps ?? []) : [];
+
+      transaction.set(driverRef, {name: driver}, {merge: true});
+
+      // Not at 3 laps yet
+      if (laps.length < 3) {
+        const updatedLaps = [...laps, {lapId: lapRef.id, lapTime: lapPayload.lapTime}]
+          .sort((a, b) => parseFloat(a.lapTime) - parseFloat(b.lapTime));
+        transaction.update(lapRef, {expiresAt: null});
+        transaction.set(bestLapsRef, {laps: updatedLaps});
+        return;
+      }
+
+      // Check to replace slowest best-3 lap
+      const slowest = laps.reduce((prev, curr) =>
+        parseFloat(curr.lapTime) > parseFloat(prev.lapTime) ? curr : prev
+      );
+
+      if (parseFloat(lapPayload.lapTime) < parseFloat(slowest.lapTime)) {
+        const updatedLaps = laps
+          .filter((l) => l.lapId !== slowest.lapId)
+          .concat({lapId: lapRef.id, lapTime: lapPayload.lapTime})
+          .sort((a, b) => parseFloat(a.lapTime) - parseFloat(b.lapTime));
+
+        const knockedOutRef = firestore.collection("test_laps").doc(slowest.lapId);
+        const knockedOutExpiresAt = new Date(Date.now() + EXPIRY_HOURS * 60 * 60 * 1000);
+        transaction.update(knockedOutRef, {expiresAt: knockedOutExpiresAt});
+        transaction.update(lapRef, {expiresAt: null});
+        transaction.set(bestLapsRef, {laps: updatedLaps});
+      }
+      // else: does not qualify — expiresAt stays as written
+    });
+
+    response.send({lapId: lapRef.id});
     return;
   }
 
-  const sessionRef = firestore.collection("test_sessions")
-    .doc(lapPayload.sessionId);
+  // State B — RACE session lap
+  // TODO: Ensure these laps are also treated as potential best-3 laps
+  // and not deleted when the session is cleared
   const lapRef = firestore.collection("test_laps").doc();
 
-  await firestore.runTransaction(async (transaction) => {
-    const sessionSnap = await transaction.get(sessionRef);
+  // Sesssion already created
+  if (lapPayload.sessionId) {
+    await lapRef.set({...baseLapFields, sessionId: lapPayload.sessionId});
+    response.send({lapId: lapRef.id, sessionId: lapPayload.sessionId});
+    return;
+  }
 
-    if (!sessionSnap.exists) {
-      response.send({dropped: true, reason: "session not found"});
-      return;
-    }
-
-    const session = sessionSnap.data() ?? {};
-    // Default limit of 3 laps per session
-    const keepAllLaps: boolean = session.keepAllLaps ?? false;
-    const fastestLaps: FastestLapRef[] = session.fastestLaps ?? [];
-
-    if (keepAllLaps) {
-      transaction.create(lapRef, lapPayload);
-      response.send({lapId: lapRef.id});
-      return;
-    }
-
-    // Limited mode — maintain up to 3 fastest laps
-    if (fastestLaps.length < 3) {
-      transaction.create(lapRef, lapPayload);
-      transaction.update(sessionRef, {
-        fastestLaps: [
-          ...fastestLaps,
-          {lapId: lapRef.id, lapTime: lapPayload.lapTime},
-        ].sort((a, b) => parseFloat(a.lapTime) - parseFloat(b.lapTime)),
-      });
-      response.send({sessionId: sessionRef.id, lapId: lapRef.id});
-      return;
-    }
-
-    const slowest = fastestLaps.reduce((prev, curr) =>
-      parseFloat(curr.lapTime) > parseFloat(prev.lapTime) ? curr : prev
-    );
-
-    if (parseFloat(lapPayload.lapTime) >= parseFloat(slowest.lapTime)) {
-      response.send({
-        sessionId: sessionRef.id,
-        dropped: true,
-        reason: "not faster than current top 3",
-      });
-      return;
-    }
-
-    // New lap beats the slowest — replace it
-    const updatedFastestLaps = fastestLaps
-      .filter((l) => l.lapId !== slowest.lapId)
-      .concat({lapId: lapRef.id, lapTime: lapPayload.lapTime})
-      .sort((a, b) => parseFloat(a.lapTime) - parseFloat(b.lapTime));
-
-    transaction.create(lapRef, lapPayload);
-    transaction.delete(firestore.collection("test_laps").doc(slowest.lapId));
-    transaction.update(sessionRef, {fastestLaps: updatedFastestLaps});
-    response.send({lapId: lapRef.id, sessionId: sessionRef.id});
-  });
-});
-
-
-export const createSession = onRequest(async (request, response) => {
-  const sessionPayload: SessionPayload = await request.body;
+  // First lap of a new session — create session inline
   const sessionRef = firestore.collection("test_sessions").doc();
-  await sessionRef.set({
-    sessionType: sessionPayload.sessionType,
-    sessionTime: new Date(sessionPayload.sessionTime),
-    driver: sessionPayload.driver,
-    car: sessionPayload.car,
-    track: sessionPayload.track,
-  });
-  response.send({sessionId: sessionRef.id});
+  await sessionRef.set({driver, car, track, sessionTime, sessionType, trackSession: true});
+  await lapRef.set({...baseLapFields, sessionId: sessionRef.id});
+  response.send({lapId: lapRef.id, sessionId: sessionRef.id});
 });
