@@ -112,7 +112,13 @@ export const handleSessionSubmit = onRequest(async (request, response) => {
 export const handleLap = onRequest(async (request, response) => {
   const lapPayload: LapPayload = await request.body;
   const {sessionData} = lapPayload;
-  const {driver, car, track, sessionTime, sessionType, trackSession} = sessionData;
+  const {driver,
+    car,
+    track,
+    sessionTime,
+    sessionType,
+    trackSession,
+  } = sessionData;
 
   const baseLapFields = {
     lapNumber: lapPayload.lapNumber,
@@ -128,10 +134,11 @@ export const handleLap = onRequest(async (request, response) => {
   };
 
   if (!trackSession || sessionType !== "RACE") {
-    // State A — top-3 tracking (all non-session laps, and non-RACE session laps)
+    // State A — top-3 tracking non-session laps, and non-RACE session laps
     const expiresAt = new Date(Date.now() + EXPIRY_HOURS * 60 * 60 * 1000);
     const lapRef = firestore.collection("test_laps").doc();
     await lapRef.set({...baseLapFields, expiresAt});
+
 
     const driverRef = firestore.collection("drivers").doc(driver);
     const bestLapsRef = driverRef
@@ -147,7 +154,9 @@ export const handleLap = onRequest(async (request, response) => {
 
       // Not at 3 laps yet
       if (laps.length < 3) {
-        const updatedLaps = [...laps, {lapId: lapRef.id, lapTime: lapPayload.lapTime}]
+        const updatedLaps = [...laps, {
+          lapId: lapRef.id, lapTime: lapPayload.lapTime,
+        }]
           .sort((a, b) => parseFloat(a.lapTime) - parseFloat(b.lapTime));
         transaction.update(lapRef, {expiresAt: null});
         transaction.set(bestLapsRef, {laps: updatedLaps});
@@ -165,8 +174,11 @@ export const handleLap = onRequest(async (request, response) => {
           .concat({lapId: lapRef.id, lapTime: lapPayload.lapTime})
           .sort((a, b) => parseFloat(a.lapTime) - parseFloat(b.lapTime));
 
-        const knockedOutRef = firestore.collection("test_laps").doc(slowest.lapId);
-        const knockedOutExpiresAt = new Date(Date.now() + EXPIRY_HOURS * 60 * 60 * 1000);
+        const knockedOutRef = firestore.collection("test_laps")
+          .doc(slowest.lapId);
+        const knockedOutExpiresAt = new Date(
+          Date.now() + EXPIRY_HOURS * 60 * 60 * 1000
+        );
         transaction.update(knockedOutRef, {expiresAt: knockedOutExpiresAt});
         transaction.update(lapRef, {expiresAt: null});
         transaction.set(bestLapsRef, {laps: updatedLaps});
@@ -192,7 +204,14 @@ export const handleLap = onRequest(async (request, response) => {
 
   // First lap of a new session — create session inline
   const sessionRef = firestore.collection("test_sessions").doc();
-  await sessionRef.set({driver, car, track, sessionTime, sessionType, trackSession: true});
+  await sessionRef.set({
+    driver,
+    car,
+    track,
+    sessionTime,
+    sessionType,
+    trackSession: true,
+  });
   await lapRef.set({...baseLapFields, sessionId: sessionRef.id});
   response.send({lapId: lapRef.id, sessionId: sessionRef.id});
 });
