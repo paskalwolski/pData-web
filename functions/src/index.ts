@@ -142,8 +142,7 @@ export const handleLap = onRequest(async (request, response) => {
 
     const driverRef = firestore.collection("drivers").doc(driver);
     const bestLapsRef = driverRef
-      .collection("best_laps").doc(track)
-      .collection("cars").doc(car);
+      .collection(track).doc(car);
 
     await firestore.runTransaction(async (transaction) => {
       const carSnap = await transaction.get(bestLapsRef);
