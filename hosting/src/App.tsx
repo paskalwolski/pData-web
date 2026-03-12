@@ -12,6 +12,7 @@ import {
     TbPlaylistAdd,
     TbPlaylistX,
 } from "react-icons/tb";
+import { useLatestLaps } from "./hooks/useLaps";
 
 function App() {
     // Instead of having top-level state, extract this to a SessionProvider + SessionContext
@@ -22,6 +23,8 @@ function App() {
     const [secondarySessionData, setSecondarySessionData] = useState(null);
     const [primaryLap, setPrimaryLap] = useState(null);
     const [secondaryLap, setSecondaryLap] = useState(null);
+
+    const [latestLaps, isLoadingLatestLaps] = useLatestLaps();
 
     useEffect(() => {
         if (primaryLap !== null) {
@@ -97,7 +100,7 @@ function App() {
                                     }}
                                     onClick={() => {
                                         setSecondarySessionData(
-                                            primarySessionData
+                                            primarySessionData,
                                         );
                                     }}
                                 >
@@ -198,7 +201,7 @@ function App() {
                                     }}
                                     onClick={() =>
                                         setSelectingSecondary(
-                                            !isSelectingSecondary
+                                            !isSelectingSecondary,
                                         )
                                     }
                                 >
@@ -236,6 +239,12 @@ function App() {
                     </div>
                 )}
             </div>
+            {/* TODO: Hoist this to a component so when we revisit, the query is remade */}
+            {isLoadingLatestLaps
+                ? "Loading..."
+                : latestLaps.length > 0
+                  ? `Latest Laps: ${latestLaps.map((lap) => lap.lapNumber)}`
+                  : "No Laps registered"}
             {isSelectingPrimary && (
                 <SessionSelector
                     setSession={setPrimarySessionData}
