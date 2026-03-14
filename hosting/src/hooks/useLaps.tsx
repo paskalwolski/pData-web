@@ -46,7 +46,7 @@ const useLatestLaps = (): [Array<LapData> | undefined, boolean] => {
         async function fetchLatestLaps() {
             const q = query(
                 collection(db, "test_laps"),
-                orderBy("sessionData.sessionTime"),
+                orderBy("sessionTime"),
                 limit(5),
             );
 

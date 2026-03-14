@@ -1,4 +1,5 @@
 import {onRequest} from "firebase-functions/v2/https";
+import {onSchedule} from "firebase-functions/v2/scheduler";
 
 // Type completion
 // import functions = require("firebase-functions");
@@ -213,4 +214,24 @@ export const handleLap = onRequest(async (request, response) => {
   });
   await lapRef.set({...baseLapFields, sessionId: sessionRef.id});
   response.send({lapId: lapRef.id, sessionId: sessionRef.id});
+});
+
+// TODO: Allow specifying a specific user, and triggering with a request
+export const deleteExpiredTestLaps = onSchedule("every 6 hours", async () => {
+  const now = new Date();
+  const expiredSnapshot = await firestore
+    .collection("test_laps")
+    .where("expiresAt", "<=", now)
+    .get();
+
+  if (expiredSnapshot.empty) {
+    console.log("No expired test_laps to delete.");
+    return;
+  }
+
+  const batch = firestore.batch();
+  expiredSnapshot.docs.forEach((doc) => batch.delete(doc.ref));
+  await batch.commit();
+
+  console.log(`Deleted ${expiredSnapshot.size} expired test_laps.`);
 });
