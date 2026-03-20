@@ -1,23 +1,29 @@
 {
   "name": "functions",
   "scripts": {
-    "lint": "eslint .",
+    "lint": "gts lint",
     "build": "tsc",
     "build:watch": "tsc --watch",
     "serve": "npm run build:watch | firebase emulators:start --only functions --inspect-functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
+    "logs": "firebase functions:log",
+    "clean": "gts clean",
+    "compile": "tsc",
+    "fix": "gts fix",
+    "prepare": "npm run compile",
+    "pretest": "npm run compile",
+    "posttest": "npm run lint"
   },
   "engines": {
-    "node": "20"
+    "node": "22"
   },
   "main": "lib/index.js",
   "dependencies": {
     "firebase": "^11.0.1",
     "firebase-admin": "^12.1.0",
-    "firebase-functions": "^6.3.2",
+    "firebase-functions": "^7.2.2",
     "firebase-tools": "^13.23.0"
   },
   "devDependencies": {
@@ -25,8 +31,10 @@
     "eslint": "^9.9.0",
     "firebase-functions-test": "^3.1.0",
     "globals": "^15.9.0",
-    "typescript": "^5.5.3",
-    "typescript-eslint": "^8.57.1"
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.57.1",
+    "gts": "^7.0.0",
+    "@types/node": "^22.7.5"
   },
   "private": true
 }
