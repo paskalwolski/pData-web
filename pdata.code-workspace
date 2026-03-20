@@ -1,0 +1,16 @@
+{
+  "folders": [
+    { "name": "hosting", "path": "hosting" },
+    { "name": "functions", "path": "functions" }
+  ],
+  "settings": {
+    "eslint.workingDirectories": [
+      { "mode": "auto" }
+    ],
+    "js/ts.suggest.autoImports": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    },
+    "eslint.format.enable": true
+  }
+}
