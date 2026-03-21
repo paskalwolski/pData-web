@@ -1,35 +1,35 @@
 import { AppBar, Box, MenuItem, Toolbar, Typography } from "@mui/material";
-import { useState } from "react";
-import {
-    TbKeyframe,
-    TbKeyframeFilled,
-    TbKeyframes,
-    TbKeyframesFilled,
-} from "react-icons/tb";
 import { Link } from "wouter";
+import { useState } from "react";
+import { TbKeyframesFilled, TbKeyframes, TbKeyframe } from "react-icons/tb";
 
-const AppControlBar = () => {
-    const [mouseOver, setMouseOver] = useState(false);
-    const [drawerOpen, setDrawerOpen] = useState(false);
+interface AppControlBarProps {
+    isDrawerOpen: boolean;
+    toggleDrawerOpen: () => void;
+}
 
+const AppControlBar = ({
+    isDrawerOpen,
+    toggleDrawerOpen,
+}: AppControlBarProps) => {
+    const [isMouseOver, setMouseOver] = useState(false);
     return (
         <AppBar position="static">
             <Toolbar variant="dense" disableGutters>
                 <Box display="flex" alignSelf="stretch">
                     <MenuItem
-                        onMouseOver={() => setMouseOver(true)}
+                        onMouseEnter={() => setMouseOver(true)}
                         onMouseLeave={() => setMouseOver(false)}
-                        onClick={() => setDrawerOpen(!drawerOpen)}
-                        color="inherit"
+                        onClick={() => toggleDrawerOpen()}
                     >
-                        {drawerOpen ? (
-                            mouseOver ? (
+                        {isMouseOver ? (
+                            isDrawerOpen ? (
                                 <TbKeyframesFilled />
                             ) : (
                                 <TbKeyframes />
                             )
-                        ) : mouseOver ? (
-                            <TbKeyframeFilled />
+                        ) : isDrawerOpen ? (
+                            <TbKeyframesFilled />
                         ) : (
                             <TbKeyframe />
                         )}
