@@ -1,7 +1,7 @@
 import { AppBar, Box, MenuItem, Toolbar, Typography } from "@mui/material";
 import { Link } from "wouter";
 import { useState } from "react";
-import { TbKeyframesFilled, TbKeyframes, TbKeyframe } from "react-icons/tb";
+import { TbKeyframes, TbKeyframe, TbKeyframesFilled } from "react-icons/tb";
 
 interface AppControlBarProps {
     isDrawerOpen: boolean;
@@ -29,7 +29,7 @@ const AppControlBar = ({
                                 <TbKeyframes />
                             )
                         ) : isDrawerOpen ? (
-                            <TbKeyframesFilled />
+                            <TbKeyframes />
                         ) : (
                             <TbKeyframe />
                         )}
