@@ -118,7 +118,6 @@ export const handleLap = onRequest(async (request, response) => {
     lapTime: lapPayload.lapTime,
     isValid: lapPayload.isValid,
     isPit: lapPayload.isPit,
-    lapData: lapPayload.lapData,
     driver,
     car,
     track,
@@ -131,6 +130,9 @@ export const handleLap = onRequest(async (request, response) => {
     const expiresAt = new Date(Date.now() + EXPIRY_HOURS * 60 * 60 * 1000);
     const lapRef = firestore.collection('test_laps').doc();
     await lapRef.set({...baseLapFields, expiresAt});
+
+    const dataRef = lapRef.collection('data').doc('telemetry');
+    await dataRef.set(lapPayload.lapData);
 
     const driverRef = firestore.collection('drivers').doc(driver);
     const bestLapsRef = driverRef.collection(track).doc(car);
