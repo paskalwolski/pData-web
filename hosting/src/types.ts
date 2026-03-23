@@ -4,9 +4,10 @@ export interface LapData {
     lapTime: string
     isValid: boolean
     isPit: boolean
-    lapData: object
     sessionData: SessionData
 }
+
+export type TelemetryData = object
 
 export interface SessionData {
     driver: string

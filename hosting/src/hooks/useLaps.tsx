@@ -9,10 +9,10 @@ import {
     limit,
     getDocs,
 } from "firebase/firestore";
-import { LapData } from "../types";
+import { LapData, TelemetryData } from "../types";
 
 const useLap = (lapId: string): [LapData | undefined, boolean] => {
-    const [lap, setLap] = useState<LapData | undefined>();
+    const [lapData, setLapData] = useState<LapData | undefined>();
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -23,7 +23,7 @@ const useLap = (lapId: string): [LapData | undefined, boolean] => {
             const snapshot = await getDoc(doc(db, "test_laps", lapId));
             // Only write if we want to keep the result
             if (snapshot.exists() && !cancelled) {
-                setLap(snapshot.data() as LapData);
+                setLapData(snapshot.data() as LapData);
                 setLoading(false);
             }
         }
@@ -35,7 +35,36 @@ const useLap = (lapId: string): [LapData | undefined, boolean] => {
         };
     }, [lapId]);
 
-    return [lap, loading];
+    return [lapData, loading];
+};
+
+const useLapTelemetry = (lapId: string): TelemetryData => {
+    const [telemetryData, setTelemetryData] = useState<
+        TelemetryData | undefined
+    >();
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        async function fetchLapTelemetry() {
+            // TODO: Implement `getDocFromCache` and `getDocFromServer` to prevent excessive reads
+            const snapshot = await getDoc(
+                doc(db, "test_laps", lapId, "data", "telemtry"),
+            );
+            if (snapshot.exists() && !cancelled) {
+                setTelemetryData(snapshot.data() as TelemetryData);
+                setLoading(false);
+            }
+        }
+
+        fetchLapTelemetry();
+        return () => {
+            cancelled = true;
+        };
+    }, [lapId]);
+
+    return [telemetryData, loading];
 };
 
 const useLatestLaps = (): [Array<LapData> | undefined, boolean] => {
@@ -67,4 +96,4 @@ const useLatestLaps = (): [Array<LapData> | undefined, boolean] => {
     return [latestLaps, loading];
 };
 
-export { useLap, useLatestLaps };
+export { useLap, useLapTelemetry, useLatestLaps };
