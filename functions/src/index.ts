@@ -108,7 +108,13 @@ export const handleSessionSubmit = onRequest(async (request, response) => {
 });
 
 export const handleLap = onRequest(async (request, response) => {
-  const lapPayload: LapPayload = await request.body;
+  // Handle empty payload, to manage session opening request
+  const payload = await request.body;
+  if (!payload?.sessionData) {
+    response.status(202).send();
+    return;
+  }
+  const lapPayload: LapPayload = payload as LapPayload;
   const {sessionData} = lapPayload;
   const {driver, car, track, sessionTime, sessionType, trackSession} =
     sessionData;
