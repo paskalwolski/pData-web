@@ -155,10 +155,9 @@ export const handleLap = onRequest(async (request, response) => {
 
     // Always store lap data + telemetry
     transaction.set(lapRef, {...baseLapFields});
-    transaction.set(
-      lapRef.collection('data').doc('telemetry'),
-      lapPayload.lapData,
-    );
+    transaction.set(lapRef.collection('data').doc('telemetry'), {
+      data: lapPayload.lapData,
+    });
 
     const laps: FastestLapRef[] = bestLapSnapshot.exists
       ? (bestLapSnapshot.data()?.laps ?? [])
