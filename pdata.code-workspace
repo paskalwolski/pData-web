@@ -4,6 +4,7 @@
     { "name": "functions", "path": "functions" }
   ],
   "settings": {
+    "eslint.useFlatConfig": true,
     "eslint.workingDirectories": [
       { "mode": "auto" }
     ],
@@ -12,5 +13,5 @@
       "source.fixAll.eslint": "explicit"
     },
     "eslint.format.enable": true
-  }
+  },
 }

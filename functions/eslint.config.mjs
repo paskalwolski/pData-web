@@ -1,20 +1,31 @@
-import js from "@eslint/js";
-import globals from "globals";
-import tseslint from "typescript-eslint";
-import {defineConfig } from 'eslint/config';
+import eslint from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import globals from 'globals';
 
-export default defineConfig(
-  { ignores: ["lib", "generated"] },
+let customConfig = [];
+let hasIgnoresFile = false;
+try {
+  await import('./eslint.ignores.js');
+  hasIgnoresFile = true;
+} catch {
+  // eslint.ignores.js doesn't exist
+}
+
+if (hasIgnoresFile) {
+  const { default: ignores } = await import('./eslint.ignores.js');
+  customConfig = [{ ignores }];
+}
+
+export default [
+  ...customConfig,
+  eslint.configs.recommended,
+  ...tseslint.configs.recommended,
   {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ["**/*.{ts,js}"],
     languageOptions: {
-      ecmaVersion: 2020,
       globals: globals.node,
     },
     rules: {
-      quotes: ["error", "double"],
-      indent: ["error", 2],
+      quotes: ['error', 'single', { avoidEscape: true }],
     },
   },
-);
+];
