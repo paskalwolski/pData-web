@@ -227,8 +227,27 @@ export const handleLap = onRequest(async (request, response) => {
 });
 
 // TODO: Allow specifying a specific user, and triggering with a request
+// TODO: Rename for clarity
 export const deleteExpiredTestLaps = onSchedule('every 6 hours', async () => {
   const now = new Date();
+  // Delete expired Sessions
+  const expiredSessionSnapshot = await firestore
+    .collection('sessions')
+    .where('expiresAt', '<=', now)
+    .get();
+
+  if (expiredSessionSnapshot.empty) {
+    console.log('No expired sessions to delete');
+  } else {
+    const batch = firestore.batch();
+    expiredSessionSnapshot.docs.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+    await batch.commit();
+    console.log(`Deleted ${expiredSessionSnapshot.size} expired sessions.`);
+  }
+
+  // Delete expired laps
   const expiredSnapshot = await firestore
     .collection('test_laps')
     .where('expiresAt', '<=', now)
@@ -236,12 +255,13 @@ export const deleteExpiredTestLaps = onSchedule('every 6 hours', async () => {
 
   if (expiredSnapshot.empty) {
     console.log('No expired test_laps to delete.');
-    return;
+  } else {
+    const batch = firestore.batch();
+    expiredSnapshot.docs.forEach(doc => {
+      batch.delete(doc.ref.collection('data').doc('telemetry'));
+      batch.delete(doc.ref);
+    });
+    await batch.commit();
+    console.log(`Deleted ${expiredSnapshot.size} expired test_laps.`);
   }
-
-  const batch = firestore.batch();
-  expiredSnapshot.docs.forEach(doc => batch.delete(doc.ref));
-  await batch.commit();
-
-  console.log(`Deleted ${expiredSnapshot.size} expired test_laps.`);
 });
