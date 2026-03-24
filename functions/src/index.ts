@@ -131,26 +131,42 @@ export const handleLap = onRequest(async (request, response) => {
     sessionType,
   };
 
-  if (!trackSession || sessionType !== 'RACE') {
-    // State A — top-3 tracking non-session laps, and non-RACE session laps
-    const expiresAt = new Date(Date.now() + EXPIRY_HOURS * 60 * 60 * 1000);
-    const lapRef = firestore.collection('test_laps').doc();
-    await lapRef.set({...baseLapFields, expiresAt});
+  const canBeFastestLap = baseLapFields.isValid && !baseLapFields.isPit;
 
-    const dataRef = lapRef.collection('data').doc('telemetry');
-    await dataRef.set(lapPayload.lapData);
+  // Handle session ID
+  const sessionId = lapPayload.sessionId;
+  // Get the sessionRef if it exists or not
+  const sessionRef = sessionId
+    ? firestore.collection('test_sessions').doc(sessionId)
+    : firestore.collection('test_sessions').doc();
 
-    const driverRef = firestore.collection('drivers').doc(driver);
-    const bestLapsRef = driverRef.collection(track).doc(car);
+  // Prepare refs for read/write
+  const lapRef = firestore.collection('test_laps').doc();
 
-    await firestore.runTransaction(async transaction => {
-      const carSnap = await transaction.get(bestLapsRef);
-      const laps: FastestLapRef[] = carSnap.exists
-        ? (carSnap.data()?.laps ?? [])
-        : [];
+  const driverRef = firestore.collection('drivers').doc(driver);
+  const bestLapsRef = driverRef.collection(track).doc(car);
 
-      transaction.set(driverRef, {name: driver}, {merge: true});
+  const expiresAt = new Date(Date.now() + EXPIRY_HOURS * 60 * 60 * 1000);
 
+  // Prepare for lap write and Fastest Lap Update
+  await firestore.runTransaction(async transaction => {
+    // Get the Lap Snapshot + Data
+    const bestLapSnapshot = await transaction.get(bestLapsRef);
+
+    // Always store lap data + telemetry
+    transaction.set(lapRef, {...baseLapFields});
+    transaction.set(
+      lapRef.collection('data').doc('telemetry'),
+      lapPayload.lapData,
+    );
+
+    const laps: FastestLapRef[] = bestLapSnapshot.exists
+      ? (bestLapSnapshot.data()?.laps ?? [])
+      : [];
+
+    // Ensure we have a driverRef
+    transaction.set(driverRef, {name: driver}, {merge: true});
+    if (canBeFastestLap) {
       // Not at 3 laps yet
       if (laps.length < 3) {
         const updatedLaps = [
@@ -160,63 +176,54 @@ export const handleLap = onRequest(async (request, response) => {
             lapTime: lapPayload.lapTime,
           },
         ].sort((a, b) => parseFloat(a.lapTime) - parseFloat(b.lapTime));
-        transaction.update(lapRef, {expiresAt: null});
+        // Store best lap with unset expiresAt
         transaction.set(bestLapsRef, {laps: updatedLaps});
-        return;
-      }
-
-      // Check to replace slowest best-3 lap
-      const slowest = laps.reduce((prev, curr) =>
-        parseFloat(curr.lapTime) > parseFloat(prev.lapTime) ? curr : prev,
-      );
-
-      if (parseFloat(lapPayload.lapTime) < parseFloat(slowest.lapTime)) {
-        const updatedLaps = laps
-          .filter(l => l.lapId !== slowest.lapId)
-          .concat({lapId: lapRef.id, lapTime: lapPayload.lapTime})
-          .sort((a, b) => parseFloat(a.lapTime) - parseFloat(b.lapTime));
-
-        const knockedOutRef = firestore
-          .collection('test_laps')
-          .doc(slowest.lapId);
-        const knockedOutExpiresAt = new Date(
-          Date.now() + EXPIRY_HOURS * 60 * 60 * 1000,
+      } else {
+        // Check to replace slowest best-3 lap
+        const slowest = laps.reduce((prev, curr) =>
+          parseFloat(curr.lapTime) > parseFloat(prev.lapTime) ? curr : prev,
         );
-        transaction.update(knockedOutRef, {expiresAt: knockedOutExpiresAt});
-        transaction.update(lapRef, {expiresAt: null});
-        transaction.set(bestLapsRef, {laps: updatedLaps});
+
+        if (parseFloat(lapPayload.lapTime) < parseFloat(slowest.lapTime)) {
+          const updatedLaps = laps
+            .filter(l => l.lapId !== slowest.lapId)
+            .concat({lapId: lapRef.id, lapTime: lapPayload.lapTime})
+            .sort((a, b) => parseFloat(a.lapTime) - parseFloat(b.lapTime));
+
+          const knockedOutRef = firestore
+            .collection('test_laps')
+            .doc(slowest.lapId);
+          transaction.update(knockedOutRef, {
+            expiresAt,
+          });
+          transaction.set(bestLapsRef, {laps: updatedLaps});
+        } else {
+          // New lap doesn't make it - set it to expire
+          transaction.update(lapRef, {expiresAt});
+        }
       }
-      // else: does not qualify — expiresAt stays as written
-    });
+    } else {
+      // Expire an unsuitable lap
+      transaction.update(lapRef, {expiresAt});
+    }
 
-    response.send({lapId: lapRef.id});
-    return;
-  }
-
-  // State B — RACE session lap
-  // TODO: Ensure these laps are also treated as potential best-3 laps
-  // and not deleted when the session is cleared
-  const lapRef = firestore.collection('test_laps').doc();
-
-  // Sesssion already created
-  if (lapPayload.sessionId) {
-    await lapRef.set({...baseLapFields, sessionId: lapPayload.sessionId});
-    response.send({lapId: lapRef.id, sessionId: lapPayload.sessionId});
-    return;
-  }
-
-  // First lap of a new session — create session inline
-  const sessionRef = firestore.collection('test_sessions').doc();
-  await sessionRef.set({
-    driver,
-    car,
-    track,
-    sessionTime,
-    sessionType,
-    trackSession: true,
+    // Handle session Update
+    if (!sessionId) {
+      // First lap of a new session
+      transaction.set(sessionRef, {
+        driver,
+        car,
+        track,
+        sessionTime,
+        sessionType,
+        expiresAt: trackSession ? undefined : expiresAt,
+        // TODO: Improve data in Session eg. fastest lap
+      });
+    }
   });
-  await lapRef.set({...baseLapFields, sessionId: sessionRef.id});
+
   response.send({lapId: lapRef.id, sessionId: sessionRef.id});
+  return;
 });
 
 // TODO: Allow specifying a specific user, and triggering with a request
