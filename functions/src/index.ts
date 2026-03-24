@@ -232,19 +232,21 @@ export const deleteExpiredTestLaps = onSchedule('every 6 hours', async () => {
   const now = new Date();
   // Delete expired Sessions
   const expiredSessionSnapshot = await firestore
-    .collection('sessions')
+    .collection('test_sessions')
     .where('expiresAt', '<=', now)
     .get();
 
   if (expiredSessionSnapshot.empty) {
-    console.log('No expired sessions to delete');
+    console.log('No expired test_sessions to delete');
   } else {
     const batch = firestore.batch();
     expiredSessionSnapshot.docs.forEach(doc => {
       batch.delete(doc.ref);
     });
     await batch.commit();
-    console.log(`Deleted ${expiredSessionSnapshot.size} expired sessions.`);
+    console.log(
+      `Deleted ${expiredSessionSnapshot.size} expired test_sessions.`,
+    );
   }
 
   // Delete expired laps
