@@ -119,29 +119,20 @@ export const handleLap = onRequest(async (request, response) => {
     return;
   }
   const lapPayload: LapPayload = payload as LapPayload;
-  const {sessionData} = lapPayload;
+  const {sessionData, ...lapFields} = lapPayload;
   const {driver, car, track, sessionTime, sessionType, trackSession} =
     sessionData;
 
-  const baseLapFields = {
-    lapNumber: lapPayload.lapNumber,
-    lapTime: lapPayload.lapTime,
-    isValid: lapPayload.isValid,
-    isPit: lapPayload.isPit,
-    driver,
-    car,
-    track,
-    sessionTime,
-    sessionType,
-  };
+  const {lapData, ...lapDetails} = lapFields;
 
-  const canBeFastestLap = baseLapFields.isValid && !baseLapFields.isPit;
+  const canBeFastestLap = lapDetails.isValid && !lapDetails.isPit;
 
   // Handle session ID
-  const sessionId = lapPayload.sessionId;
+  const receivedSessionId = lapPayload.sessionId;
+  // TODO: Add flag to ignore session creation
   // Get the sessionRef if it exists or not
-  const sessionRef = sessionId
-    ? firestore.collection(SESSIONS).doc(sessionId)
+  const sessionRef = receivedSessionId
+    ? firestore.collection(SESSIONS).doc(receivedSessionId)
     : firestore.collection(SESSIONS).doc();
 
   // Prepare refs for read/write
@@ -158,11 +149,12 @@ export const handleLap = onRequest(async (request, response) => {
     const bestLapSnapshot = await transaction.get(bestLapsRef);
 
     // Always store lap data + telemetry
-    transaction.set(lapRef, {...baseLapFields});
-    transaction.set(
-      lapRef.collection('data').doc('telemetry'),
-      lapPayload.lapData,
-    );
+    transaction.set(lapRef, {
+      ...lapDetails,
+      sessionData,
+      sessionId: sessionRef.id,
+    });
+    transaction.set(lapRef.collection('data').doc('telemetry'), lapData);
 
     const laps: FastestLapRef[] = bestLapSnapshot.exists
       ? (bestLapSnapshot.data()?.laps ?? [])
@@ -210,7 +202,7 @@ export const handleLap = onRequest(async (request, response) => {
     }
 
     // Handle session Update
-    if (!sessionId) {
+    if (!receivedSessionId) {
       // First lap of a new session
       transaction.set(sessionRef, {
         driver,
@@ -245,10 +237,10 @@ export const deleteExpiredTestLaps = onSchedule('every 6 hours', async () => {
     const lapBatches = expiredSessionSnapshot.docs.map(async session => {
       const removedSessionLaps = await firestore
         .collection(LAPS)
-        .where('sessionData.sessionId', '==', session.id)
+        .where('sessionId', '==', session.id)
         .get();
       removedSessionLaps.docs.forEach(lap =>
-        batch.update(lap.ref, {'sessionData.sessionId': FieldValue.delete()}),
+        batch.update(lap.ref, {sessionId: FieldValue.delete()}),
       );
       batch.delete(session.ref);
     });
