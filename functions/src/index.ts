@@ -199,12 +199,12 @@ export const handleLap = onRequest(async (request, response) => {
           transaction.set(bestLapsRef, {laps: updatedLaps});
         } else {
           // New lap doesn't make it - set it to expire
-          transaction.update(lapRef, {expiresAt});
+          transaction.set(lapRef, {expiresAt}, {merge: true});
         }
       }
     } else {
       // Expire an unsuitable lap
-      transaction.update(lapRef, {expiresAt});
+      transaction.set(lapRef, {expiresAt}, {merge: true});
     }
 
     // Handle session Update
