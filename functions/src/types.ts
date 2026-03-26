@@ -24,6 +24,20 @@ export interface LapPayload {
   sessionData: SessionData;
 }
 
+export interface TelemetryData {
+  brake?: Array<number | undefined>;
+  gas?: Array<number | undefined>;
+  gear?: Array<number | undefined>;
+  lapTime?: Array<number | undefined>;
+  rpm?: Array<number | undefined>;
+  speed?: Array<number | undefined>;
+  steer?: Array<number | undefined>;
+  ers?: Array<number | undefined>;
+  posX?: Array<number | undefined>;
+  posY?: Array<number | undefined>;
+  posZ?: Array<number | undefined>;
+}
+
 export interface SessionReturn {
   sessionId: string;
   lapId: string;
