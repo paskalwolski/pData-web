@@ -42,3 +42,8 @@ export interface SessionReturn {
   sessionId: string;
   lapId: string;
 }
+
+export interface CloseSessionPayload {
+  sessionId: string;
+  lapCount: number;
+}

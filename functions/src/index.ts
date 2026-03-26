@@ -5,7 +5,7 @@ import {onSchedule} from 'firebase-functions/v2/scheduler';
 import {initializeApp as initializeApp} from 'firebase-admin/app';
 import {FieldValue, getFirestore} from 'firebase-admin/firestore';
 import {getStorage} from 'firebase-admin/storage';
-import {FastestLapRef, LapPayload} from './types';
+import {CloseSessionPayload, FastestLapRef, LapPayload} from './types';
 
 const EXPIRY_HOURS = 24;
 
@@ -218,6 +218,26 @@ export const handleLap = onRequest(async (request, response) => {
 
   response.send({lapId: lapRef.id, sessionId: sessionRef.id});
   return;
+});
+
+export const closeSession = onRequest(async (request, response) => {
+  const closeSessionRequest = (await request.body) as CloseSessionPayload;
+  if (!closeSessionRequest.sessionId) {
+    response.status(400).send('No session ID provided');
+    return;
+  }
+  const sessionRef = firestore
+    .collection(SESSIONS)
+    .doc(closeSessionRequest.sessionId);
+  try {
+    await sessionRef.update({lapCount: closeSessionRequest.lapCount});
+  } catch {
+    response
+      .status(404)
+      .send(`No session found for ${closeSessionRequest.sessionId}`);
+    return;
+  }
+  response.send({sessionId: sessionRef.id});
 });
 
 // TODO: Allow specifying a specific user, and triggering with a request
