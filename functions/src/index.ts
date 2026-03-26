@@ -3,11 +3,15 @@ import {onSchedule} from 'firebase-functions/v2/scheduler';
 
 // The Firebase Admin SDK to access Firestore.
 import {initializeApp as initializeApp} from 'firebase-admin/app';
-import {getFirestore} from 'firebase-admin/firestore';
+import {FieldValue, getFirestore} from 'firebase-admin/firestore';
 import {getStorage} from 'firebase-admin/storage';
 import {FastestLapRef, LapPayload} from './types';
 
 const EXPIRY_HOURS = 24;
+
+// Collection Definition
+const LAPS = 'test_laps';
+const SESSIONS = 'test_sessions';
 
 const adminApp = initializeApp();
 const firestore = getFirestore();
@@ -137,11 +141,11 @@ export const handleLap = onRequest(async (request, response) => {
   const sessionId = lapPayload.sessionId;
   // Get the sessionRef if it exists or not
   const sessionRef = sessionId
-    ? firestore.collection('test_sessions').doc(sessionId)
-    : firestore.collection('test_sessions').doc();
+    ? firestore.collection(SESSIONS).doc(sessionId)
+    : firestore.collection(SESSIONS).doc();
 
   // Prepare refs for read/write
-  const lapRef = firestore.collection('test_laps').doc();
+  const lapRef = firestore.collection(LAPS).doc();
 
   const driverRef = firestore.collection('drivers').doc(driver);
   const bestLapsRef = driverRef.collection(track).doc(car);
@@ -190,9 +194,7 @@ export const handleLap = onRequest(async (request, response) => {
             .concat({lapId: lapRef.id, lapTime: lapPayload.lapTime})
             .sort((a, b) => parseFloat(a.lapTime) - parseFloat(b.lapTime));
 
-          const knockedOutRef = firestore
-            .collection('test_laps')
-            .doc(slowest.lapId);
+          const knockedOutRef = firestore.collection(LAPS).doc(slowest.lapId);
           transaction.update(knockedOutRef, {
             expiresAt,
           });
@@ -232,7 +234,7 @@ export const deleteExpiredTestLaps = onSchedule('every 6 hours', async () => {
   const now = new Date();
   // Delete expired Sessions
   const expiredSessionSnapshot = await firestore
-    .collection('test_sessions')
+    .collection(SESSIONS)
     .where('expiresAt', '<=', now)
     .get();
 
@@ -240,10 +242,17 @@ export const deleteExpiredTestLaps = onSchedule('every 6 hours', async () => {
     console.log('No expired test_sessions to delete');
   } else {
     const batch = firestore.batch();
-    expiredSessionSnapshot.docs.forEach(doc => {
-      batch.delete(doc.ref);
+    const lapBatches = expiredSessionSnapshot.docs.map(async session => {
+      const removedSessionLaps = await firestore
+        .collection(LAPS)
+        .where('sessionData.sessionId', '==', session.id)
+        .get();
+      removedSessionLaps.docs.forEach(lap =>
+        batch.update(lap.ref, {'sessionData.sessionId': FieldValue.delete()}),
+      );
+      batch.delete(session.ref);
     });
-    await batch.commit();
+    await Promise.all(lapBatches).then(() => batch.commit());
     console.log(
       `Deleted ${expiredSessionSnapshot.size} expired test_sessions.`,
     );
@@ -251,7 +260,7 @@ export const deleteExpiredTestLaps = onSchedule('every 6 hours', async () => {
 
   // Delete expired laps
   const expiredSnapshot = await firestore
-    .collection('test_laps')
+    .collection(LAPS)
     .where('expiresAt', '<=', now)
     .get();
 
