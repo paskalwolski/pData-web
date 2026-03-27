@@ -1,11 +1,27 @@
-import { Card, Divider, List, MenuItem, Stack } from "@mui/material";
+import {
+    Card,
+    Divider,
+    List,
+    MenuItem,
+    Stack,
+    Typography,
+} from "@mui/material";
+import { Link } from "wouter";
 
 interface CustomerDrawerProps {
     isDrawerOpen: boolean;
     toggleDrawerOpen: () => void;
 }
 
-const CustomDrawer = ({ isDrawerOpen }: CustomerDrawerProps) => {
+const CustomDrawer = ({
+    isDrawerOpen,
+    toggleDrawerOpen,
+}: CustomerDrawerProps) => {
+    const DrawerMenuItem = ({ children, ...props }) => (
+        <MenuItem {...props} onClick={toggleDrawerOpen}>
+            {children}
+        </MenuItem>
+    );
     return (
         <Card
             square
@@ -21,8 +37,12 @@ const CustomDrawer = ({ isDrawerOpen }: CustomerDrawerProps) => {
             <Stack direction="column" flexGrow={1}>
                 <List>
                     <Divider />
-                    <MenuItem>Laps</MenuItem>
-                    <MenuItem>Sessions</MenuItem>
+                    <DrawerMenuItem>
+                        <Link href="/laps" asChild>
+                            <Typography>Laps</Typography>
+                        </Link>
+                    </DrawerMenuItem>
+                    <DrawerMenuItem>Sessions</DrawerMenuItem>
                     <Divider />
                 </List>
             </Stack>
