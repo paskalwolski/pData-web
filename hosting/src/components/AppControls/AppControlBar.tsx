@@ -29,7 +29,7 @@ const AppControlBar = ({
                                 <TbKeyframes />
                             )
                         ) : isDrawerOpen ? (
-                            <TbKeyframes />
+                            <TbKeyframesFilled />
                         ) : (
                             <TbKeyframe />
                         )}

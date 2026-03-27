@@ -38,7 +38,9 @@ const useLap = (lapId: string): [LapData | undefined, boolean] => {
     return [lapData, loading];
 };
 
-const useLapTelemetry = (lapId: string): TelemetryData => {
+const useLapTelemetry = (
+    lapId: string,
+): [TelemetryData | undefined, boolean] => {
     const [telemetryData, setTelemetryData] = useState<
         TelemetryData | undefined
     >();
@@ -75,7 +77,7 @@ const useLatestLaps = (): [Array<LapData> | undefined, boolean] => {
         async function fetchLatestLaps() {
             const q = query(
                 collection(db, "test_laps"),
-                orderBy("sessionTime"),
+                orderBy("lapTime"),
                 limit(5),
             );
 
