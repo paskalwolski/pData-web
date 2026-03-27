@@ -20,7 +20,7 @@ export interface LapPayload {
   lapTime: string;
   isValid: boolean;
   isPit: boolean;
-  lapData: Array<object>;
+  lapData: Array<TelemetryData>;
   sessionData: SessionData;
 }
 
