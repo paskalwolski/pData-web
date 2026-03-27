@@ -10,6 +10,7 @@ export interface SessionData {
 }
 
 export interface LapData {
+  lapId: string;
   sessionId?: string;
   lapNumber: number;
   lapTime: string;

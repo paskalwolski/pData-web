@@ -23,7 +23,10 @@ const useLap = (lapId: string): [LapData | undefined, boolean] => {
             const snapshot = await getDoc(doc(db, "test_laps", lapId));
             // Only write if we want to keep the result
             if (snapshot.exists() && !cancelled) {
-                setLapData(snapshot.data() as LapData);
+                setLapData({
+                    ...snapshot.data(),
+                    lapId: snapshot.id,
+                } as LapData);
                 setLoading(false);
             }
         }
@@ -69,7 +72,9 @@ const useLapTelemetry = (
     return [telemetryData, loading];
 };
 
-const useLatestLaps = (): [Array<LapData> | undefined, boolean] => {
+const useLatestLaps = (
+    fetchLimit?: number,
+): [Array<LapData> | undefined, boolean] => {
     const [latestLaps, setLatestLaps] = useState<Array<LapData> | undefined>();
     const [loading, setLoading] = useState(true);
     useEffect(() => {
@@ -78,12 +83,14 @@ const useLatestLaps = (): [Array<LapData> | undefined, boolean] => {
             const q = query(
                 collection(db, "test_laps"),
                 orderBy("lapTime"),
-                limit(5),
+                limit(fetchLimit ?? 5),
             );
 
             const snapshot = await getDocs(q);
             console.log(snapshot.docs);
-            const laps = snapshot.docs.map((doc) => doc.data() as LapData);
+            const laps = snapshot.docs.map(
+                (doc) => ({ ...doc.data(), lapId: doc.id }) as LapData,
+            );
             if (!cancelled) {
                 setLatestLaps(laps);
                 setLoading(false);
@@ -93,7 +100,7 @@ const useLatestLaps = (): [Array<LapData> | undefined, boolean] => {
         return () => {
             cancelled = true;
         };
-    }, []);
+    }, [fetchLimit]);
 
     return [latestLaps, loading];
 };
