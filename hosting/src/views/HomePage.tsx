@@ -1,9 +1,22 @@
-import { Box, Card, Divider, Paper, Stack, Typography } from "@mui/material";
+import {
+    Box,
+    Card,
+    CardActionArea,
+    Divider,
+    Paper,
+    Stack,
+    Typography,
+} from "@mui/material";
 import { useLatestLaps } from "../hooks/useLaps";
 import { TbClockX } from "react-icons/tb";
+import { useLocation } from "wouter";
 
 const Homepage = () => {
-    const [latestLaps, isLoadingLatestLaps] = useLatestLaps();
+    const [latestLaps, isLoadingLatestLaps] = useLatestLaps(10);
+    const [, navigate] = useLocation();
+    const handleSelectLap = (lapId: string) => {
+        navigate(`/lap/${lapId}`);
+    };
 
     return (
         <Stack gap={1} my={1}>
@@ -13,41 +26,54 @@ const Homepage = () => {
                 {isLoadingLatestLaps ? (
                     <Typography>Loading...</Typography>
                 ) : latestLaps ? (
-                    <Stack direction="row" overflow="auto" spacing={2}>
+                    <Stack direction="row" overflow="auto" spacing={1}>
                         {latestLaps.map((lap) => (
                             <Box
                                 display="flex"
+                                flexGrow={1}
+                                py={1}
                                 key={`lap-${lap.sessionData.driver}-${lap.sessionData.sessionTime}-${lap.lapNumber}`}
-                                padding={1}
                             >
-                                <Stack gap={1}>
-                                    <Stack
-                                        direction="row"
-                                        alignItems="center"
-                                        justifyContent="space-between"
-                                        px={2}
-                                        py={1}
+                                <Card>
+                                    <CardActionArea
+                                        onClick={() =>
+                                            handleSelectLap(lap.lapId)
+                                        }
                                     >
-                                        <Typography>
-                                            {lap?.sessionData?.driver}
-                                        </Typography>
-                                        {lap.expiresAt && <TbClockX />}
-                                    </Stack>
-                                    <Typography>
-                                        {lap?.sessionData.sessionTime}
-                                    </Typography>
-                                    <Typography>{lap.lapTime}</Typography>
-                                    <Typography>
-                                        {lap?.sessionData?.track}
-                                    </Typography>
-                                    <Typography>
-                                        {lap?.sessionData?.car}
-                                    </Typography>
-                                    <Typography>
-                                        {lap?.sessionData.sessionType}
-                                    </Typography>
-                                    <Typography>{lap?.sessionId}</Typography>
-                                </Stack>
+                                        <Stack gap={1} px={2} py={1}>
+                                            <Stack
+                                                direction="row"
+                                                alignItems="center"
+                                                justifyContent="space-between"
+                                                px={2}
+                                                py={1}
+                                            >
+                                                <Typography>
+                                                    {lap?.sessionData?.driver}
+                                                </Typography>
+                                                {lap.expiresAt && <TbClockX />}
+                                            </Stack>
+                                            <Typography>
+                                                {lap?.sessionData.sessionTime}
+                                            </Typography>
+                                            <Typography>
+                                                {lap.lapTime}
+                                            </Typography>
+                                            <Typography>
+                                                {lap?.sessionData?.track}
+                                            </Typography>
+                                            <Typography>
+                                                {lap?.sessionData?.car}
+                                            </Typography>
+                                            <Typography>
+                                                {lap?.sessionData.sessionType}
+                                            </Typography>
+                                            <Typography>
+                                                {lap?.sessionId}
+                                            </Typography>
+                                        </Stack>
+                                    </CardActionArea>
+                                </Card>
                             </Box>
                         ))}
                     </Stack>

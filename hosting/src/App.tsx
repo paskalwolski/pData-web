@@ -5,6 +5,7 @@ import { AppControlBar } from "./components/AppControls/AppControlBar";
 import { useToggle } from "./hooks/useToggle";
 import { CustomDrawer } from "./components/AppControls/CustomDrawer";
 import { Homepage } from "./views/HomePage";
+import { NewLapData } from "./views/NewLapData";
 
 export default function App() {
     const [isDrawerOpen, toggleDrawerOpen] = useToggle(false);
@@ -21,6 +22,11 @@ export default function App() {
                 />
                 <Container>
                     <Switch>
+                        <Route path="/lap/:lapId">
+                            {({ lapId }: { lapId: string }) => (
+                                <NewLapData lapId={lapId} />
+                            )}
+                        </Route>
                         <Route path="/" component={Homepage} />
                     </Switch>
                 </Container>
