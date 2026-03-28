@@ -55,7 +55,7 @@ const useLapTelemetry = (
         async function fetchLapTelemetry() {
             // TODO: Implement `getDocFromCache` and `getDocFromServer` to prevent excessive reads
             const snapshot = await getDoc(
-                doc(db, "test_laps", lapId, "data", "telemtry"),
+                doc(db, "test_laps", lapId, "data", "telemetry"),
             );
             if (snapshot.exists() && !cancelled) {
                 setTelemetryData(snapshot.data() as TelemetryData);
