@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { TelemetryLine } from "./TelemetryLine.component";
 import * as d3 from "d3";
-import { useContainerWidth } from "../../hooks/useContainerWidth";
+import { useContainerSize } from "../../hooks/useContainerSize";
 import { Box, Paper, Stack, Typography } from "@mui/material";
 
 interface TelemetryChartProps {
@@ -18,7 +18,7 @@ const TelemetryChart = ({
 }: TelemetryChartProps) => {
     const height = 200;
 
-    const [containerRef, width] = useContainerWidth();
+    const [containerRef, width] = useContainerSize();
 
     const yDomain = d3.extent(data);
     const xDomain = useMemo(() => [0, data.length], [data.length]);
