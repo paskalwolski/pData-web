@@ -21,7 +21,7 @@ export default function App() {
                     isDrawerOpen={isDrawerOpen}
                     toggleDrawerOpen={toggleDrawerOpen}
                 />
-                <Container>
+                <Container maxWidth={false} sx={{ margin: 2 }}>
                     <Switch>
                         <Route path="/laps/:lapId">
                             {({ lapId }: { lapId: string }) => (
