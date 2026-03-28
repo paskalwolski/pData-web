@@ -9,7 +9,7 @@ export const NewLapData = ({ lapId }: NewLapDataProps) => {
 
     return (
         <Stack>
-            <Typography>{lapId}</Typography>;
+            <Typography>{lapId}</Typography>
         </Stack>
     );
 };

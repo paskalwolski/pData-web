@@ -15,7 +15,7 @@ const Homepage = () => {
     const [latestLaps, isLoadingLatestLaps] = useLatestLaps(10);
     const [, navigate] = useLocation();
     const handleSelectLap = (lapId: string) => {
-        navigate(`/lap/${lapId}`);
+        navigate(`/laps/${lapId}`);
     };
 
     return (

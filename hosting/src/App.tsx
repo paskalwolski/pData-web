@@ -6,6 +6,7 @@ import { useToggle } from "./hooks/useToggle";
 import { CustomDrawer } from "./components/AppControls/CustomDrawer";
 import { Homepage } from "./views/HomePage";
 import { NewLapData } from "./views/NewLapData";
+import { LapSelectorPage } from "./views/LapSelectorPage";
 
 export default function App() {
     const [isDrawerOpen, toggleDrawerOpen] = useToggle(false);
@@ -22,11 +23,12 @@ export default function App() {
                 />
                 <Container>
                     <Switch>
-                        <Route path="/lap/:lapId">
+                        <Route path="/laps/:lapId">
                             {({ lapId }: { lapId: string }) => (
                                 <NewLapData lapId={lapId} />
                             )}
                         </Route>
+                        <Route path="/laps" component={LapSelectorPage} />
                         <Route path="/" component={Homepage} />
                     </Switch>
                 </Container>
