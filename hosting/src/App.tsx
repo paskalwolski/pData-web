@@ -16,7 +16,7 @@ export default function App() {
                 isDrawerOpen={isDrawerOpen}
                 toggleDrawerOpen={toggleDrawerOpen}
             />
-            <Box display="flex" height="100vh" overflow={"auto"}>
+            <Box display="flex">
                 <CustomDrawer
                     isDrawerOpen={isDrawerOpen}
                     toggleDrawerOpen={toggleDrawerOpen}
