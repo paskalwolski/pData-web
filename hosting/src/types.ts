@@ -34,3 +34,11 @@ export interface TelemetryData {
   posZ?: Array<number | undefined>;
 }
 
+export interface TrackData {
+  height: number;
+  width: number;
+  xOffset: number;
+  yOffset: number;
+  url: string;
+  margin: number;
+}

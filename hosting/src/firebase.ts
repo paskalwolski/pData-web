@@ -18,7 +18,7 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 export const db = getFirestore(firebaseApp);
 
-const storage = getStorage();
+export const storage = getStorage();
 
 export const getTrackData = async (trackName: string) => {
     console.log("Getting track", trackName)
