@@ -12,7 +12,7 @@ export const NewLapData = ({ lapId }: NewLapDataProps) => {
     return isLoadingLapData ? (
         <Typography>Loading...</Typography>
     ) : (
-        <Stack>
+        <Stack spacing={1}>
             <SessionInfoCard sessionData={lapData.sessionData} />
             <TelemetrySection lapId={lapId} />
         </Stack>

@@ -12,9 +12,9 @@ const TelemetryLine = React.memo(
         const lineGenerator = () => {
             let d = d3
                 .line<number | undefined>()
-                .defined((d) => !!d)
-                .x((d, i) => (d ? xScale(i) : undefined))
-                .y((d) => (d ? yScale(d) : undefined));
+                .defined((d) => d !== undefined && d !== null)
+                .x((_, i) => xScale(i))
+                .y((d) => yScale(d as number));
             if (!stepped) {
                 d = d.curve(d3.curveCatmullRom);
             }
@@ -24,7 +24,7 @@ const TelemetryLine = React.memo(
         return (
             <path
                 d={lineGenerator()}
-                stroke="steelblue"
+                stroke="purple"
                 strokeWidth={2}
                 strokeDasharray={"0"}
                 fill="none"
