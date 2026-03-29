@@ -5,7 +5,12 @@ import {onSchedule} from 'firebase-functions/v2/scheduler';
 import {initializeApp as initializeApp} from 'firebase-admin/app';
 import {FieldValue, getFirestore} from 'firebase-admin/firestore';
 import {getStorage} from 'firebase-admin/storage';
-import {CloseSessionPayload, FastestLapRef, LapPayload} from './types';
+import {
+  CloseSessionPayload,
+  FastestLapRef,
+  LapPayload,
+  TelemetryDataSet,
+} from './types';
 
 const EXPIRY_HOURS = 24;
 
@@ -154,11 +159,11 @@ export const handleLap = onRequest(async (request, response) => {
       sessionData,
       sessionId: sessionRef.id,
     });
-    Object.entries(lapData).map(([telemetryKey, telemetryData]) =>
-      transaction.set(
-        lapRef.collection('telemetry').doc(telemetryKey),
-        telemetryData,
-      ),
+    (Object.entries(lapData) as [string, TelemetryDataSet][]).map(
+      ([telemetryKey, telemetryData]) =>
+        transaction.set(lapRef.collection('telemetry').doc(telemetryKey), {
+          data: telemetryData,
+        }),
     );
 
     const laps: FastestLapRef[] = bestLapSnapshot.exists
