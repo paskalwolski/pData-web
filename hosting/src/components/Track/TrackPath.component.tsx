@@ -31,7 +31,13 @@ const TrackPath = React.memo(({ data, xScale, yScale }: Props) => {
                         key={`track-path-${i}`}
                         d={lineGenerator([d, data[i + 1]]) ?? undefined}
                         fill="none"
-                        stroke="white"
+                        stroke={(() => {
+                            const { gas, brake } = d;
+                            if (gas && brake) return "#000000";
+                            if (gas) return d3.hsl(120, 1, 1 - gas * 0.5).formatHex8();
+                            if (brake) return d3.hsl(0, 1, 1 - brake * 0.5).formatHex8();
+                            return "#FFFFFF";
+                        })()}
                         strokeWidth={2}
                     />
                 );
