@@ -20,18 +20,20 @@ export interface LapData {
   sessionData: SessionData;
 }
 
+export type TelemetryDataSet = Array<number | undefined>;
+
 export interface TelemetryData {
-  brake?: Array<number | undefined>;
-  gas?: Array<number | undefined>;
-  gear?: Array<number | undefined>;
-  lapTime?: Array<number | undefined>;
-  rpm?: Array<number | undefined>;
-  speed?: Array<number | undefined>;
-  steer?: Array<number | undefined>;
-  ers?: Array<number | undefined>;
-  posX?: Array<number | undefined>;
-  posY?: Array<number | undefined>;
-  posZ?: Array<number | undefined>;
+  brake?: TelemetryDataSet;
+  gas?: TelemetryDataSet;
+  gear?: TelemetryDataSet;
+  lapTime?: TelemetryDataSet;
+  rpm?: TelemetryDataSet;
+  speed?: TelemetryDataSet;
+  steer?: TelemetryDataSet;
+  ers?: TelemetryDataSet;
+  posX?: TelemetryDataSet;
+  posY?: TelemetryDataSet;
+  posZ?: TelemetryDataSet;
 }
 
 export interface TrackData {

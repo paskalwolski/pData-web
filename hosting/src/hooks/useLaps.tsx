@@ -54,11 +54,23 @@ const useLapTelemetry = (
 
         async function fetchLapTelemetry() {
             // TODO: Implement `getDocFromCache` and `getDocFromServer` to prevent excessive reads
-            const snapshot = await getDoc(
-                doc(db, "test_laps", lapId, "data", "telemetry"),
+            const telemetryCollectionRef = collection(
+                db,
+                "test_laps",
+                lapId,
+                "telemetry",
             );
-            if (snapshot.exists() && !cancelled) {
-                setTelemetryData(snapshot.data() as TelemetryData);
+            const telemetryDocsSnapshot = await getDocs(telemetryCollectionRef);
+            if (!telemetryDocsSnapshot.empty && !cancelled) {
+                setTelemetryData(
+                    telemetryDocsSnapshot.docs.reduce(
+                        (acc, tDoc) => ({
+                            ...acc,
+                            [tDoc.id]: tDoc.data().data,
+                        }),
+                        {},
+                    ),
+                );
                 setLoading(false);
             }
         }
