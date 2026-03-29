@@ -14,7 +14,10 @@ export const NewLapData = ({ lapId }: NewLapDataProps) => {
     ) : (
         <Stack spacing={1}>
             <SessionInfoCard sessionData={lapData.sessionData} />
-            <TelemetrySection lapId={lapId} />
+            <TelemetrySection
+                trackId={lapData.sessionData.track}
+                lapId={lapId}
+            />
         </Stack>
     );
 };

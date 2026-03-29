@@ -1,17 +1,22 @@
-import { Box, Stack, Typography } from "@mui/material";
+import { Box, Paper, Stack, Typography } from "@mui/material";
 import { useLapTelemetry } from "../hooks/useLaps";
 import TelemetryChart from "../components/TelemetryChart";
+import { useTrackData } from "../hooks/useTracks";
+import { TrackDisplay } from "../components/Track/TrackDisplay.component";
 
 interface Props {
     lapId: string;
+    trackId: string;
 }
 
-export const TelemetrySection = ({ lapId }: Props) => {
-    const [lapTelemetry, isLoading] = useLapTelemetry(lapId);
-    return isLoading ? (
-        <Typography>Loading telemetry...</Typography>
+export const TelemetrySection = ({ lapId, trackId }: Props) => {
+    const [lapTelemetry, isLoadingTelemetry] = useLapTelemetry(lapId);
+    const [trackData, isLoadingTrackData] = useTrackData(trackId);
+
+    return isLoadingTelemetry || isLoadingTrackData ? (
+        <Typography>Loading Lap Data...</Typography>
     ) : (
-        <Stack direction="row">
+        <Stack direction="row" gap={2}>
             <Stack gap={1} flex={1} minWidth={0}>
                 <TelemetryChart
                     title="Speed"
@@ -49,8 +54,23 @@ export const TelemetrySection = ({ lapId }: Props) => {
                     lapId={lapId}
                 />
             </Stack>
-            <Box display="flex" flex={1} sx={{ position: "sticky", top: 0, alignSelf: "flex-start" }}>
-                <Typography flex={1}>Track Map Goes Here</Typography>
+            <Box
+                sx={{
+                    position: "sticky",
+                    top: 0,
+                    alignSelf: "flex-start",
+                    flex: 1,
+                }}
+            >
+                <Paper>
+                    <Box sx={{ width: "100%", height: "100vh" }}>
+                        <TrackDisplay
+                            telemetryData={lapTelemetry}
+                            trackData={trackData}
+                            lapId={lapId}
+                        />
+                    </Box>
+                </Paper>
             </Box>
         </Stack>
     );
