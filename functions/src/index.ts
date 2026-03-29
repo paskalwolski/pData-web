@@ -154,7 +154,12 @@ export const handleLap = onRequest(async (request, response) => {
       sessionData,
       sessionId: sessionRef.id,
     });
-    transaction.set(lapRef.collection('data').doc('telemetry'), lapData);
+    Object.entries(lapData).map(([telemetryKey, telemetryData]) =>
+      transaction.set(
+        lapRef.collection('telemetry').doc(telemetryKey),
+        telemetryData,
+      ),
+    );
 
     const laps: FastestLapRef[] = bestLapSnapshot.exists
       ? (bestLapSnapshot.data()?.laps ?? [])
