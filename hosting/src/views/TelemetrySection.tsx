@@ -6,14 +6,19 @@ import { TrackDisplay } from "../components/Track/TrackDisplay.component";
 
 interface Props {
     lapId: string;
+    secondaryLapId: string;
     trackId: string;
 }
 
-export const TelemetrySection = ({ lapId, trackId }: Props) => {
+export const TelemetrySection = ({ lapId, secondaryLapId, trackId }: Props) => {
     const [lapTelemetry, isLoadingTelemetry] = useLapTelemetry(lapId);
+    const [secondaryTelemetry, isLoadingSecondaryTelemetry] =
+        useLapTelemetry(secondaryLapId);
     const [trackData, isLoadingTrackData] = useTrackData(trackId);
 
-    return isLoadingTelemetry || isLoadingTrackData ? (
+    return isLoadingTelemetry ||
+        isLoadingSecondaryTelemetry ||
+        isLoadingTrackData ? (
         <Typography>Loading Lap Data...</Typography>
     ) : (
         <Stack direction="row" gap={2}>
@@ -21,37 +26,51 @@ export const TelemetrySection = ({ lapId, trackId }: Props) => {
                 <TelemetryChart
                     title="Speed"
                     data={lapTelemetry.speed}
+                    secondaryData={secondaryTelemetry?.speed}
                     lapId={lapId}
+                    secondaryLapId={secondaryLapId}
                 />
                 <TelemetryChart
                     title="Gas"
                     data={lapTelemetry.gas}
+                    secondaryData={secondaryTelemetry?.gas}
                     lapId={lapId}
+                    secondaryLapId={secondaryLapId}
                 />
                 <TelemetryChart
                     title="Brake"
                     data={lapTelemetry.brake}
+                    secondaryData={secondaryTelemetry?.brake}
                     lapId={lapId}
+                    secondaryLapId={secondaryLapId}
                 />
                 <TelemetryChart
                     title="Steering"
                     data={lapTelemetry.steer}
+                    secondaryData={secondaryTelemetry?.steer}
                     lapId={lapId}
+                    secondaryLapId={secondaryLapId}
                 />
                 <TelemetryChart
                     title="ERS Deployment (Joules)"
                     data={lapTelemetry.ers}
+                    secondaryData={secondaryTelemetry?.ers}
                     lapId={lapId}
+                    secondaryLapId={secondaryLapId}
                 />
                 <TelemetryChart
                     title="Gear"
                     data={lapTelemetry.gear}
+                    secondaryData={secondaryTelemetry?.gear}
                     lapId={lapId}
+                    secondaryLapId={secondaryLapId}
                 />
                 <TelemetryChart
                     title="RPM"
                     data={lapTelemetry.rpm}
+                    secondaryData={secondaryTelemetry?.rpm}
                     lapId={lapId}
+                    secondaryLapId={secondaryLapId}
                 />
             </Stack>
             <Box

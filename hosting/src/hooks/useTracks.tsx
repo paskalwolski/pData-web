@@ -10,7 +10,6 @@ const useTrackData = (trackId: string): [TrackData | null, boolean] => {
 
     useEffect(() => {
         let cancelled = false;
-        console.log("fetching", trackId);
         async function fetchTrackData() {
             const snapshot = await getDoc(doc(db, "tracks", trackId));
             if (snapshot.exists() && !cancelled) {
@@ -20,7 +19,6 @@ const useTrackData = (trackId: string): [TrackData | null, boolean] => {
                     const downloadUrl = await getDownloadURL(imageRef);
                     trackData.url = downloadUrl;
                 }
-                console.log(trackData.url);
                 setLoading(false);
                 setTrackData(trackData);
             }

@@ -16,6 +16,11 @@ const useLap = (lapId: string): [LapData | undefined, boolean] => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        if (!lapId) {
+            setLoading(false);
+            setLapData(undefined);
+            return;
+        }
         // Mark if we want to keep the result
         let cancelled = false;
 
@@ -51,6 +56,12 @@ const useLapTelemetry = (
 
     useEffect(() => {
         let cancelled = false;
+
+        if (!lapId) {
+            setLoading(false);
+            setTelemetryData(undefined);
+            return;
+        }
 
         async function fetchLapTelemetry() {
             // TODO: Implement `getDocFromCache` and `getDocFromServer` to prevent excessive reads

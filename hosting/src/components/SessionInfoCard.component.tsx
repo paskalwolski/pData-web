@@ -4,17 +4,18 @@ import { TbCalendar, TbCar, TbHelmet, TbRoad } from "react-icons/tb";
 import { IconType } from "react-icons";
 import { BiStopwatch } from "react-icons/bi";
 
-interface SessionInfoCardProps {
-    sessionData: SessionData;
-    variant?: Variant;
-}
-
 type Variant = "wide" | "small" | "normal";
 const VARIANT_COLUMN_MAPPING: Record<Variant, number> = {
     wide: 4,
     normal: 3,
     small: 11,
 };
+
+interface SessionInfoCardProps {
+    sessionData: SessionData;
+    variant?: Variant;
+}
+
 interface CardValueProps {
     Icon?: IconType;
     label?: string;

@@ -23,6 +23,20 @@ export default function App() {
                 />
                 <Container maxWidth={false} sx={{ margin: 2 }}>
                     <Switch>
+                        <Route path="/laps/:lapId/compare/:secondaryId">
+                            {({
+                                lapId,
+                                secondaryId,
+                            }: {
+                                lapId: string;
+                                secondaryId: string;
+                            }) => (
+                                <NewLapData
+                                    lapId={lapId}
+                                    secondaryLapId={secondaryId}
+                                />
+                            )}
+                        </Route>
                         <Route path="/laps/:lapId">
                             {({ lapId }: { lapId: string }) => (
                                 <NewLapData lapId={lapId} />

@@ -6,9 +6,16 @@ interface TelemetryLineProps {
     yScale: d3.ScaleLinear<number, number, never>;
     stepped?: boolean;
     data: Array<number | undefined>;
+    secondary?: boolean;
 }
 const TelemetryLine = React.memo(
-    ({ data, xScale, yScale, stepped }: TelemetryLineProps) => {
+    ({
+        data,
+        xScale,
+        yScale,
+        stepped = false,
+        secondary = false,
+    }: TelemetryLineProps) => {
         const lineGenerator = () => {
             let d = d3
                 .line<number | undefined>()
@@ -26,7 +33,7 @@ const TelemetryLine = React.memo(
                 d={lineGenerator()}
                 stroke="purple"
                 strokeWidth={2}
-                strokeDasharray={"0"}
+                strokeDasharray={secondary ? "5 2" : "0"}
                 fill="none"
             />
         );
