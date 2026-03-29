@@ -22,6 +22,8 @@ const TrackDisplay = ({ trackData, telemetryData, lapId }: Props) => {
                 gas: telemetryData.gas[i],
                 brake: telemetryData.brake[i],
             })),
+        // Only force a recalculate when we switch laps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [lapId],
     );
 
