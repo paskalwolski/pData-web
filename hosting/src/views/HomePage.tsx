@@ -10,6 +10,7 @@ import {
 import { useLatestLaps } from "../hooks/useLaps";
 import { TbClockX } from "react-icons/tb";
 import { useLocation } from "wouter";
+import { formatDuration } from "../helpers/formatDuration";
 
 const Homepage = () => {
     const [latestLaps, isLoadingLatestLaps] = useLatestLaps(10);
@@ -57,7 +58,7 @@ const Homepage = () => {
                                                 {lap?.sessionData.sessionTime}
                                             </Typography>
                                             <Typography>
-                                                {lap.lapTime}
+                                                {formatDuration(lap.lapTime)}
                                             </Typography>
                                             <Typography>
                                                 {lap?.sessionData?.track}

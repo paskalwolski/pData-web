@@ -13,7 +13,7 @@ export interface LapData {
   lapId: string;
   sessionId?: string;
   lapNumber: number;
-  lapTime: string;
+  lapTime: number;
   isValid: boolean;
   isPit: boolean;
   expiresAt?: string;

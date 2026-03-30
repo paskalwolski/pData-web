@@ -105,7 +105,7 @@ const useLatestLaps = (
         async function fetchLatestLaps() {
             const q = query(
                 collection(db, "test_laps"),
-                orderBy("lapTime"),
+                orderBy("sessionData.sessionTime", "desc"),
                 limit(fetchLimit ?? 5),
             );
 
