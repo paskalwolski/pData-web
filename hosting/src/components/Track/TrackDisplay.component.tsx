@@ -1,7 +1,13 @@
 import { Box } from "@mui/material";
 import * as d3 from "d3";
 import { useContainerSize } from "../../hooks/useContainerSize";
-import { TelemetryData, TrackData } from "../../types";
+import {
+    TelemetryData,
+    TrackData,
+    TrackPositionData,
+    TrackSegment,
+    TrackSegmentType,
+} from "../../types";
 import { useMemo } from "react";
 import { TrackPath } from "./TrackPath.component";
 
@@ -11,17 +17,76 @@ interface Props {
     lapId: string;
 }
 
+const getTrackSegmentType = (
+    gas: number | undefined,
+    brake: number | undefined,
+): TrackSegmentType => {
+    const g = gas ?? 0;
+    const b = brake ?? 0;
+    if (g > 0 && b > 0) return "double-pedal";
+    if (g === 1) return "gas-full";
+    if (g >= 0.5) return "gas-mid";
+    if (g > 0) return "gas-low";
+    if (b === 1) return "brake-full";
+    if (b >= 0.5) return "brake-mid";
+    if (b > 0) return "brake-low";
+    return "coast";
+};
+
+const prepareTrackSegments = (telemetryData: TelemetryData): TrackSegment[] => {
+    const overallSegmentData: TrackSegment[] = [];
+    let currentSegmentPositionData: TrackPositionData[] = [];
+    let currentSegmentType: TrackSegmentType | undefined = undefined;
+    let indexStart = 0;
+
+    telemetryData.posX.forEach((_, i) => {
+        const calculatedSegmentType = getTrackSegmentType(
+            telemetryData.gas[i],
+            telemetryData.brake[i],
+        );
+        const trackPositionData: TrackPositionData = {
+            x: telemetryData.posX[i],
+            z: telemetryData.posZ[i],
+        };
+
+        // Initialize segment type from the first point
+        if (currentSegmentType === undefined) {
+            currentSegmentType = calculatedSegmentType;
+        }
+
+        const isLastPoint = i === telemetryData.posX.length - 1;
+        const isTypeChange = calculatedSegmentType !== currentSegmentType;
+
+        if (isTypeChange || isLastPoint) {
+            // Include this point in the closing segment for visual continuity
+            currentSegmentPositionData.push(trackPositionData);
+            // Store the segment
+            overallSegmentData.push({
+                data: currentSegmentPositionData,
+                type: currentSegmentType,
+                indexStart,
+                indexEnd: i,
+            });
+            if (!isLastPoint) {
+                // Start new segment from this point (overlap keeps the path connected)
+                currentSegmentPositionData = [trackPositionData];
+                indexStart = i;
+                currentSegmentType = calculatedSegmentType;
+            }
+        } else {
+            // Add the point to the segment
+            currentSegmentPositionData.push(trackPositionData);
+        }
+    });
+
+    return overallSegmentData;
+};
+
 const TrackDisplay = ({ trackData, telemetryData, lapId }: Props) => {
     const [containerRef, fullWidth, fullHeight] = useContainerSize();
 
-    const effectiveTelemetryData = useMemo(
-        () =>
-            telemetryData.posX.map((xPos, i) => ({
-                posX: xPos,
-                posZ: telemetryData.posZ[i],
-                gas: telemetryData.gas[i],
-                brake: telemetryData.brake[i],
-            })),
+    const trackSegmentData = useMemo(
+        () => prepareTrackSegments(telemetryData),
         // Only force a recalculate when we switch laps
         // eslint-disable-next-line react-hooks/exhaustive-deps
         [lapId],
@@ -141,7 +206,7 @@ const TrackDisplay = ({ trackData, telemetryData, lapId }: Props) => {
                 />
 
                 <TrackPath
-                    data={effectiveTelemetryData}
+                    trackSegmentData={trackSegmentData}
                     xScale={xScale}
                     yScale={yScale}
                 />

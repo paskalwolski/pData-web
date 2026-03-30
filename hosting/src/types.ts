@@ -22,6 +22,28 @@ export interface LapData {
 
 export type TelemetryDataSet = Array<number | undefined>;
 
+export interface TrackPositionData {
+    x: number | null;
+    z: number | null;
+}
+
+export interface TrackSegment {
+    data: TrackPositionData[];
+    type: TrackSegmentType;
+    indexStart?: number;
+    indexEnd?: number;
+}
+
+export type TrackSegmentType =
+    | 'double-pedal'
+    | 'gas-full'
+    | 'gas-mid'
+    | 'gas-low'
+    | 'brake-full'
+    | 'brake-mid'
+    | 'brake-low'
+    | 'coast';
+
 export interface TelemetryData {
   brake?: TelemetryDataSet;
   gas?: TelemetryDataSet;
