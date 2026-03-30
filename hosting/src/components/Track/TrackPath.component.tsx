@@ -15,33 +15,22 @@ interface Props {
 }
 
 const TrackPath = React.memo(({ data, xScale, yScale }: Props) => {
-    const lineGenerator = d3
-        .line<DataPoint>()
-        .defined((d) => d.posX !== undefined && d.posZ !== undefined)
-        .x((d) => xScale(d.posX!))
-        .y((d) => yScale(d.posZ!))
-        .curve(d3.curveCatmullRom);
+    const lineGenerator = () =>
+        d3
+            .line<DataPoint>()
+            .defined((d) => !!d && d.posX != null && d.posZ != null)
+            .x((d) => xScale(d.posX))
+            .y((d) => yScale(d.posZ))
+            .curve(d3.curveLinear)(data);
 
     return (
         <g>
-            {data.map((d, i) => {
-                if (i === data.length - 1) return null;
-                return (
-                    <path
-                        key={`track-path-${i}`}
-                        d={lineGenerator([d, data[i + 1]]) ?? undefined}
-                        fill="none"
-                        stroke={(() => {
-                            const { gas, brake } = d;
-                            if (gas && brake) return "#000000";
-                            if (gas) return d3.hsl(120, 1, 1 - gas * 0.5).formatHex8();
-                            if (brake) return d3.hsl(0, 1, 1 - brake * 0.5).formatHex8();
-                            return "#FFFFFF";
-                        })()}
-                        strokeWidth={2}
-                    />
-                );
-            })}
+            <path
+                d={lineGenerator()}
+                fill="none"
+                stroke="steelblue"
+                strokeWidth={2}
+            />
         </g>
     );
 });

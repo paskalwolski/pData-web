@@ -68,7 +68,10 @@ const TrackDisplay = ({ trackData, telemetryData, lapId }: Props) => {
         () =>
             d3
                 .scaleLinear()
-                .domain([-trackData.xOffset, trackData.width - trackData.xOffset])
+                .domain([
+                    -trackData.xOffset,
+                    trackData.width - trackData.xOffset,
+                ])
                 .range([imageX, imageX + renderedWidth]),
         [trackData.xOffset, trackData.width, imageX, renderedWidth],
     );
@@ -77,7 +80,10 @@ const TrackDisplay = ({ trackData, telemetryData, lapId }: Props) => {
         () =>
             d3
                 .scaleLinear()
-                .domain([-trackData.yOffset, trackData.height - trackData.yOffset])
+                .domain([
+                    -trackData.yOffset,
+                    trackData.height - trackData.yOffset,
+                ])
                 .range([imageY, imageY + renderedHeight]),
         [trackData.yOffset, trackData.height, imageY, renderedHeight],
     );
