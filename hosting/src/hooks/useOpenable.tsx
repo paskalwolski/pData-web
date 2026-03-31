@@ -6,7 +6,7 @@ const useOpeneable = (initialState: boolean = false) => {
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
-    const toggleOpen = setOpen((currentIsOpen) => !currentIsOpen);
+    const toggleOpen = () => setOpen((currentIsOpen) => !currentIsOpen);
 
     return { isOpen, toggleOpen, handleOpen, handleClose, setOpen } as const;
 };
