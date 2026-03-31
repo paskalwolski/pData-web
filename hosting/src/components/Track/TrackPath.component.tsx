@@ -1,6 +1,7 @@
 import * as d3 from "d3";
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import { TrackPositionData, TrackSegment, TrackSegmentType } from "../../types";
+import { useTelemetryPointContext } from "../../hooks/useTelemetryPoint";
 
 const SEGMENT_COLOR_MAP: Record<TrackSegmentType, string> = {
     "double-pedal": "#000000",
@@ -11,6 +12,59 @@ const SEGMENT_COLOR_MAP: Record<TrackSegmentType, string> = {
     "brake-mid": "rgba(255, 0, 0, 0.66)",
     "brake-low": "rgba(255, 0, 0, 0.33)",
     coast: "#FFFFFF",
+};
+interface TrackTraceSegmentProps {
+    lineGenerator: d3.Line<TrackPositionData>;
+    segment: TrackSegment;
+}
+const TrackTraceSegment = ({
+    lineGenerator,
+    segment,
+}: TrackTraceSegmentProps) => {
+    const {
+        selectionStartIndex,
+        setSelectionStartIndex,
+        selectionEndIndex,
+        setSelectionEndIndex,
+    } = useTelemetryPointContext();
+
+    const handleSegmentSelection = useCallback(() => {
+        setSelectionStartIndex(segment.indexStart);
+        setSelectionEndIndex(segment.indexEnd);
+    }, [
+        segment.indexEnd,
+        segment.indexStart,
+        setSelectionEndIndex,
+        setSelectionStartIndex,
+    ]);
+
+    const handleSegmentClear = useCallback(() => {
+        setSelectionStartIndex(undefined);
+        setSelectionEndIndex(undefined);
+    }, [setSelectionStartIndex, setSelectionEndIndex]);
+
+    const isSegmentSelected = useMemo(
+        () =>
+            selectionStartIndex <= segment.indexStart &&
+            selectionEndIndex >= segment.indexEnd,
+        [
+            selectionStartIndex,
+            segment.indexStart,
+            segment.indexEnd,
+            selectionEndIndex,
+        ],
+    );
+
+    return (
+        <path
+            d={lineGenerator(segment.data)}
+            fill="none"
+            stroke={SEGMENT_COLOR_MAP[segment.type]}
+            strokeWidth={isSegmentSelected ? 8 : 2}
+            onMouseEnter={handleSegmentSelection}
+            onMouseLeave={handleSegmentClear}
+        />
+    );
 };
 
 interface Props {
@@ -33,13 +87,11 @@ const TrackPath = React.memo(({ trackSegmentData, xScale, yScale }: Props) => {
 
     return (
         <g>
-            {trackSegmentData.map((segment, i) => (
-                <path
+            {trackSegmentData.map((s, i) => (
+                <TrackTraceSegment
                     key={`segment-${i}`}
-                    d={lineGen(segment.data)}
-                    fill="none"
-                    stroke={SEGMENT_COLOR_MAP[segment.type]}
-                    strokeWidth={2}
+                    lineGenerator={lineGen}
+                    segment={s}
                 />
             ))}
         </g>

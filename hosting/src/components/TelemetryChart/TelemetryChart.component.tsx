@@ -2,7 +2,7 @@ import { useCallback, useMemo } from "react";
 import { TelemetryLine } from "./TelemetryLine.component";
 import * as d3 from "d3";
 import { useContainerSize } from "../../hooks/useContainerSize";
-import { Box, Paper, Stack, Typography } from "@mui/material";
+import { Box, Paper, Stack, Typography, useTheme } from "@mui/material";
 import { useTelemetryPointContext } from "../../hooks/useTelemetryPoint";
 import { TelemetryDataSet } from "../../types";
 import { TelemetryInterceptor } from "./TelemetryInterceptor";
@@ -20,6 +20,8 @@ const TelemetryChart = ({
     secondaryData,
     stepped = false,
 }: TelemetryChartProps) => {
+    const { palette } = useTheme();
+
     const height = 200;
     const [containerRef, width] = useContainerSize();
 
@@ -44,7 +46,12 @@ const TelemetryChart = ({
         [height, yDomain],
     );
 
-    const { selectedIndex, setSelectedIndex } = useTelemetryPointContext();
+    const {
+        selectedIndex,
+        setSelectedIndex,
+        selectionStartIndex,
+        selectionEndIndex,
+    } = useTelemetryPointContext();
 
     const selectedYValue = data[selectedIndex];
 
@@ -83,6 +90,22 @@ const TelemetryChart = ({
                 </Box>
                 <Box ref={containerRef}>
                     <svg width={width} height={height}>
+                        {selectionStartIndex && (
+                            <rect
+                                fill={palette.info.light}
+                                stroke={palette.info.light}
+                                rx={2}
+                                ry={2}
+                                fillOpacity={0.3}
+                                x={xScale(selectionStartIndex)}
+                                y={yScale.range()[1]}
+                                height={height}
+                                width={
+                                    xScale(selectionEndIndex ?? selectedIndex) -
+                                    xScale(selectionStartIndex)
+                                }
+                            />
+                        )}
                         <TelemetryLine
                             data={data}
                             xScale={xScale}
