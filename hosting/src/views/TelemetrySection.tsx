@@ -4,6 +4,13 @@ import TelemetryChart from "../components/TelemetryChart";
 import { useTrackData } from "../hooks/useTracks";
 import { TrackDisplay } from "../components/Track/TrackDisplay.component";
 import { TelemetryPointProvider } from "../hooks/useTelemetryPoint";
+import {
+    ersFormatter,
+    pedalFormatter,
+    rpmFormatter,
+    speedFormatter,
+    steerFormatter,
+} from "../helpers/telemetryValueFormatter";
 
 interface Props {
     lapId: string;
@@ -29,26 +36,31 @@ export const TelemetrySection = ({ lapId, secondaryLapId, trackId }: Props) => {
                         title="Speed"
                         data={lapTelemetry.speed}
                         secondaryData={secondaryTelemetry?.speed}
+                        valueFormatter={speedFormatter}
                     />
                     <TelemetryChart
                         title="Gas"
                         data={lapTelemetry.gas}
                         secondaryData={secondaryTelemetry?.gas}
+                        valueFormatter={pedalFormatter}
                     />
                     <TelemetryChart
                         title="Brake"
                         data={lapTelemetry.brake}
                         secondaryData={secondaryTelemetry?.brake}
+                        valueFormatter={pedalFormatter}
                     />
                     <TelemetryChart
                         title="Steering"
                         data={lapTelemetry.steer}
                         secondaryData={secondaryTelemetry?.steer}
+                        valueFormatter={steerFormatter}
                     />
                     <TelemetryChart
                         title="ERS Deployment (Joules)"
                         data={lapTelemetry.ers}
                         secondaryData={secondaryTelemetry?.ers}
+                        valueFormatter={ersFormatter}
                     />
                     <TelemetryChart
                         title="Gear"
@@ -59,6 +71,7 @@ export const TelemetrySection = ({ lapId, secondaryLapId, trackId }: Props) => {
                         title="RPM"
                         data={lapTelemetry.rpm}
                         secondaryData={secondaryTelemetry?.rpm}
+                        valueFormatter={rpmFormatter}
                     />
                 </Stack>
                 <Box

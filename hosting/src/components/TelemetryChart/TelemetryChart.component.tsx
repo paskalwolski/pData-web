@@ -12,12 +12,14 @@ interface TelemetryChartProps {
     data: TelemetryDataSet;
     secondaryData: TelemetryDataSet;
     stepped?: boolean;
+    valueFormatter?: (v: number) => string;
 }
 
 const TelemetryChart = ({
     title,
     data,
     secondaryData,
+    valueFormatter,
     stepped = false,
 }: TelemetryChartProps) => {
     const { palette } = useTheme();
@@ -82,7 +84,8 @@ const TelemetryChart = ({
                         <Box flex={1}>
                             <Typography>
                                 {isFinite(selectedYValue) && !!selectedYValue
-                                    ? selectedYValue
+                                    ? (valueFormatter?.(selectedYValue) ??
+                                      selectedYValue)
                                     : "-"}
                             </Typography>
                         </Box>
