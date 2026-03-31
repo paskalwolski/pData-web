@@ -8,6 +8,8 @@ import {
     orderBy,
     limit,
     getDocs,
+    getDocsFromCache,
+    getDocsFromServer,
 } from "firebase/firestore";
 import { LapData, TelemetryData } from "../types";
 
@@ -64,14 +66,20 @@ const useLapTelemetry = (
         }
 
         async function fetchLapTelemetry() {
-            // TODO: Implement `getDocFromCache` and `getDocFromServer` to prevent excessive reads
             const telemetryCollectionRef = collection(
                 db,
                 "test_laps",
                 lapId,
                 "telemetry",
             );
-            const telemetryDocsSnapshot = await getDocs(telemetryCollectionRef);
+            let telemetryDocsSnapshot = await getDocsFromCache(
+                telemetryCollectionRef,
+            );
+            if (telemetryDocsSnapshot.empty && !cancelled) {
+                telemetryDocsSnapshot = await getDocsFromServer(
+                    telemetryCollectionRef,
+                );
+            }
             if (!telemetryDocsSnapshot.empty && !cancelled) {
                 setTelemetryData(
                     telemetryDocsSnapshot.docs.reduce(
@@ -110,7 +118,6 @@ const useLatestLaps = (
             );
 
             const snapshot = await getDocs(q);
-            console.log(snapshot.docs);
             const laps = snapshot.docs.map(
                 (doc) => ({ ...doc.data(), lapId: doc.id }) as LapData,
             );
