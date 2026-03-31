@@ -10,6 +10,8 @@ import {
     getDocs,
     getDocsFromCache,
     getDocsFromServer,
+    QueryConstraint,
+    where,
 } from "firebase/firestore";
 import { LapData, TelemetryData } from "../types";
 
@@ -103,19 +105,27 @@ const useLapTelemetry = (
     return [telemetryData, loading];
 };
 
-const useLatestLaps = (
-    fetchLimit?: number,
-): [Array<LapData> | undefined, boolean] => {
+interface LatestLapsOpts {
+    trackId?: string;
+    fetchLimit?: number;
+}
+const useLatestLaps = ({
+    trackId,
+    fetchLimit,
+}: LatestLapsOpts): [Array<LapData> | undefined, boolean] => {
     const [latestLaps, setLatestLaps] = useState<Array<LapData> | undefined>();
     const [loading, setLoading] = useState(true);
     useEffect(() => {
         let cancelled = false;
         async function fetchLatestLaps() {
-            const q = query(
-                collection(db, "test_laps"),
+            const queryConstraints: QueryConstraint[] = [
                 orderBy("sessionData.sessionTime", "desc"),
                 limit(fetchLimit ?? 5),
-            );
+            ];
+            if (trackId) {
+                queryConstraints.push(where("sessionData.track", "==", trackId));
+            }
+            const q = query(collection(db, "test_laps"), ...queryConstraints);
 
             const snapshot = await getDocs(q);
             const laps = snapshot.docs.map(
@@ -130,7 +140,7 @@ const useLatestLaps = (
         return () => {
             cancelled = true;
         };
-    }, [fetchLimit]);
+    }, [fetchLimit, trackId]);
 
     return [latestLaps, loading];
 };

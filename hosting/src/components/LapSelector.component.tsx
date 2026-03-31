@@ -1,65 +1,31 @@
-import LapCard from "./LapCard.component";
+import { Box, Card, CardActionArea, Grid, Typography } from "@mui/material";
+import { useLatestLaps } from "../hooks/useLaps";
+import { LapInfo } from "./LapInfo.component";
 
-const LapSelector = ({ sessionData, selectLap, selectedLap, isComparison }) => {
-    const sanitizeLap = (lap) => {
-        if (!lap.lap_data[0]) {
-            // First data entry is empty - try find the next valid one
-            let lapTracker = 1;
-            while (!lap?.lap_data[lapTracker]) {
-                lapTracker++;
-            }
-            // Found a non-Null entry! Use it
-            lap.lap_data[0] = lap.lap_data[lapTracker];
-        }
-        lap.lap_data.reduce((oLap, nLap, i) => {
-            if (!nLap) {
-                lap.lap_data[i] = oLap;
-                return oLap;
-            }
-            return nLap;
-        });
-        return lap;
-    };
+interface Props {
+    trackId?: string;
+    onClick: (lapId: string) => void;
+}
+const LapSelector = ({ trackId, onClick }: Props) => {
+    const [laps, isLoadingLaps] = useLatestLaps({ trackId, fetchLimit: 30 });
 
-    const getTimeDelta = (time, id) => {
-        if (selectedLap) {
-            if (id == selectedLap.lapId) {
-                // Don't show a zero delta
-                return null;
-            }
-            const delta = (time - selectedLap.lap_time) / 1000;
-            return delta > 0 ? `+${delta.toFixed(3)}` : delta.toFixed(3);
-        }
-        // No selected lap - don't show the gap
-        return null;
-    };
-
-    return (
-        <div
-            style={{
-                display: "flex",
-            }}
-        >
-            {sessionData.laps.map((lap, i) => {
-                return (
-                    <LapCard
-                        key={lap.lapId}
-                        {...{
-                            lapData: lap,
-                            isFastestLap:
-                                lap?.lap_number === sessionData.fastestLap, //TODO: Change the fastest lap storage
-                            isSelected: lap.lapId== selectedLap?.lapId,
-                            timeDisplay: lap.discard
-                                ? null
-                                : getTimeDelta(lap?.lap_time, lap?.lapId),
-                        }}
-                        onClick={() => {
-                            selectLap(sanitizeLap(lap));
-                        }}
-                    />
-                );
-            })}
-        </div>
+    return isLoadingLaps ? (
+        <Typography>Loading...</Typography>
+    ) : (
+        <Grid columns={4} container spacing={1} padding={1}>
+            {laps.map((lap) => (
+                <Grid>
+                    <Card>
+                        <CardActionArea onClick={() => onClick(lap.lapId)}>
+                            <Box p={1} display="flex">
+                                <LapInfo lapData={lap} isShowingSessionData />
+                            </Box>
+                        </CardActionArea>
+                    </Card>
+                </Grid>
+            ))}
+        </Grid>
     );
 };
-export default LapSelector;
+
+export { LapSelector };
