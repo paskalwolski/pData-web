@@ -14,7 +14,6 @@ import { TrackPath } from "./TrackPath.component";
 interface Props {
     trackData: TrackData;
     telemetryData: TelemetryData;
-    lapId: string;
 }
 
 const getTrackSegmentType = (
@@ -82,14 +81,12 @@ const prepareTrackSegments = (telemetryData: TelemetryData): TrackSegment[] => {
     return overallSegmentData;
 };
 
-const TrackDisplay = ({ trackData, telemetryData, lapId }: Props) => {
+const TrackDisplay = ({ trackData, telemetryData }: Props) => {
     const [containerRef, fullWidth, fullHeight] = useContainerSize();
 
     const trackSegmentData = useMemo(
         () => prepareTrackSegments(telemetryData),
-        // Only force a recalculate when we switch laps
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [lapId],
+        [telemetryData],
     );
 
     const { renderedWidth, renderedHeight, imageX, imageY } = useMemo(() => {

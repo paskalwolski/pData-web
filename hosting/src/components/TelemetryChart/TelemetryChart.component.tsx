@@ -1,13 +1,12 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { TelemetryLine } from "./TelemetryLine.component";
 import * as d3 from "d3";
 import { useContainerSize } from "../../hooks/useContainerSize";
-import { Box, Paper, Stack, Typography } from "@mui/material";
+import { Box, Paper, Stack, Typography, useTheme } from "@mui/material";
+import { useTelemetryPointContext } from "../../hooks/useTelemetryPoint";
 
 interface TelemetryChartProps {
     title: string;
-    lapId: string;
-    secondaryLapId: string;
     data: Array<number | undefined>;
     secondaryData: Array<number | undefined>;
     stepped?: boolean;
@@ -20,13 +19,19 @@ const TelemetryChart = ({
     stepped = false,
 }: TelemetryChartProps) => {
     const height = 200;
-
     const [containerRef, width] = useContainerSize();
 
-    const yDomain = d3.extent([
-        ...d3.extent(data),
-        ...d3.extent(secondaryData ?? [undefined, undefined]),
-    ]);
+    const theme = useTheme();
+
+    const yDomain = useMemo(
+        () =>
+            d3.extent([
+                ...d3.extent(data),
+                ...d3.extent(secondaryData ?? [undefined, undefined]),
+            ]),
+        [data, secondaryData],
+    );
+
     const xDomain = useMemo(() => [0, data.length], [data.length]);
 
     const xScale = useMemo(
@@ -37,6 +42,26 @@ const TelemetryChart = ({
     const yScale = useMemo(
         () => d3.scaleLinear().domain(yDomain).range([height, 0]),
         [height, yDomain],
+    );
+
+    const { selectedIndex, setSelectedIndex } = useTelemetryPointContext();
+
+    const handleMouseMove = useCallback(
+        (e: React.MouseEvent) => {
+            const x0 = xScale.invert(d3.pointer(e)[0]);
+            const x = Number(x0.toFixed(0));
+            if (xDomain[0] <= x && x <= xDomain[1]) {
+                setSelectedIndex(x);
+            } else {
+                setSelectedIndex(null);
+            }
+        },
+        [setSelectedIndex, xScale, xDomain],
+    );
+
+    const handleMouseLeave = useCallback(
+        () => setSelectedIndex(null),
+        [setSelectedIndex],
     );
 
     return (
@@ -62,6 +87,24 @@ const TelemetryChart = ({
                                 secondary
                             />
                         )}
+                        {selectedIndex && (
+                            <line
+                                x1={xScale(selectedIndex)}
+                                x2={xScale(selectedIndex)}
+                                y1={yScale.range()[0]}
+                                y2={yScale.range()[1]}
+                                stroke={theme.palette.info.main}
+                                strokeWidth={2}
+                            />
+                        )}
+                        <rect
+                            style={{ pointerEvents: "all" }}
+                            fill="none"
+                            height={height}
+                            width={width}
+                            onMouseMove={handleMouseMove}
+                            onMouseLeave={handleMouseLeave}
+                        />
                     </svg>
                 </Box>
             </Stack>
