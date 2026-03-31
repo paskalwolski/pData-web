@@ -81,7 +81,7 @@ const TelemetryChart = ({
                         <Typography>{title}</Typography>
                         <Box flex={1}>
                             <Typography>
-                                {isFinite(selectedYValue)
+                                {isFinite(selectedYValue) && !!selectedYValue
                                     ? selectedYValue
                                     : "-"}
                             </Typography>
