@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import "./App.css";
 
 import LapData from "./components/LapData.component";
-import LapSelector from "./components/LapSelector.component";
+import LapSelector from "./components/OldLapSelector.component";
 import SessionSelector from "./components/SessionSelector.component";
 
 import {
