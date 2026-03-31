@@ -70,11 +70,15 @@ const TelemetryChart = ({
         <Paper>
             <Stack spacing={1} margin={1}>
                 <Box width={1} flex={1} display="flex" justifyContent="center">
-                    <Stack>
+                    <Stack width={1} alignItems="start">
                         <Typography>{title}</Typography>
-                        <Typography>
-                            {isFinite(selectedYValue) ? selectedYValue : "-"}
-                        </Typography>
+                        <Box flex={1}>
+                            <Typography>
+                                {isFinite(selectedYValue)
+                                    ? selectedYValue
+                                    : "-"}
+                            </Typography>
+                        </Box>
                     </Stack>
                 </Box>
                 <Box ref={containerRef}>
