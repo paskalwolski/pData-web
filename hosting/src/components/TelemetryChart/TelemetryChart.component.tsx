@@ -44,7 +44,9 @@ const TelemetryChart = ({
         [height, yDomain],
     );
 
-    const { setSelectedIndex } = useTelemetryPointContext();
+    const { selectedIndex, setSelectedIndex } = useTelemetryPointContext();
+
+    const selectedYValue = data[selectedIndex];
 
     const handleMouseMove = useCallback(
         (e: React.MouseEvent) => {
@@ -68,7 +70,12 @@ const TelemetryChart = ({
         <Paper>
             <Stack spacing={1} margin={1}>
                 <Box width={1} flex={1} display="flex" justifyContent="center">
-                    <Typography>{title}</Typography>
+                    <Stack>
+                        <Typography>{title}</Typography>
+                        <Typography>
+                            {isFinite(selectedYValue) ? selectedYValue : "-"}
+                        </Typography>
+                    </Stack>
                 </Box>
                 <Box ref={containerRef}>
                     <svg width={width} height={height}>
