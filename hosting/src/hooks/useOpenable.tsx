@@ -8,7 +8,7 @@ const useOpeneable = (initialState: boolean = false) => {
 
     const toggleOpen = setOpen((currentIsOpen) => !currentIsOpen);
 
-    return [isOpen, toggleOpen, handleOpen, handleClose, setOpen] as const;
+    return { isOpen, toggleOpen, handleOpen, handleClose, setOpen } as const;
 };
 
 export { useOpeneable };
