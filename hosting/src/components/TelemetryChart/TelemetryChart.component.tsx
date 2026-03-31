@@ -2,13 +2,15 @@ import { useCallback, useMemo } from "react";
 import { TelemetryLine } from "./TelemetryLine.component";
 import * as d3 from "d3";
 import { useContainerSize } from "../../hooks/useContainerSize";
-import { Box, Paper, Stack, Typography, useTheme } from "@mui/material";
+import { Box, Paper, Stack, Typography } from "@mui/material";
 import { useTelemetryPointContext } from "../../hooks/useTelemetryPoint";
+import { TelemetryDataSet } from "../../types";
+import { TelemetryInterceptor } from "./TelemetryInterceptor";
 
 interface TelemetryChartProps {
     title: string;
-    data: Array<number | undefined>;
-    secondaryData: Array<number | undefined>;
+    data: TelemetryDataSet;
+    secondaryData: TelemetryDataSet;
     stepped?: boolean;
 }
 
@@ -20,8 +22,6 @@ const TelemetryChart = ({
 }: TelemetryChartProps) => {
     const height = 200;
     const [containerRef, width] = useContainerSize();
-
-    const theme = useTheme();
 
     const yDomain = useMemo(
         () =>
@@ -44,7 +44,7 @@ const TelemetryChart = ({
         [height, yDomain],
     );
 
-    const { selectedIndex, setSelectedIndex } = useTelemetryPointContext();
+    const { setSelectedIndex } = useTelemetryPointContext();
 
     const handleMouseMove = useCallback(
         (e: React.MouseEvent) => {
@@ -87,16 +87,11 @@ const TelemetryChart = ({
                                 secondary
                             />
                         )}
-                        {selectedIndex && (
-                            <line
-                                x1={xScale(selectedIndex)}
-                                x2={xScale(selectedIndex)}
-                                y1={yScale.range()[0]}
-                                y2={yScale.range()[1]}
-                                stroke={theme.palette.info.main}
-                                strokeWidth={2}
-                            />
-                        )}
+                        <TelemetryInterceptor
+                            xScale={xScale}
+                            yScale={yScale}
+                            data={data}
+                        />
                         <rect
                             style={{ pointerEvents: "all" }}
                             fill="none"
