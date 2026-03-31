@@ -7,6 +7,7 @@ import {
     Paper,
     Stack,
     Typography,
+    useTheme,
 } from "@mui/material";
 import { useLap } from "../hooks/useLaps";
 import { SessionInfo } from "../components/SessionInfo.component";
@@ -26,6 +27,7 @@ interface NewLapDataProps {
 }
 
 export const NewLapData = ({ lapId, secondaryLapId }: NewLapDataProps) => {
+    const { palette } = useTheme();
     const [lapData, isLoadingLapData] = useLap(lapId);
     const [secondaryLapData, isLoadingSecondaryLapData] =
         useLap(secondaryLapId);
@@ -66,17 +68,37 @@ export const NewLapData = ({ lapId, secondaryLapId }: NewLapDataProps) => {
                                     direction="row"
                                     flex={1}
                                     justifyContent="space-between"
+                                    spacing={1}
                                 >
-                                    <LapInfo lapData={lapData} isComparison />
+                                    <Paper
+                                        sx={{
+                                            flex: 1,
+                                            backgroundColor:
+                                                palette.primary.dark,
+                                        }}
+                                    >
+                                        <LapInfo
+                                            lapData={lapData}
+                                            isComparison
+                                        />
+                                    </Paper>
                                     <Divider orientation="vertical" />
                                     {isLoadingSecondaryLapData ? (
                                         <Typography>Loading...</Typography>
                                     ) : (
                                         secondaryLapData && (
-                                            <LapInfo
-                                                lapData={secondaryLapData}
-                                                isComparison
-                                            />
+                                            <Paper
+                                                sx={{
+                                                    flex: 1,
+                                                    backgroundColor:
+                                                        palette.secondary.dark,
+                                                }}
+                                            >
+                                                <LapInfo
+                                                    lapData={secondaryLapData}
+                                                    isComparison
+                                                />
+                                            </Paper>
                                         )
                                     )}
                                 </Stack>

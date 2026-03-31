@@ -17,7 +17,7 @@ const LapSelector = ({ trackId, onClick }: Props) => {
                 <Grid>
                     <Card>
                         <CardActionArea onClick={() => onClick(lap.lapId)}>
-                            <Box p={1} display="flex">
+                            <Box display="flex">
                                 <LapInfo lapData={lap} isShowingSessionData />
                             </Box>
                         </CardActionArea>

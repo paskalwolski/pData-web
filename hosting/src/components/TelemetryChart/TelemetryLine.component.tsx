@@ -34,7 +34,9 @@ const TelemetryLine = React.memo(
         return (
             <path
                 d={line}
-                stroke={palette.primary.dark}
+                stroke={
+                    secondary ? palette.secondary.dark : palette.primary.dark
+                }
                 strokeWidth={2}
                 strokeDasharray={secondary ? "5 2" : "0"}
                 fill="none"

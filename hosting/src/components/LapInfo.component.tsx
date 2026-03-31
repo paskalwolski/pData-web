@@ -1,4 +1,4 @@
-import { Stack } from "@mui/material";
+import { Box, Stack } from "@mui/material";
 import { LapData } from "../types";
 import { InfoCardValue } from "./InfoCardValue.component";
 import {
@@ -23,7 +23,7 @@ const LapInfo = ({
     isComparison = false,
 }: Props) => {
     return (
-        <Stack>
+        <Stack flex={1} p={1}>
             <Stack
                 direction="row"
                 alignItems="center"
@@ -33,7 +33,11 @@ const LapInfo = ({
                     Icon={BiStopwatch}
                     value={formatDuration(lapData.lapTime)}
                 />
-                {lapData.expiresAt && <TbClockX />}
+                {lapData.expiresAt && (
+                    <Box pr={1}>
+                        <TbClockX />
+                    </Box>
+                )}
             </Stack>
             <InfoCardValue Icon={TbHelmet} value={lapData.sessionData.driver} />
             {isShowingSessionData && (
