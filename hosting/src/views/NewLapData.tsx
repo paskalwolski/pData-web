@@ -1,11 +1,13 @@
-import { Button, Stack, Typography } from "@mui/material";
+import { Button, Divider, Paper, Stack, Typography } from "@mui/material";
 import { useLap } from "../hooks/useLaps";
-import { SessionInfoCard } from "../components/SessionInfoCard.component";
+import { SessionInfo } from "../components/SessionInfo.component";
 import { TelemetrySection } from "./TelemetrySection";
 import { useRoute } from "wouter";
-import { TbAB, TbABOff } from "react-icons/tb";
+import { TbAB, TbABOff, TbRoad } from "react-icons/tb";
 import { useCallback } from "react";
 import { navigate } from "wouter/use-browser-location";
+import { LapInfo } from "../components/LapInfo.component";
+import { InfoCardValue } from "../components/InfoCardValue.component";
 
 interface NewLapDataProps {
     lapId: string;
@@ -17,39 +19,57 @@ export const NewLapData = ({ lapId, secondaryLapId }: NewLapDataProps) => {
     const [secondaryLapData, isLoadingSecondaryLapData] =
         useLap(secondaryLapId);
 
-    const [hasSecondaryLap] = useRoute("/laps/:lapId/compare/:secondaryId");
+    const [hasComparisonLap] = useRoute("/laps/:lapId/compare/:secondaryId");
 
     const removeSecondaryLap = useCallback(() => {
         navigate(`/laps/${lapId}`);
     }, [lapId]);
 
     return (
-        <Stack spacing={1}>
-            <Stack direction="row" spacing={1}>
-                {isLoadingLapData ? (
-                    <Typography>Loading...</Typography>
-                ) : (
-                    <SessionInfoCard sessionData={lapData.sessionData} />
-                )}
-                {isLoadingSecondaryLapData ? (
-                    <Typography>Loading...</Typography>
-                ) : (
-                    secondaryLapData && (
-                        <SessionInfoCard
-                            sessionData={secondaryLapData.sessionData}
-                        />
-                    )
-                )}
-                {isLoadingLapData || isLoadingSecondaryLapData ? (
-                    <Typography>Loading...</Typography>
-                ) : (
-                    <Stack spacing={1} justifyContent="space-evenly">
-                        <Button variant="contained">
+        <Stack spacing={1} width={1}>
+            <Paper>
+                <Stack width={1} direction="row" justifyContent="space-between">
+                    {isLoadingLapData ? (
+                        <Typography>Loading...</Typography>
+                    ) : hasComparisonLap ? (
+                        <Stack p={1} spacing={1} flex={1}>
+                            <InfoCardValue
+                                Icon={TbRoad}
+                                value={lapData.sessionData.track}
+                            />
+                            <Stack
+                                direction="row"
+                                flex={1}
+                                justifyContent="space-between"
+                            >
+                                <LapInfo lapData={lapData} isComparison />
+                                <Divider orientation="vertical" />
+                                {isLoadingSecondaryLapData ? (
+                                    <Typography>Loading...</Typography>
+                                ) : (
+                                    secondaryLapData && (
+                                        <LapInfo
+                                            lapData={secondaryLapData}
+                                            isComparison
+                                        />
+                                    )
+                                )}
+                            </Stack>
+                        </Stack>
+                    ) : (
+                        <SessionInfo sessionData={lapData.sessionData} />
+                    )}
+                    <Stack
+                        m={1}
+                        alignItems="center"
+                        justifyContent="space-around"
+                    >
+                        <Button variant="outlined">
                             <TbAB />
                         </Button>
-                        {hasSecondaryLap && (
+                        {hasComparisonLap && (
                             <Button
-                                variant="contained"
+                                variant="outlined"
                                 color="error"
                                 onClick={removeSecondaryLap}
                             >
@@ -57,8 +77,8 @@ export const NewLapData = ({ lapId, secondaryLapId }: NewLapDataProps) => {
                             </Button>
                         )}
                     </Stack>
-                )}
-            </Stack>
+                </Stack>
+            </Paper>
             {isLoadingLapData || isLoadingSecondaryLapData ? (
                 <Typography>Loading...</Typography>
             ) : (

@@ -29,8 +29,9 @@ const TelemetryCrosshair = ({ xScale, yScale, data }: Props) => {
                     x2={yIntercept}
                     y1={yScale.range()[0]}
                     y2={yScale.range()[1]}
-                    stroke={palette.info.dark}
+                    stroke={palette.info.light}
                     strokeWidth={2}
+                    strokeOpacity={0.4}
                 />
             )}
             {yIntercept && (

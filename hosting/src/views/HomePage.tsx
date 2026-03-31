@@ -8,9 +8,8 @@ import {
     Typography,
 } from "@mui/material";
 import { useLatestLaps } from "../hooks/useLaps";
-import { TbClockX } from "react-icons/tb";
 import { useLocation } from "wouter";
-import { formatDuration } from "../helpers/formatDuration";
+import { LapInfo } from "../components/LapInfo.component";
 
 const Homepage = () => {
     const [latestLaps, isLoadingLatestLaps] = useLatestLaps(10);
@@ -22,12 +21,14 @@ const Homepage = () => {
     return (
         <Stack gap={1} my={1}>
             <Paper>
-                <Typography variant="h5">Latest Fast Laps</Typography>
+                <Box p={1}>
+                    <Typography variant="h5">Latest Fast Laps</Typography>
+                </Box>
                 <Divider />
                 {isLoadingLatestLaps ? (
                     <Typography>Loading...</Typography>
                 ) : latestLaps ? (
-                    <Stack direction="row" overflow="auto" spacing={1}>
+                    <Stack direction="row" overflow="auto" spacing={1} px={1}>
                         {latestLaps.map((lap) => (
                             <Box
                                 display="flex"
@@ -41,38 +42,14 @@ const Homepage = () => {
                                             handleSelectLap(lap.lapId)
                                         }
                                     >
-                                        <Stack gap={1} px={2} py={1}>
-                                            <Stack
-                                                direction="row"
-                                                alignItems="center"
-                                                justifyContent="space-between"
-                                                px={2}
-                                                py={1}
-                                            >
-                                                <Typography>
-                                                    {lap?.sessionData?.driver}
-                                                </Typography>
-                                                {lap.expiresAt && <TbClockX />}
-                                            </Stack>
-                                            <Typography>
-                                                {lap?.sessionData.sessionTime}
-                                            </Typography>
-                                            <Typography>
-                                                {formatDuration(lap.lapTime)}
-                                            </Typography>
-                                            <Typography>
-                                                {lap?.sessionData?.track}
-                                            </Typography>
-                                            <Typography>
-                                                {lap?.sessionData?.car}
-                                            </Typography>
-                                            <Typography>
-                                                {lap?.sessionData.sessionType}
-                                            </Typography>
-                                            <Typography>
-                                                {lap?.sessionId}
-                                            </Typography>
-                                        </Stack>
+                                        <Paper elevation={3}>
+                                            <Box padding={1}>
+                                                <LapInfo
+                                                    lapData={lap}
+                                                    isShowingSessionData
+                                                />
+                                            </Box>
+                                        </Paper>
                                     </CardActionArea>
                                 </Card>
                             </Box>
@@ -82,11 +59,13 @@ const Homepage = () => {
                     <Typography variant="body2">No available laps</Typography>
                 )}
             </Paper>
-            <Card>
-                <Typography variant="h5">Latest Sessions</Typography>
+            <Paper>
+                <Box p={1}>
+                    <Typography variant="h5">Latest Sessions</Typography>
+                </Box>
                 <Divider />
                 <Typography variant="body2">No available sessions</Typography>
-            </Card>
+            </Paper>
         </Stack>
     );
 };
