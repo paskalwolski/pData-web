@@ -5,7 +5,7 @@ import { useContainerSize } from "../../hooks/useContainerSize";
 import { Box, Paper, Stack, Typography, useTheme } from "@mui/material";
 import { useTelemetryPointContext } from "../../hooks/useTelemetryPoint";
 import { TelemetryDataSet } from "../../types";
-import { TelemetryInterceptor } from "./TelemetryInterceptor";
+import { TelemetryCrosshair } from "./TelemetryCrosshair";
 
 interface TelemetryChartProps {
     title: string;
@@ -124,7 +124,7 @@ const TelemetryChart = ({
                                 secondary
                             />
                         )}
-                        <TelemetryInterceptor
+                        <TelemetryCrosshair
                             xScale={xScale}
                             yScale={yScale}
                             data={data}
