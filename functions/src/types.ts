@@ -48,3 +48,24 @@ export interface CloseSessionPayload {
   sessionId: string;
   lapCount: number;
 }
+
+interface SectionData {
+  name: string;
+  start: number;
+  end: number;
+}
+
+interface TrackData {
+  trackName: string;
+  sectionData: Array<SectionData>;
+  width: number;
+  height: number;
+  xOffset: number;
+  yOffset: number;
+  margin: number;
+  image: string;
+}
+export interface TrackPayload {
+  trackId: string;
+  trackData: TrackData;
+}

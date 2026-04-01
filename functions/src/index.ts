@@ -10,6 +10,7 @@ import {
   FastestLapRef,
   LapPayload,
   TelemetryDataSet,
+  TrackPayload,
 } from './types';
 
 const EXPIRY_HOURS = 24;
@@ -24,41 +25,37 @@ const storage = getStorage(adminApp);
 
 export const checkTrackData = onRequest(async (request, response) => {
   const body = await request.body;
-  const trackSnapshot = await firestore
-    .collection('tracks')
-    .doc(body.trackName)
-    .get();
+  const trackId = body?.trackId;
+  if (!trackId) {
+    response.status(400).send();
+    return;
+  }
+  const trackSnapshot = await firestore.collection('tracks').doc(trackId).get();
   // If the doc has no data, it does not exist
   if (!trackSnapshot.exists) {
     console.log('No Track Data Found');
-    response.send({exists: false});
+    response.status(404).send();
     return;
   }
-  const trackData = trackSnapshot.data() ?? {};
 
-  // Check for required values
-  ['trackName', 'xOffset', 'yOffset', 'width', 'height', 'url', 'margin'].map(
-    v => {
-      if (!(v in trackData)) {
-        console.log('Track Missing Key', v);
-        response.send({exists: false});
-        return;
-      }
-    },
-  );
-  response.send({trackName: body.trackName, exists: true});
+  const trackData = trackSnapshot.data();
+  response.send({exists: true, trackData});
 });
 
 export const handleTrackData = onRequest(async (request, response) => {
-  const body = await request.body;
+  const body = (await request.body) as TrackPayload;
 
-  const {image, ...trackData} = body;
-  const trackDoc = firestore.collection('tracks').doc(trackData.trackName);
+  const {
+    trackId,
+    trackData: {image, ...trackData},
+  } = body;
+  const trackDoc = firestore.collection('tracks').doc(trackId);
   const imageBuffer = Buffer.from(image, 'base64');
   const bucket = storage.bucket();
 
-  const file = bucket.file(`tracks/${trackData.trackName}.png`);
+  const file = bucket.file(`tracks/${trackId}.png`);
   await file.save(imageBuffer);
+  // await file.makePublic();
   await trackDoc.set({...trackData, url: file.publicUrl()});
   response.send();
 });
