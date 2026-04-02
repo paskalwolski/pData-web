@@ -291,11 +291,16 @@ export const deleteExpiredTestLaps = onSchedule('every 6 hours', async () => {
     console.log('No expired test_laps to delete.');
   } else {
     const batch = firestore.batch();
-    expiredSnapshot.docs.forEach(doc => {
-      batch.delete(doc.ref.collection('data').doc('telemetry'));
+    const batchOperations = expiredSnapshot.docs.map(async doc => {
+      await doc.ref
+        .collection('telemetry')
+        .listDocuments()
+        .then(telemetryDocs => telemetryDocs.map(td => batch.delete(td)));
       batch.delete(doc.ref);
     });
-    await batch.commit();
-    console.log(`Deleted ${expiredSnapshot.size} expired test_laps.`);
+    await Promise.all(batchOperations).then(() => batch.commit());
+    console.log(
+      `Deleted ${expiredSnapshot.size} expired test_laps and their telemetry data.`,
+    );
   }
 });
