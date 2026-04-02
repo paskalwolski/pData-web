@@ -119,7 +119,7 @@ const useLatestLaps = ({
         let cancelled = false;
         async function fetchLatestLaps() {
             const queryConstraints: QueryConstraint[] = [
-                orderBy("sessionData.sessionTime", "desc"),
+                orderBy("lapTimestamp", "desc"),
                 limit(fetchLimit ?? 5),
             ];
             if (trackId) {

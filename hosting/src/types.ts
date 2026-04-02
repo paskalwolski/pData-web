@@ -14,6 +14,7 @@ export interface LapData {
   sessionId?: string;
   lapNumber: number;
   lapTime: number;
+  lapTimestamp: number;
   isValid: boolean;
   isPit: boolean;
   expiresAt?: string;
