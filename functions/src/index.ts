@@ -143,7 +143,10 @@ export const handleLap = onRequest(async (request, response) => {
   const driverRef = firestore.collection('drivers').doc(driver);
   const bestLapsRef = driverRef.collection(track).doc(car);
 
-  const expiresAt = new Date(Date.now() + EXPIRY_HOURS * 60 * 60 * 1000);
+  const now = Date.now();
+
+  const lapTimestamp = new Date(now);
+  const expiresAt = new Date(now + EXPIRY_HOURS * 60 * 60 * 1000);
 
   // Prepare for lap write and Fastest Lap Update
   await firestore.runTransaction(async transaction => {
@@ -152,6 +155,7 @@ export const handleLap = onRequest(async (request, response) => {
 
     // Always store lap data + telemetry
     transaction.set(lapRef, {
+      lapTimestamp,
       ...lapDetails,
       sessionData,
       sessionId: sessionRef.id,
