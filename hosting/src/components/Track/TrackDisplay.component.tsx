@@ -12,7 +12,7 @@ import { useMemo } from "react";
 import { TrackPath } from "./TrackPath.component";
 
 interface Props {
-    trackData: TrackData;
+    trackData?: TrackData;
     telemetryData: TelemetryData;
 }
 
@@ -88,13 +88,29 @@ const TrackDisplay = ({ trackData, telemetryData }: Props) => {
         () => prepareTrackSegments(telemetryData),
         [telemetryData],
     );
+    // TODO: Clean the calculation pipeline for this
+    const fallbackDimensions = useMemo(() => {
+        const [minX, maxX] = d3.extent(telemetryData.posX ?? [], (v) => v);
+        const [minZ, maxZ] = d3.extent(telemetryData.posZ ?? [], (v) => v);
+        if (minX === undefined || maxX === undefined || minZ === undefined || maxZ === undefined) return null;
+        return {
+            width: maxX - minX,
+            height: maxZ - minZ,
+            xOffset: -minX,
+            yOffset: -minZ,
+        };
+    }, [telemetryData.posX, telemetryData.posZ]);
+
+    const effectiveDimensions = trackData ?? fallbackDimensions;
 
     const { renderedWidth, renderedHeight, imageX, imageY } = useMemo(() => {
+        if (!effectiveDimensions) return { renderedWidth: 0, renderedHeight: 0, imageX: 0, imageY: 0 };
+
         // Step 1 — How much would we need to scale the image to fill each axis exactly?
         //   If this scale were used alone, the image would touch that edge perfectly,
         //   but might overflow the other axis.
-        const scaleToFillWidth = fullWidth / trackData.width;
-        const scaleToFillHeight = fullHeight / trackData.height;
+        const scaleToFillWidth = fullWidth / effectiveDimensions.width;
+        const scaleToFillHeight = fullHeight / effectiveDimensions.height;
 
         // Step 2 — Use the smaller of the two scales.
         //   The smaller scale is always the one that is constrained (i.e. would overflow
@@ -103,8 +119,8 @@ const TrackDisplay = ({ trackData, telemetryData }: Props) => {
 
         // Step 3 — Apply the scale to the image's natural dimensions.
         //   This gives us the pixel size the image will actually be rendered at.
-        const renderedWidth = trackData.width * scale;
-        const renderedHeight = trackData.height * scale;
+        const renderedWidth = effectiveDimensions.width * scale;
+        const renderedHeight = effectiveDimensions.height * scale;
 
         // Step 4 — Centre the rendered image within the SVG canvas.
         //   Any leftover space is split equally either side.
@@ -114,7 +130,7 @@ const TrackDisplay = ({ trackData, telemetryData }: Props) => {
         const imageY = spareHeight / 2;
 
         return { renderedWidth, renderedHeight, imageX, imageY };
-    }, [fullWidth, fullHeight, trackData.width, trackData.height]);
+    }, [fullWidth, fullHeight, effectiveDimensions]);
 
     // xScale / yScale map world-space coordinates (posX, posZ) onto SVG pixels.
     //
@@ -131,11 +147,11 @@ const TrackDisplay = ({ trackData, telemetryData }: Props) => {
             d3
                 .scaleLinear()
                 .domain([
-                    -trackData.xOffset,
-                    trackData.width - trackData.xOffset,
+                    -(effectiveDimensions?.xOffset ?? 0),
+                    (effectiveDimensions?.width ?? 0) - (effectiveDimensions?.xOffset ?? 0),
                 ])
                 .range([imageX, imageX + renderedWidth]),
-        [trackData.xOffset, trackData.width, imageX, renderedWidth],
+        [effectiveDimensions, imageX, renderedWidth],
     );
 
     const yScale = useMemo(
@@ -143,11 +159,11 @@ const TrackDisplay = ({ trackData, telemetryData }: Props) => {
             d3
                 .scaleLinear()
                 .domain([
-                    -trackData.yOffset,
-                    trackData.height - trackData.yOffset,
+                    -(effectiveDimensions?.yOffset ?? 0),
+                    (effectiveDimensions?.height ?? 0) - (effectiveDimensions?.yOffset ?? 0),
                 ])
                 .range([imageY, imageY + renderedHeight]),
-        [trackData.yOffset, trackData.height, imageY, renderedHeight],
+        [effectiveDimensions, imageY, renderedHeight],
     );
 
     return (
@@ -170,37 +186,41 @@ const TrackDisplay = ({ trackData, telemetryData }: Props) => {
                 width={fullWidth}
                 height={fullHeight}
             >
-                <defs>
-                    {/*
-                        The track image is used as a mask.
-                        White pixels in the image reveal the rect beneath;
-                        black pixels hide it. This lets us tint the track shape
-                        with a fill colour (darkgray) rather than showing the
-                        raw image.
-                    */}
-                    <mask id="track-mask">
-                        <image
-                            href={trackData.url}
+                {trackData && (
+                    <>
+                        <defs>
+                            {/*
+                                The track image is used as a mask.
+                                White pixels in the image reveal the rect beneath;
+                                black pixels hide it. This lets us tint the track shape
+                                with a fill colour (darkgray) rather than showing the
+                                raw image.
+                            */}
+                            <mask id="track-mask">
+                                <image
+                                    href={trackData.url}
+                                    x={imageX}
+                                    y={imageY}
+                                    width={renderedWidth}
+                                    height={renderedHeight}
+                                />
+                            </mask>
+                        </defs>
+
+                        {/*
+                            This rect is the same size and position as the image.
+                            The mask cuts it into the shape of the track.
+                        */}
+                        <rect
                             x={imageX}
                             y={imageY}
                             width={renderedWidth}
                             height={renderedHeight}
+                            fill="darkgray"
+                            mask="url(#track-mask)"
                         />
-                    </mask>
-                </defs>
-
-                {/*
-                    This rect is the same size and position as the image.
-                    The mask cuts it into the shape of the track.
-                */}
-                <rect
-                    x={imageX}
-                    y={imageY}
-                    width={renderedWidth}
-                    height={renderedHeight}
-                    fill="darkgray"
-                    mask="url(#track-mask)"
-                />
+                    </>
+                )}
 
                 <TrackPath
                     trackSegmentData={trackSegmentData}

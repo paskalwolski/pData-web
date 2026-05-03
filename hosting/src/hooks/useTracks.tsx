@@ -12,15 +12,20 @@ const useTrackData = (trackId: string): [TrackData | null, boolean] => {
         let cancelled = false;
         async function fetchTrackData() {
             const snapshot = await getDoc(doc(db, "tracks", trackId));
-            if (snapshot.exists() && !cancelled) {
-                const trackData = snapshot.data() as TrackData;
-                if ("url" in trackData) {
-                    const imageRef = ref(storage, trackData.url);
-                    const downloadUrl = await getDownloadURL(imageRef);
-                    trackData.url = downloadUrl;
+            if (!cancelled) {
+                if (snapshot.exists()) {
+                    const trackData = snapshot.data() as TrackData;
+                    if ("url" in trackData) {
+                        const imageRef = ref(storage, trackData.url);
+                        const downloadUrl = await getDownloadURL(imageRef);
+                        trackData.url = downloadUrl;
+                    }
+                    setLoading(false);
+                    setTrackData(trackData);
+                } else {
+                    setLoading(false);
+                    setTrackData(undefined);
                 }
-                setLoading(false);
-                setTrackData(trackData);
             }
         }
 
