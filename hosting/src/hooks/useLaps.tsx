@@ -109,10 +109,10 @@ interface LatestLapsOpts {
     trackId?: string;
     fetchLimit?: number;
 }
-const useLatestLaps = ({
-    trackId,
-    fetchLimit,
-}: LatestLapsOpts): [Array<LapData> | undefined, boolean] => {
+const useLatestLaps = ({ trackId, fetchLimit }: LatestLapsOpts = {}): [
+    Array<LapData> | undefined,
+    boolean,
+] => {
     const [latestLaps, setLatestLaps] = useState<Array<LapData> | undefined>();
     const [loading, setLoading] = useState(true);
     useEffect(() => {
@@ -123,7 +123,9 @@ const useLatestLaps = ({
                 limit(fetchLimit ?? 5),
             ];
             if (trackId) {
-                queryConstraints.push(where("sessionData.track", "==", trackId));
+                queryConstraints.push(
+                    where("sessionData.track", "==", trackId),
+                );
             }
             const q = query(collection(db, "test_laps"), ...queryConstraints);
 
