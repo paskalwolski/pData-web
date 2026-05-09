@@ -36,7 +36,22 @@ const TelemetryChart = ({
         [data, secondaryData],
     );
 
-    const xDomain = useMemo(() => [0, data.length], [data.length]);
+    const {
+        selectedIndex,
+        setSelectedIndex,
+        highlightStartIndex,
+        highlightEndIndex,
+        selectionStartIndex,
+        selectionEndIndex,
+    } = useTelemetryPointContext();
+
+    const xDomain = useMemo(
+        () =>
+            selectionStartIndex != null && selectionEndIndex != null
+                ? [selectionStartIndex, selectionEndIndex]
+                : [0, data.length],
+        [data.length, selectionStartIndex, selectionEndIndex],
+    );
 
     const xScale = useMemo(
         () => d3.scaleLinear().domain(xDomain).range([0, width]),
@@ -47,13 +62,6 @@ const TelemetryChart = ({
         () => d3.scaleLinear().domain(yDomain).range([height, 0]),
         [height, yDomain],
     );
-
-    const {
-        selectedIndex,
-        setSelectedIndex,
-        selectionStartIndex,
-        selectionEndIndex,
-    } = useTelemetryPointContext();
 
     const selectedYValue = data[selectedIndex];
 
@@ -93,19 +101,19 @@ const TelemetryChart = ({
                 </Box>
                 <Box ref={containerRef}>
                     <svg width={width} height={height}>
-                        {selectionStartIndex && (
+                        {highlightStartIndex != null && (
                             <rect
                                 fill={palette.info.light}
                                 stroke={palette.info.light}
                                 rx={2}
                                 ry={2}
                                 fillOpacity={0.3}
-                                x={xScale(selectionStartIndex)}
+                                x={xScale(highlightStartIndex)}
                                 y={yScale.range()[1]}
                                 height={height}
                                 width={
-                                    xScale(selectionEndIndex ?? selectedIndex) -
-                                    xScale(selectionStartIndex)
+                                    xScale(highlightEndIndex ?? selectedIndex) -
+                                    xScale(highlightStartIndex)
                                 }
                             />
                         )}

@@ -22,29 +22,67 @@ const TrackTraceSegment = ({
     segment,
 }: TrackTraceSegmentProps) => {
     const {
+        highlightStartIndex,
+        setHighlightStartIndex,
+        highlightEndIndex,
+        setHighlightEndIndex,
         selectionStartIndex,
         setSelectionStartIndex,
         selectionEndIndex,
         setSelectionEndIndex,
     } = useTelemetryPointContext();
 
-    const handleSegmentSelection = useCallback(() => {
-        setSelectionStartIndex(segment.indexStart);
-        setSelectionEndIndex(segment.indexEnd);
+    const handleMouseEnter = useCallback(() => {
+        setHighlightStartIndex(segment.indexStart);
+        setHighlightEndIndex(segment.indexEnd);
     }, [
         segment.indexEnd,
         segment.indexStart,
+        setHighlightEndIndex,
+        setHighlightStartIndex,
+    ]);
+
+    const handleMouseLeave = useCallback(() => {
+        setHighlightStartIndex(undefined);
+        setHighlightEndIndex(undefined);
+    }, [setHighlightStartIndex, setHighlightEndIndex]);
+
+    const handleClick = useCallback(() => {
+        if (
+            selectionStartIndex === segment.indexStart &&
+            selectionEndIndex === segment.indexEnd
+        ) {
+            setSelectionStartIndex(undefined);
+            setSelectionEndIndex(undefined);
+        } else {
+            setSelectionStartIndex(segment.indexStart);
+            setSelectionEndIndex(segment.indexEnd);
+        }
+    }, [
+        segment.indexEnd,
+        segment.indexStart,
+        selectionStartIndex,
+        selectionEndIndex,
         setSelectionEndIndex,
         setSelectionStartIndex,
     ]);
 
-    const handleSegmentClear = useCallback(() => {
-        setSelectionStartIndex(undefined);
-        setSelectionEndIndex(undefined);
-    }, [setSelectionStartIndex, setSelectionEndIndex]);
+    const isSegmentHighlighted = useMemo(
+        () =>
+            highlightStartIndex <= segment.indexStart &&
+            highlightEndIndex >= segment.indexEnd,
+        [
+            highlightStartIndex,
+            segment.indexStart,
+            segment.indexEnd,
+            highlightEndIndex,
+        ],
+    );
 
     const isSegmentSelected = useMemo(
         () =>
+            selectionStartIndex != null &&
+            selectionEndIndex != null &&
             selectionStartIndex <= segment.indexStart &&
             selectionEndIndex >= segment.indexEnd,
         [
@@ -60,9 +98,11 @@ const TrackTraceSegment = ({
             d={lineGenerator(segment.data)}
             fill="none"
             stroke={SEGMENT_COLOR_MAP[segment.type]}
-            strokeWidth={isSegmentSelected ? 8 : 2}
-            onMouseEnter={handleSegmentSelection}
-            onMouseLeave={handleSegmentClear}
+            strokeWidth={isSegmentHighlighted || isSegmentSelected ? 8 : 2}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            onClick={handleClick}
+            style={{ cursor: "pointer" }}
         />
     );
 };
