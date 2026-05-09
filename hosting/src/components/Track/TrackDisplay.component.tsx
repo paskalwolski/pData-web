@@ -10,6 +10,7 @@ import {
 } from "../../types";
 import { useMemo } from "react";
 import { TrackPath } from "./TrackPath.component";
+import { useTelemetryPointContext } from "../../hooks/useTelemetryPoint";
 
 interface Props {
     trackData?: TrackData;
@@ -94,6 +95,7 @@ const prepareTrackSegments = (telemetryData: TelemetryData): TrackSegment[] => {
 
 const TrackDisplay = ({ trackData, telemetryData }: Props) => {
     const [containerRef, fullWidth, fullHeight] = useContainerSize();
+    const { selectionStartIndex, selectionEndIndex } = useTelemetryPointContext();
 
     const trackSegmentData = useMemo(
         () => prepareTrackSegments(telemetryData),
@@ -120,8 +122,35 @@ const TrackDisplay = ({ trackData, telemetryData }: Props) => {
 
     const effectiveDimensions = trackData ?? fallbackDimensions;
 
+    // When a selection is active, shrink the viewport to the selection's world-space
+    // bounding box (with 10% padding) so the image and path both zoom into that region.
+    const viewportDimensions = useMemo(() => {
+        if (selectionStartIndex == null || selectionEndIndex == null || !effectiveDimensions)
+            return effectiveDimensions;
+
+        const selectedX = telemetryData.posX.slice(selectionStartIndex, selectionEndIndex + 1);
+        const selectedZ = telemetryData.posZ.slice(selectionStartIndex, selectionEndIndex + 1);
+        const [minX, maxX] = d3.extent(selectedX);
+        const [minZ, maxZ] = d3.extent(selectedZ);
+
+        if (minX == null || maxX == null || minZ == null || maxZ == null || minX === maxX || minZ === maxZ)
+            return effectiveDimensions;
+
+        const padX = (maxX - minX) * 0.1;
+        const padZ = (maxZ - minZ) * 0.1;
+        const viewLeft = minX - padX;
+        const viewTop = minZ - padZ;
+
+        return {
+            width: maxX + padX - viewLeft,
+            height: maxZ + padZ - viewTop,
+            xOffset: -viewLeft,
+            yOffset: -viewTop,
+        };
+    }, [selectionStartIndex, selectionEndIndex, effectiveDimensions, telemetryData.posX, telemetryData.posZ]);
+
     const { renderedWidth, renderedHeight, imageX, imageY } = useMemo(() => {
-        if (!effectiveDimensions)
+        if (!viewportDimensions)
             return {
                 renderedWidth: 0,
                 renderedHeight: 0,
@@ -129,23 +158,23 @@ const TrackDisplay = ({ trackData, telemetryData }: Props) => {
                 imageY: 0,
             };
 
-        // Step 1 — How much would we need to scale the image to fill each axis exactly?
-        //   If this scale were used alone, the image would touch that edge perfectly,
+        // Step 1 — How much would we need to scale the viewport to fill each axis exactly?
+        //   If this scale were used alone, the viewport would touch that edge perfectly,
         //   but might overflow the other axis.
-        const scaleToFillWidth = fullWidth / effectiveDimensions.width;
-        const scaleToFillHeight = fullHeight / effectiveDimensions.height;
+        const scaleToFillWidth = fullWidth / viewportDimensions.width;
+        const scaleToFillHeight = fullHeight / viewportDimensions.height;
 
         // Step 2 — Use the smaller of the two scales.
         //   The smaller scale is always the one that is constrained (i.e. would overflow
-        //   first). Using it ensures the image fits within both axes simultaneously.
+        //   first). Using it ensures the viewport fits within both axes simultaneously.
         const scale = Math.min(scaleToFillWidth, scaleToFillHeight);
 
-        // Step 3 — Apply the scale to the image's natural dimensions.
-        //   This gives us the pixel size the image will actually be rendered at.
-        const renderedWidth = effectiveDimensions.width * scale;
-        const renderedHeight = effectiveDimensions.height * scale;
+        // Step 3 — Apply the scale to the viewport's natural dimensions.
+        //   This gives us the pixel size the viewport will actually be rendered at.
+        const renderedWidth = viewportDimensions.width * scale;
+        const renderedHeight = viewportDimensions.height * scale;
 
-        // Step 4 — Centre the rendered image within the SVG canvas.
+        // Step 4 — Centre the rendered viewport within the SVG canvas.
         //   Any leftover space is split equally either side.
         const spareWidth = fullWidth - renderedWidth;
         const spareHeight = fullHeight - renderedHeight;
@@ -153,29 +182,30 @@ const TrackDisplay = ({ trackData, telemetryData }: Props) => {
         const imageY = spareHeight / 2;
 
         return { renderedWidth, renderedHeight, imageX, imageY };
-    }, [fullWidth, fullHeight, effectiveDimensions]);
+    }, [fullWidth, fullHeight, viewportDimensions]);
 
-    // xScale / yScale map world-space coordinates (posX, posZ) onto SVG pixels.
+    // xScale / yScale map world-space coordinates (posX, posZ) onto SVG pixels,
+    // calibrated to the current viewport (full track or selection bbox).
     //
     // The image was authored so that a point at world position (wx, wz) lands on
     // image pixel  (wx + xOffset,  wz + yOffset).  In other words:
     //   image pixel 0   ↔  world value  -xOffset
     //   image pixel W   ↔  world value   W - xOffset   (W = trackData.width)
     //
-    // After the fit-and-centre step, image pixel 0 maps to SVG pixel imageX and
-    // image pixel W maps to SVG pixel imageX + renderedWidth — so the d3 range
-    // simply follows the already-computed image placement.
+    // After the fit-and-centre step, the viewport's left edge maps to SVG pixel imageX
+    // and its right edge maps to imageX + renderedWidth — so the d3 range simply
+    // follows the already-computed viewport placement.
     const xScale = useMemo(
         () =>
             d3
                 .scaleLinear()
                 .domain([
-                    -(effectiveDimensions?.xOffset ?? 0),
-                    (effectiveDimensions?.width ?? 0) -
-                        (effectiveDimensions?.xOffset ?? 0),
+                    -(viewportDimensions?.xOffset ?? 0),
+                    (viewportDimensions?.width ?? 0) -
+                        (viewportDimensions?.xOffset ?? 0),
                 ])
                 .range([imageX, imageX + renderedWidth]),
-        [effectiveDimensions, imageX, renderedWidth],
+        [viewportDimensions, imageX, renderedWidth],
     );
 
     const yScale = useMemo(
@@ -183,13 +213,24 @@ const TrackDisplay = ({ trackData, telemetryData }: Props) => {
             d3
                 .scaleLinear()
                 .domain([
-                    -(effectiveDimensions?.yOffset ?? 0),
-                    (effectiveDimensions?.height ?? 0) -
-                        (effectiveDimensions?.yOffset ?? 0),
+                    -(viewportDimensions?.yOffset ?? 0),
+                    (viewportDimensions?.height ?? 0) -
+                        (viewportDimensions?.yOffset ?? 0),
                 ])
                 .range([imageY, imageY + renderedHeight]),
-        [effectiveDimensions, imageY, renderedHeight],
+        [viewportDimensions, imageY, renderedHeight],
     );
+
+    // Project the full image's world-space bounds through the (possibly zoomed) scales.
+    // When zoomed, the image extends beyond the SVG canvas; the SVG viewport clips it.
+    const actualImageBounds = useMemo(() => {
+        if (!effectiveDimensions) return null;
+        const left = xScale(-(effectiveDimensions.xOffset));
+        const top = yScale(-(effectiveDimensions.yOffset));
+        const right = xScale(effectiveDimensions.width - effectiveDimensions.xOffset);
+        const bottom = yScale(effectiveDimensions.height - effectiveDimensions.yOffset);
+        return { x: left, y: top, width: right - left, height: bottom - top };
+    }, [effectiveDimensions, xScale, yScale]);
 
     return (
         // The Box fills the parent and gives useContainerSize something to measure.
@@ -211,7 +252,7 @@ const TrackDisplay = ({ trackData, telemetryData }: Props) => {
                 width={fullWidth}
                 height={fullHeight}
             >
-                {trackData && (
+                {trackData && actualImageBounds && (
                     <>
                         <defs>
                             {/*
@@ -224,10 +265,10 @@ const TrackDisplay = ({ trackData, telemetryData }: Props) => {
                             <mask id="track-mask">
                                 <image
                                     href={trackData.url}
-                                    x={imageX}
-                                    y={imageY}
-                                    width={renderedWidth}
-                                    height={renderedHeight}
+                                    x={actualImageBounds.x}
+                                    y={actualImageBounds.y}
+                                    width={actualImageBounds.width}
+                                    height={actualImageBounds.height}
                                 />
                             </mask>
                         </defs>
@@ -237,10 +278,10 @@ const TrackDisplay = ({ trackData, telemetryData }: Props) => {
                             The mask cuts it into the shape of the track.
                         */}
                         <rect
-                            x={imageX}
-                            y={imageY}
-                            width={renderedWidth}
-                            height={renderedHeight}
+                            x={actualImageBounds.x}
+                            y={actualImageBounds.y}
+                            width={actualImageBounds.width}
+                            height={actualImageBounds.height}
                             fill="darkgray"
                             mask="url(#track-mask)"
                         />
