@@ -16,24 +16,22 @@ interface Props {
     telemetryData: TelemetryData;
 }
 
+const BLIP_THRESHOLD = 5;
+
 const getTrackSegmentType = (
     gas: number | undefined,
     brake: number | undefined,
-): TrackSegmentType => {
-    const g = gas ?? 0;
+): TrackSegmentType | undefined => {
+    if (gas === undefined && brake === undefined) return undefined;
     const b = brake ?? 0;
-    if (g > 0 && b > 0) return "double-pedal";
-    if (g === 1) return "gas-full";
-    if (g >= 0.5) return "gas-mid";
-    if (g > 0) return "gas-low";
-    if (b === 1) return "brake-full";
-    if (b >= 0.5) return "brake-mid";
-    if (b > 0) return "brake-low";
+    const g = gas ?? 0;
+    if (b > 0) return "brake";
+    if (g > 0) return "gas";
     return "coast";
 };
 
 const prepareTrackSegments = (telemetryData: TelemetryData): TrackSegment[] => {
-    const overallSegmentData: TrackSegment[] = [];
+    const rawSegments: TrackSegment[] = [];
     let currentSegmentPositionData: TrackPositionData[] = [];
     let currentSegmentType: TrackSegmentType | undefined = undefined;
     let indexStart = 0;
@@ -48,37 +46,50 @@ const prepareTrackSegments = (telemetryData: TelemetryData): TrackSegment[] => {
             z: telemetryData.posZ[i],
         };
 
-        // Initialize segment type from the first point
         if (currentSegmentType === undefined) {
             currentSegmentType = calculatedSegmentType;
         }
 
+        // Undefined means no pedal data for this point — absorb into current segment
+        const effectiveType = calculatedSegmentType ?? currentSegmentType;
+
         const isLastPoint = i === telemetryData.posX.length - 1;
-        const isTypeChange = calculatedSegmentType !== currentSegmentType;
+        const isTypeChange = effectiveType !== currentSegmentType;
 
         if (isTypeChange || isLastPoint) {
-            // Include this point in the closing segment for visual continuity
             currentSegmentPositionData.push(trackPositionData);
-            // Store the segment
-            overallSegmentData.push({
-                data: currentSegmentPositionData,
-                type: currentSegmentType,
-                indexStart,
-                indexEnd: i,
-            });
+            if (currentSegmentType !== undefined) {
+                rawSegments.push({
+                    data: currentSegmentPositionData,
+                    type: currentSegmentType,
+                    indexStart,
+                    indexEnd: i,
+                });
+            }
             if (!isLastPoint) {
-                // Start new segment from this point (overlap keeps the path connected)
                 currentSegmentPositionData = [trackPositionData];
                 indexStart = i;
-                currentSegmentType = calculatedSegmentType;
+                currentSegmentType = effectiveType;
             }
         } else {
-            // Add the point to the segment
             currentSegmentPositionData.push(trackPositionData);
         }
     });
 
-    return overallSegmentData;
+    // Merge blip segments into their predecessor so brief coasts/double-pedal
+    // don't create visual noise
+    const merged: TrackSegment[] = [];
+    for (const seg of rawSegments) {
+        if (seg.indexEnd - seg.indexStart < BLIP_THRESHOLD && merged.length > 0) {
+            const prev = merged[merged.length - 1];
+            prev.data = [...prev.data, ...seg.data.slice(1)];
+            prev.indexEnd = seg.indexEnd;
+        } else {
+            merged.push({ ...seg, data: [...seg.data] });
+        }
+    }
+
+    return merged;
 };
 
 const TrackDisplay = ({ trackData, telemetryData }: Props) => {
@@ -92,7 +103,13 @@ const TrackDisplay = ({ trackData, telemetryData }: Props) => {
     const fallbackDimensions = useMemo(() => {
         const [minX, maxX] = d3.extent(telemetryData.posX ?? [], (v) => v);
         const [minZ, maxZ] = d3.extent(telemetryData.posZ ?? [], (v) => v);
-        if (minX === undefined || maxX === undefined || minZ === undefined || maxZ === undefined) return null;
+        if (
+            minX === undefined ||
+            maxX === undefined ||
+            minZ === undefined ||
+            maxZ === undefined
+        )
+            return null;
         return {
             width: maxX - minX,
             height: maxZ - minZ,
@@ -104,7 +121,13 @@ const TrackDisplay = ({ trackData, telemetryData }: Props) => {
     const effectiveDimensions = trackData ?? fallbackDimensions;
 
     const { renderedWidth, renderedHeight, imageX, imageY } = useMemo(() => {
-        if (!effectiveDimensions) return { renderedWidth: 0, renderedHeight: 0, imageX: 0, imageY: 0 };
+        if (!effectiveDimensions)
+            return {
+                renderedWidth: 0,
+                renderedHeight: 0,
+                imageX: 0,
+                imageY: 0,
+            };
 
         // Step 1 — How much would we need to scale the image to fill each axis exactly?
         //   If this scale were used alone, the image would touch that edge perfectly,
@@ -148,7 +171,8 @@ const TrackDisplay = ({ trackData, telemetryData }: Props) => {
                 .scaleLinear()
                 .domain([
                     -(effectiveDimensions?.xOffset ?? 0),
-                    (effectiveDimensions?.width ?? 0) - (effectiveDimensions?.xOffset ?? 0),
+                    (effectiveDimensions?.width ?? 0) -
+                        (effectiveDimensions?.xOffset ?? 0),
                 ])
                 .range([imageX, imageX + renderedWidth]),
         [effectiveDimensions, imageX, renderedWidth],
@@ -160,7 +184,8 @@ const TrackDisplay = ({ trackData, telemetryData }: Props) => {
                 .scaleLinear()
                 .domain([
                     -(effectiveDimensions?.yOffset ?? 0),
-                    (effectiveDimensions?.height ?? 0) - (effectiveDimensions?.yOffset ?? 0),
+                    (effectiveDimensions?.height ?? 0) -
+                        (effectiveDimensions?.yOffset ?? 0),
                 ])
                 .range([imageY, imageY + renderedHeight]),
         [effectiveDimensions, imageY, renderedHeight],

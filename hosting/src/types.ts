@@ -35,15 +35,7 @@ export interface TrackSegment {
     indexEnd?: number;
 }
 
-export type TrackSegmentType =
-    | 'double-pedal'
-    | 'gas-full'
-    | 'gas-mid'
-    | 'gas-low'
-    | 'brake-full'
-    | 'brake-mid'
-    | 'brake-low'
-    | 'coast';
+export type TrackSegmentType = 'gas' | 'brake' | 'coast';
 
 export interface TelemetryData {
   brake?: TelemetryDataSet;

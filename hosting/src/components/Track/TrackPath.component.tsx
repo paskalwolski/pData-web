@@ -4,13 +4,8 @@ import { TrackPositionData, TrackSegment, TrackSegmentType } from "../../types";
 import { useTelemetryPointContext } from "../../hooks/useTelemetryPoint";
 
 const SEGMENT_COLOR_MAP: Record<TrackSegmentType, string> = {
-    "double-pedal": "#000000",
-    "gas-full": "rgb(0, 255, 0)",
-    "gas-mid": "rgba(0, 255, 0, 0.66)",
-    "gas-low": "rgba(0, 255, 0, 0.33)",
-    "brake-full": "#FF0000",
-    "brake-mid": "rgba(255, 0, 0, 0.66)",
-    "brake-low": "rgba(255, 0, 0, 0.33)",
+    gas: "rgb(0, 255, 0)",
+    brake: "#FF0000",
     coast: "#FFFFFF",
 };
 interface TrackTraceSegmentProps {
