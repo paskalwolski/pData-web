@@ -80,6 +80,7 @@ export const TelemetrySection = ({ lapId, secondaryLapId, trackId }: Props) => {
                         top: 0,
                         alignSelf: "flex-start",
                         flex: 1,
+                        maxWidth: "1200px",
                     }}
                 >
                     <Paper>
