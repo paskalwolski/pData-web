@@ -34,7 +34,7 @@ export const checkTrackData = onRequest(async (request, response) => {
   // If the doc has no data, it does not exist
   if (!trackSnapshot.exists) {
     console.log('No Track Data Found');
-    response.status(404).send();
+    response.status(204).send();
     return;
   }
 
