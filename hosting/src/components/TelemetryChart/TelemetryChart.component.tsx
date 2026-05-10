@@ -100,11 +100,16 @@ const TelemetryChart = ({
     const handleMouseUp = useCallback(
         (e: React.MouseEvent) => {
             if (highlightStartIndex == null) return;
-            const x = getIndexFromEvent(e);
-            setSelectionStartIndex(Math.min(highlightStartIndex, x ?? highlightStartIndex));
-            setSelectionEndIndex(Math.max(highlightStartIndex, x ?? highlightStartIndex));
+            const x = getIndexFromEvent(e) ?? highlightStartIndex;
             setHighlightStartIndex(undefined);
             setHighlightEndIndex(undefined);
+            if (x === highlightStartIndex) {
+                setSelectionStartIndex(undefined);
+                setSelectionEndIndex(undefined);
+            } else {
+                setSelectionStartIndex(Math.min(highlightStartIndex, x));
+                setSelectionEndIndex(Math.max(highlightStartIndex, x));
+            }
         },
         [getIndexFromEvent, highlightStartIndex, setSelectionStartIndex, setSelectionEndIndex, setHighlightStartIndex, setHighlightEndIndex],
     );
