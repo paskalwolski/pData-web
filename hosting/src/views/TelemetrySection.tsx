@@ -87,6 +87,7 @@ export const TelemetrySection = ({ lapId, secondaryLapId, trackId }: Props) => {
                         <Box sx={{ width: "100%", height: "100vh" }}>
                             <TrackDisplay
                                 telemetryData={lapTelemetry}
+                                secondaryTelemetryData={secondaryTelemetry}
                                 trackData={trackData}
                             />
                         </Box>

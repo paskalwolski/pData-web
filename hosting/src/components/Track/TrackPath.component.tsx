@@ -2,6 +2,7 @@ import * as d3 from "d3";
 import React, { useCallback, useMemo } from "react";
 import { TrackPositionData, TrackSegment, TrackSegmentType } from "../../types";
 import { useTelemetryPointContext } from "../../hooks/useTelemetryPoint";
+import { useTheme } from "@mui/material";
 
 const SEGMENT_COLOR_MAP: Record<TrackSegmentType, string> = {
     gas: "rgb(0, 255, 0)",
@@ -116,10 +117,20 @@ type Props = (
 ) & {
     xScale: d3.ScaleLinear<number, number, never>;
     yScale: d3.ScaleLinear<number, number, never>;
+    secondary?: boolean;
 };
 
 const TrackPath = React.memo(
-    ({ variant, trackSegmentData, positionData, xScale, yScale }: Props) => {
+    ({
+        variant,
+        trackSegmentData,
+        positionData,
+        xScale,
+        yScale,
+        secondary = false,
+    }: Props) => {
+        const { palette } = useTheme();
+
         const lineGen = useMemo(
             () =>
                 d3
@@ -137,7 +148,11 @@ const TrackPath = React.memo(
                     <path
                         d={lineGen(positionData)}
                         fill="none"
-                        stroke="white"
+                        stroke={
+                            secondary
+                                ? palette.secondary.dark
+                                : palette.primary.dark
+                        }
                         strokeWidth={2}
                     />
                 )}

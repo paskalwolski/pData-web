@@ -110,6 +110,14 @@ const TrackDisplay = ({
         () => prepareTrackSegments(telemetryData),
         [telemetryData],
     );
+    const secondaryPositionData = useMemo<
+        TrackPositionData[] | undefined
+    >(() => {
+        if (!secondaryTelemetryData) return undefined;
+        const { posX, posZ } = secondaryTelemetryData;
+        return posX.map((_, i) => ({ x: posX[i], z: posZ[i] }));
+    }, [secondaryTelemetryData]);
+
     // TODO: Clean the calculation pipeline for this
     const fallbackDimensions = useMemo(() => {
         const allX = [
@@ -343,6 +351,16 @@ const TrackDisplay = ({
                     xScale={xScale}
                     yScale={yScale}
                 />
+
+                {secondaryTelemetryData && (
+                    <TrackPath
+                        variant="plain"
+                        positionData={secondaryPositionData}
+                        xScale={xScale}
+                        yScale={yScale}
+                        secondary
+                    />
+                )}
             </svg>
         </Box>
     );
