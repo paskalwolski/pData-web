@@ -68,6 +68,11 @@ const TelemetryChart = ({
     );
 
     const selectedYValue = data[selectedIndex];
+    const secondaryYValue = secondaryData?.[selectedIndex];
+    const diffYValue =
+        selectedYValue && secondaryYValue
+            ? selectedYValue - secondaryYValue
+            : undefined;
 
     const getIndexFromEvent = useCallback(
         (e: React.MouseEvent) => {
@@ -129,14 +134,14 @@ const TelemetryChart = ({
 
     const handleMouseLeave = useCallback(
         (e: React.MouseEvent) => {
-        setSelectedIndex(null);
+            setSelectedIndex(null);
             if (highlightStartIndex == null) return;
             setSelectionStartIndex(highlightStartIndex);
             const x = getIndexFromEvent(e) ?? highlightEndIndex;
             setSelectionStartIndex(Math.min(highlightStartIndex, x));
             setSelectionEndIndex(Math.max(highlightStartIndex, x));
-        setHighlightStartIndex(undefined);
-        setHighlightEndIndex(undefined);
+            setHighlightStartIndex(undefined);
+            setHighlightEndIndex(undefined);
         },
         [
             setSelectedIndex,
@@ -153,19 +158,40 @@ const TelemetryChart = ({
     return (
         <Paper>
             <Stack spacing={1} margin={1}>
-                <Box width={1} flex={1} display="flex" justifyContent="center">
-                    <Stack width={1} alignItems="start">
+                <Stack width={1} justifyContent="space-between" direction="row">
+                    <Stack justifyContent="start" direction="row" spacing={1}>
                         <Typography>{title}</Typography>
-                        <Box flex={1}>
-                            <Typography>
-                                {isFinite(selectedYValue) && !!selectedYValue
-                                    ? (valueFormatter?.(selectedYValue) ??
-                                      selectedYValue)
-                                    : "-"}
+                        <Typography
+                            color={palette.primary.light}
+                            sx={{ minWidth: "8ch", textAlign: "right" }}
+                        >
+                            {isFinite(selectedYValue) && !!selectedYValue
+                                ? (valueFormatter?.(selectedYValue) ??
+                                  selectedYValue)
+                                : "-"}
+                        </Typography>
+                        {isFinite(secondaryYValue) && (
+                            <Typography
+                                color={palette.secondary.light}
+                                sx={{ minWidth: "8ch", textAlign: "right" }}
+                            >
+                                {valueFormatter?.(secondaryYValue) ??
+                                    secondaryYValue}
                             </Typography>
-                        </Box>
+                        )}
+                        {isFinite(diffYValue) && (
+                            <Typography
+                                color={palette.info.light}
+                                sx={{ minWidth: "8ch", textAlign: "right" }}
+                            >
+                                ∆ {valueFormatter?.(diffYValue) ?? diffYValue}
+                            </Typography>
+                        )}
                     </Stack>
-                </Box>
+                    {isFinite(selectedIndex) && !!selectedIndex && (
+                        <Typography>{selectedIndex}m</Typography>
+                    )}
+                </Stack>
                 <Box ref={containerRef}>
                     <svg width={width} height={height}>
                         {highlightStartIndex != null && (
