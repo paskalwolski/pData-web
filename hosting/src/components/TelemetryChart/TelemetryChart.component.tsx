@@ -40,9 +40,13 @@ const TelemetryChart = ({
         selectedIndex,
         setSelectedIndex,
         highlightStartIndex,
+        setHighlightStartIndex,
         highlightEndIndex,
+        setHighlightEndIndex,
         selectionStartIndex,
         selectionEndIndex,
+        setSelectionStartIndex,
+        setSelectionEndIndex,
     } = useTelemetryPointContext();
 
     const xDomain = useMemo(
@@ -65,23 +69,56 @@ const TelemetryChart = ({
 
     const selectedYValue = data[selectedIndex];
 
-    const handleMouseMove = useCallback(
+    const getIndexFromEvent = useCallback(
         (e: React.MouseEvent) => {
             const x0 = xScale.invert(d3.pointer(e)[0]);
             const x = Number(x0.toFixed(0));
-            if (xDomain[0] <= x && x <= xDomain[1]) {
-                setSelectedIndex(x);
-            } else {
-                setSelectedIndex(null);
-            }
+            return xDomain[0] <= x && x <= xDomain[1] ? x : null;
         },
-        [setSelectedIndex, xScale, xDomain],
+        [xScale, xDomain],
+    );
+
+    const handleMouseDown = useCallback(
+        (e: React.MouseEvent) => {
+            const x = getIndexFromEvent(e);
+            if (x == null) return;
+            setHighlightStartIndex(x);
+            setHighlightEndIndex(undefined);
+        },
+        [getIndexFromEvent, setHighlightStartIndex, setHighlightEndIndex],
+    );
+
+    const handleMouseMove = useCallback(
+        (e: React.MouseEvent) => {
+            const x = getIndexFromEvent(e);
+            setSelectedIndex(x ?? undefined);
+            if (highlightStartIndex != null && x != null) setHighlightEndIndex(x);
+        },
+        [getIndexFromEvent, setSelectedIndex, highlightStartIndex, setHighlightEndIndex],
+    );
+
+    const handleMouseUp = useCallback(
+        (e: React.MouseEvent) => {
+            if (highlightStartIndex == null) return;
+            const x = getIndexFromEvent(e);
+            setSelectionStartIndex(Math.min(highlightStartIndex, x ?? highlightStartIndex));
+            setSelectionEndIndex(Math.max(highlightStartIndex, x ?? highlightStartIndex));
+            setHighlightStartIndex(undefined);
+            setHighlightEndIndex(undefined);
+        },
+        [getIndexFromEvent, highlightStartIndex, setSelectionStartIndex, setSelectionEndIndex, setHighlightStartIndex, setHighlightEndIndex],
     );
 
     const handleMouseLeave = useCallback(
-        () => setSelectedIndex(null),
-        [setSelectedIndex],
+        () => {
+            setSelectedIndex(null);
+            setHighlightStartIndex(undefined);
+            setHighlightEndIndex(undefined);
+        },
+        [setSelectedIndex, setHighlightStartIndex, setHighlightEndIndex],
     );
+
+
 
     return (
         <Paper>
@@ -138,11 +175,13 @@ const TelemetryChart = ({
                             data={data}
                         />
                         <rect
-                            style={{ pointerEvents: "all" }}
+                            style={{ pointerEvents: "all", cursor: "crosshair" }}
                             fill="none"
                             height={height}
                             width={width}
+                            onMouseDown={handleMouseDown}
                             onMouseMove={handleMouseMove}
+                            onMouseUp={handleMouseUp}
                             onMouseLeave={handleMouseLeave}
                         />
                     </svg>
