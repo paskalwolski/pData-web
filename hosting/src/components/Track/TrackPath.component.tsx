@@ -153,6 +153,7 @@ const TrackPath = React.memo(
                                 ? palette.secondary.dark
                                 : palette.primary.dark
                         }
+                        strokeDasharray={secondary ? "5 2" : "0"}
                         strokeWidth={2}
                     />
                 )}
