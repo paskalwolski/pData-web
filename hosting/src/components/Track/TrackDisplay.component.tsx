@@ -11,7 +11,7 @@ import {
 import { useMemo } from "react";
 import { TrackPath } from "./TrackPath.component";
 import { useTelemetryPointContext } from "../../hooks/useTelemetryPoint";
-import { TrackPosition } from "./TrackPosition.component";
+import { TrackCrosshair } from "./TrackCrosshair.component";
 
 interface Props {
     trackData?: TrackData;
@@ -362,7 +362,7 @@ const TrackDisplay = ({
                         secondary
                     />
                 )}
-                <TrackPosition
+                <TrackCrosshair
                     xScale={xScale}
                     yScale={yScale}
                     telemetryData={telemetryData}

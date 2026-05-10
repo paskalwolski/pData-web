@@ -9,7 +9,7 @@ interface Props {
     telemetryData: TelemetryData;
 }
 
-export const TrackPosition = ({ xScale, yScale, telemetryData }: Props) => {
+export const TrackCrosshair = ({ xScale, yScale, telemetryData }: Props) => {
     const { palette } = useTheme();
     const { selectedIndex } = useTelemetryPointContext();
 
@@ -35,9 +35,25 @@ export const TrackPosition = ({ xScale, yScale, telemetryData }: Props) => {
 
     return (
         <>
-            <line x1={posX} y1={yMin} x2={posX} y2={yMax} stroke={palette.primary.dark} strokeWidth={1} strokeOpacity={0.5} />
-            <line x1={xMin} y1={posY} x2={xMax} y2={posY} stroke={palette.primary.dark} strokeWidth={1} strokeOpacity={0.5} />
-            <circle r={4} fill={palette.primary.dark} cx={posX} cy={posY} />
+            <line
+                x1={posX}
+                y1={yMin}
+                x2={posX}
+                y2={yMax}
+                stroke={palette.info.light}
+                strokeWidth={1}
+                strokeOpacity={0.4}
+            />
+            <line
+                x1={xMin}
+                y1={posY}
+                x2={xMax}
+                y2={posY}
+                stroke={palette.info.light}
+                strokeWidth={1}
+                strokeOpacity={0.4}
+            />
+            <circle r={4} fill={palette.info.light} cx={posX} cy={posY} />
         </>
     );
 };
