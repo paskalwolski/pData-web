@@ -127,11 +127,28 @@ const TelemetryChart = ({
         ],
     );
 
-    const handleMouseLeave = useCallback(() => {
+    const handleMouseLeave = useCallback(
+        (e: React.MouseEvent) => {
         setSelectedIndex(null);
+            if (highlightStartIndex == null) return;
+            setSelectionStartIndex(highlightStartIndex);
+            const x = getIndexFromEvent(e) ?? highlightEndIndex;
+            setSelectionStartIndex(Math.min(highlightStartIndex, x));
+            setSelectionEndIndex(Math.max(highlightStartIndex, x));
         setHighlightStartIndex(undefined);
         setHighlightEndIndex(undefined);
-    }, [setSelectedIndex, setHighlightStartIndex, setHighlightEndIndex]);
+        },
+        [
+            setSelectedIndex,
+            highlightEndIndex,
+            highlightStartIndex,
+            setSelectionStartIndex,
+            getIndexFromEvent,
+            setSelectionEndIndex,
+            setHighlightStartIndex,
+            setHighlightEndIndex,
+        ],
+    );
 
     return (
         <Paper>
