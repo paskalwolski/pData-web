@@ -289,6 +289,7 @@ const TrackDisplay = ({ trackData, telemetryData }: Props) => {
                 )}
 
                 <TrackPath
+                    variant="segments"
                     trackSegmentData={trackSegmentData}
                     xScale={xScale}
                     yScale={yScale}

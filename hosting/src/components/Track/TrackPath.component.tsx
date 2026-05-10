@@ -102,35 +102,56 @@ const TrackTraceSegment = ({
     );
 };
 
-interface Props {
-    trackSegmentData: TrackSegment[];
+type Props = (
+    | {
+          variant: "segments";
+          trackSegmentData: TrackSegment[];
+          positionData?: TrackPositionData[];
+      }
+    | {
+          variant: "plain";
+          positionData: TrackPositionData[];
+          trackSegmentData?: TrackSegment[];
+      }
+) & {
     xScale: d3.ScaleLinear<number, number, never>;
     yScale: d3.ScaleLinear<number, number, never>;
-}
+};
 
-const TrackPath = React.memo(({ trackSegmentData, xScale, yScale }: Props) => {
-    const lineGen = useMemo(
-        () =>
-            d3
-                .line<TrackPositionData>()
-                .defined((d) => d.x != null && d.z != null)
-                .x((d) => xScale(d.x))
-                .y((d) => yScale(d.z))
-                .curve(d3.curveLinear),
-        [xScale, yScale],
-    );
+const TrackPath = React.memo(
+    ({ variant, trackSegmentData, positionData, xScale, yScale }: Props) => {
+        const lineGen = useMemo(
+            () =>
+                d3
+                    .line<TrackPositionData>()
+                    .defined((d) => d.x != null && d.z != null)
+                    .x((d) => xScale(d.x))
+                    .y((d) => yScale(d.z))
+                    .curve(d3.curveLinear),
+            [xScale, yScale],
+        );
 
-    return (
-        <g>
-            {trackSegmentData.map((s, i) => (
-                <TrackTraceSegment
-                    key={`segment-${i}`}
-                    lineGenerator={lineGen}
-                    segment={s}
-                />
-            ))}
-        </g>
-    );
-});
+        return (
+            <g>
+                {variant == "plain" && (
+                    <path
+                        d={lineGen(positionData)}
+                        fill="none"
+                        stroke="white"
+                        strokeWidth={2}
+                    />
+                )}
+                {variant === "segments" &&
+                    trackSegmentData?.map((s, i) => (
+                        <TrackTraceSegment
+                            key={`segment-${i}`}
+                            lineGenerator={lineGen}
+                            segment={s}
+                        />
+                    ))}
+            </g>
+        );
+    },
+);
 
 export { TrackPath };
