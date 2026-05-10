@@ -170,7 +170,7 @@ const TelemetryChart = ({
                                   selectedYValue)
                                 : "-"}
                         </Typography>
-                        {isFinite(secondaryYValue) && (
+                        {isFinite(secondaryYValue) && !!secondaryYValue && (
                             <Typography
                                 color={palette.secondary.light}
                                 sx={{ minWidth: "8ch", textAlign: "right" }}
@@ -179,7 +179,7 @@ const TelemetryChart = ({
                                     secondaryYValue}
                             </Typography>
                         )}
-                        {isFinite(diffYValue) && (
+                        {isFinite(diffYValue) && !!diffYValue && (
                             <Typography
                                 color={palette.info.light}
                                 sx={{ minWidth: "8ch", textAlign: "right" }}
