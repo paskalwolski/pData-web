@@ -29,5 +29,15 @@ export const TrackPosition = ({ xScale, yScale, telemetryData }: Props) => {
     const [posX, posY] = calculatePosition(selectedIndex);
 
     if (posX === undefined || posY === undefined) return null;
-    return <circle r={4} fill={palette.primary.dark} cx={posX} cy={posY} />;
+
+    const [xMin, xMax] = xScale.range();
+    const [yMin, yMax] = yScale.range();
+
+    return (
+        <>
+            <line x1={posX} y1={yMin} x2={posX} y2={yMax} stroke={palette.primary.dark} strokeWidth={1} strokeOpacity={0.5} />
+            <line x1={xMin} y1={posY} x2={xMax} y2={posY} stroke={palette.primary.dark} strokeWidth={1} strokeOpacity={0.5} />
+            <circle r={4} fill={palette.primary.dark} cx={posX} cy={posY} />
+        </>
+    );
 };
