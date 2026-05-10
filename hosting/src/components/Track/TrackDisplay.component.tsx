@@ -15,6 +15,7 @@ import { useTelemetryPointContext } from "../../hooks/useTelemetryPoint";
 interface Props {
     trackData?: TrackData;
     telemetryData: TelemetryData;
+    secondaryTelemetryData?: TelemetryData;
 }
 
 const BLIP_THRESHOLD = 5;
@@ -81,7 +82,10 @@ const prepareTrackSegments = (telemetryData: TelemetryData): TrackSegment[] => {
     // don't create visual noise
     const merged: TrackSegment[] = [];
     for (const seg of rawSegments) {
-        if (seg.indexEnd - seg.indexStart < BLIP_THRESHOLD && merged.length > 0) {
+        if (
+            seg.indexEnd - seg.indexStart < BLIP_THRESHOLD &&
+            merged.length > 0
+        ) {
             const prev = merged[merged.length - 1];
             prev.data = [...prev.data, ...seg.data.slice(1)];
             prev.indexEnd = seg.indexEnd;
@@ -93,9 +97,14 @@ const prepareTrackSegments = (telemetryData: TelemetryData): TrackSegment[] => {
     return merged;
 };
 
-const TrackDisplay = ({ trackData, telemetryData }: Props) => {
+const TrackDisplay = ({
+    trackData,
+    telemetryData,
+    secondaryTelemetryData,
+}: Props) => {
     const [containerRef, fullWidth, fullHeight] = useContainerSize();
-    const { selectionStartIndex, selectionEndIndex } = useTelemetryPointContext();
+    const { selectionStartIndex, selectionEndIndex } =
+        useTelemetryPointContext();
 
     const trackSegmentData = useMemo(
         () => prepareTrackSegments(telemetryData),
@@ -103,8 +112,16 @@ const TrackDisplay = ({ trackData, telemetryData }: Props) => {
     );
     // TODO: Clean the calculation pipeline for this
     const fallbackDimensions = useMemo(() => {
-        const [minX, maxX] = d3.extent(telemetryData.posX ?? [], (v) => v);
-        const [minZ, maxZ] = d3.extent(telemetryData.posZ ?? [], (v) => v);
+        const allX = [
+            ...(telemetryData.posX ?? []),
+            ...(secondaryTelemetryData?.posX ?? []),
+        ];
+        const allZ = [
+            ...(telemetryData.posZ ?? []),
+            ...(secondaryTelemetryData?.posZ ?? []),
+        ];
+        const [minX, maxX] = d3.extent(allX, (v) => v);
+        const [minZ, maxZ] = d3.extent(allZ, (v) => v);
         if (
             minX === undefined ||
             maxX === undefined ||
@@ -118,22 +135,44 @@ const TrackDisplay = ({ trackData, telemetryData }: Props) => {
             xOffset: -minX,
             yOffset: -minZ,
         };
-    }, [telemetryData.posX, telemetryData.posZ]);
+    }, [
+        telemetryData.posX,
+        telemetryData.posZ,
+        secondaryTelemetryData?.posX,
+        secondaryTelemetryData?.posZ,
+    ]);
 
     const effectiveDimensions = trackData ?? fallbackDimensions;
 
     // When a selection is active, shrink the viewport to the selection's world-space
     // bounding box (with 10% padding) so the image and path both zoom into that region.
     const viewportDimensions = useMemo(() => {
-        if (selectionStartIndex == null || selectionEndIndex == null || !effectiveDimensions)
+        if (
+            selectionStartIndex == null ||
+            selectionEndIndex == null ||
+            !effectiveDimensions
+        )
             return effectiveDimensions;
 
-        const selectedX = telemetryData.posX.slice(selectionStartIndex, selectionEndIndex + 1);
-        const selectedZ = telemetryData.posZ.slice(selectionStartIndex, selectionEndIndex + 1);
+        const selectedX = telemetryData.posX.slice(
+            selectionStartIndex,
+            selectionEndIndex + 1,
+        );
+        const selectedZ = telemetryData.posZ.slice(
+            selectionStartIndex,
+            selectionEndIndex + 1,
+        );
         const [minX, maxX] = d3.extent(selectedX);
         const [minZ, maxZ] = d3.extent(selectedZ);
 
-        if (minX == null || maxX == null || minZ == null || maxZ == null || minX === maxX || minZ === maxZ)
+        if (
+            minX == null ||
+            maxX == null ||
+            minZ == null ||
+            maxZ == null ||
+            minX === maxX ||
+            minZ === maxZ
+        )
             return effectiveDimensions;
 
         const padX = (maxX - minX) * 0.1;
@@ -147,7 +186,13 @@ const TrackDisplay = ({ trackData, telemetryData }: Props) => {
             xOffset: -viewLeft,
             yOffset: -viewTop,
         };
-    }, [selectionStartIndex, selectionEndIndex, effectiveDimensions, telemetryData.posX, telemetryData.posZ]);
+    }, [
+        selectionStartIndex,
+        selectionEndIndex,
+        effectiveDimensions,
+        telemetryData.posX,
+        telemetryData.posZ,
+    ]);
 
     const { renderedWidth, renderedHeight, imageX, imageY } = useMemo(() => {
         if (!viewportDimensions)
@@ -225,10 +270,14 @@ const TrackDisplay = ({ trackData, telemetryData }: Props) => {
     // When zoomed, the image extends beyond the SVG canvas; the SVG viewport clips it.
     const actualImageBounds = useMemo(() => {
         if (!effectiveDimensions) return null;
-        const left = xScale(-(effectiveDimensions.xOffset));
-        const top = yScale(-(effectiveDimensions.yOffset));
-        const right = xScale(effectiveDimensions.width - effectiveDimensions.xOffset);
-        const bottom = yScale(effectiveDimensions.height - effectiveDimensions.yOffset);
+        const left = xScale(-effectiveDimensions.xOffset);
+        const top = yScale(-effectiveDimensions.yOffset);
+        const right = xScale(
+            effectiveDimensions.width - effectiveDimensions.xOffset,
+        );
+        const bottom = yScale(
+            effectiveDimensions.height - effectiveDimensions.yOffset,
+        );
         return { x: left, y: top, width: right - left, height: bottom - top };
     }, [effectiveDimensions, xScale, yScale]);
 
