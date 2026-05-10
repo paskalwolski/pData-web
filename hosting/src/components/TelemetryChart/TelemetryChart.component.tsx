@@ -92,9 +92,15 @@ const TelemetryChart = ({
         (e: React.MouseEvent) => {
             const x = getIndexFromEvent(e);
             setSelectedIndex(x ?? undefined);
-            if (highlightStartIndex != null && x != null) setHighlightEndIndex(x);
+            if (highlightStartIndex != null && x != null)
+                setHighlightEndIndex(x);
         },
-        [getIndexFromEvent, setSelectedIndex, highlightStartIndex, setHighlightEndIndex],
+        [
+            getIndexFromEvent,
+            setSelectedIndex,
+            highlightStartIndex,
+            setHighlightEndIndex,
+        ],
     );
 
     const handleMouseUp = useCallback(
@@ -111,19 +117,21 @@ const TelemetryChart = ({
                 setSelectionEndIndex(Math.max(highlightStartIndex, x));
             }
         },
-        [getIndexFromEvent, highlightStartIndex, setSelectionStartIndex, setSelectionEndIndex, setHighlightStartIndex, setHighlightEndIndex],
+        [
+            getIndexFromEvent,
+            highlightStartIndex,
+            setSelectionStartIndex,
+            setSelectionEndIndex,
+            setHighlightStartIndex,
+            setHighlightEndIndex,
+        ],
     );
 
-    const handleMouseLeave = useCallback(
-        () => {
-            setSelectedIndex(null);
-            setHighlightStartIndex(undefined);
-            setHighlightEndIndex(undefined);
-        },
-        [setSelectedIndex, setHighlightStartIndex, setHighlightEndIndex],
-    );
-
-
+    const handleMouseLeave = useCallback(() => {
+        setSelectedIndex(null);
+        setHighlightStartIndex(undefined);
+        setHighlightEndIndex(undefined);
+    }, [setSelectedIndex, setHighlightStartIndex, setHighlightEndIndex]);
 
     return (
         <Paper>
@@ -150,13 +158,23 @@ const TelemetryChart = ({
                                 rx={2}
                                 ry={2}
                                 fillOpacity={0.3}
-                                x={xScale(highlightStartIndex)}
+                                x={xScale(
+                                    Math.min(
+                                        highlightStartIndex,
+                                        highlightEndIndex ??
+                                            selectedIndex ??
+                                            highlightStartIndex,
+                                    ),
+                                )}
                                 y={yScale.range()[1]}
                                 height={height}
-                                width={
-                                    xScale(highlightEndIndex ?? selectedIndex) -
-                                    xScale(highlightStartIndex)
-                                }
+                                width={Math.abs(
+                                    xScale(
+                                        highlightEndIndex ??
+                                            selectedIndex ??
+                                            highlightStartIndex,
+                                    ) - xScale(highlightStartIndex),
+                                )}
                             />
                         )}
                         <TelemetryLine
@@ -180,7 +198,10 @@ const TelemetryChart = ({
                             data={data}
                         />
                         <rect
-                            style={{ pointerEvents: "all", cursor: "crosshair" }}
+                            style={{
+                                pointerEvents: "all",
+                                cursor: "crosshair",
+                            }}
                             fill="none"
                             height={height}
                             width={width}
