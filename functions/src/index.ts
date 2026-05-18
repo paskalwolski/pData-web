@@ -259,48 +259,70 @@ export const deleteExpiredTestLaps = onSchedule('every 6 hours', async () => {
   const expiredSessionSnapshot = await firestore
     .collection(SESSIONS)
     .where('expiresAt', '<=', now)
+    .orderBy('expiresAt', 'asc')
     .get();
 
   if (expiredSessionSnapshot.empty) {
     console.log('No expired test_sessions to delete');
   } else {
+    console.log(`Found ${expiredSessionSnapshot.docs.length} expired sessions`);
     const batch = firestore.batch();
-    const lapBatches = expiredSessionSnapshot.docs.map(async session => {
-      const removedSessionLaps = await firestore
+    let sessionBatchCounter = 0;
+    let sessionCounter = 0;
+    for (const sessionDoc of expiredSessionSnapshot.docs) {
+      const linkedLapDocs = await firestore
         .collection(LAPS)
-        .where('sessionId', '==', session.id)
+        .where('sessionId', '==', sessionDoc.id)
         .get();
-      removedSessionLaps.docs.forEach(lap =>
-        batch.update(lap.ref, {sessionId: FieldValue.delete()}),
+      const sessionSizeForBatch = linkedLapDocs.docs.length + 1;
+      if (sessionBatchCounter + sessionSizeForBatch > 500) {
+        console.log('Session Delete Batch Size (500) reached');
+        break;
+      }
+      linkedLapDocs.docs.forEach(l =>
+        batch.update(l.ref, {sessionId: FieldValue.delete()}),
       );
-      batch.delete(session.ref);
-    });
-    await Promise.all(lapBatches).then(() => batch.commit());
+      batch.delete(sessionDoc.ref);
+      sessionBatchCounter += sessionSizeForBatch;
+      sessionCounter += 1;
+    }
+    await batch.commit();
     console.log(
-      `Deleted ${expiredSessionSnapshot.size} expired test_sessions.`,
+      `Deleted ${sessionCounter} expired test_sessions (${sessionBatchCounter} operations).`,
     );
   }
 
   // Delete expired laps
-  const expiredSnapshot = await firestore
+  const expiredLapSnapshot = await firestore
     .collection(LAPS)
     .where('expiresAt', '<=', now)
+    .orderBy('expiresAt', 'asc')
     .get();
 
-  if (expiredSnapshot.empty) {
+  if (expiredLapSnapshot.empty) {
     console.log('No expired test_laps to delete.');
   } else {
+    console.log(`Found ${expiredLapSnapshot.docs.length} expired laps`);
     const batch = firestore.batch();
-    const batchOperations = expiredSnapshot.docs.map(async doc => {
-      await doc.ref
+    let lapBatchCounter = 0;
+    let lapCounter = 0;
+    for (const expiredLap of expiredLapSnapshot.docs) {
+      const linkedTelemetryDocs = await expiredLap.ref
         .collection('telemetry')
-        .listDocuments()
-        .then(telemetryDocs => telemetryDocs.map(td => batch.delete(td)));
-      batch.delete(doc.ref);
-    });
-    await Promise.all(batchOperations).then(() => batch.commit());
+        .listDocuments();
+      const lapSizeForBatch = linkedTelemetryDocs.length + 1;
+      if (lapBatchCounter + lapSizeForBatch > 500) {
+        console.log('Lap Delete Batch Size (500) reached');
+        break;
+      }
+      linkedTelemetryDocs.forEach(t => batch.delete(t));
+      batch.delete(expiredLap.ref);
+      lapBatchCounter += lapSizeForBatch;
+      lapCounter += 1;
+    }
+    await batch.commit();
     console.log(
-      `Deleted ${expiredSnapshot.size} expired test_laps and their telemetry data.`,
+      `Deleted ${lapCounter} expired test_laps (${lapBatchCounter} operations).`,
     );
   }
 });
