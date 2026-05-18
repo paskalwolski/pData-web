@@ -151,7 +151,10 @@ const TrackDisplay = ({
         secondaryTelemetryData?.posZ,
     ]);
 
-    const effectiveDimensions = trackData ?? fallbackDimensions;
+    const effectiveDimensions = useMemo(
+        () => ({ ...fallbackDimensions, ...trackData }),
+        [fallbackDimensions, trackData],
+    );
 
     // When a selection is active, shrink the viewport to the selection's world-space
     // bounding box (with 10% padding) so the image and path both zoom into that region.
