@@ -22,7 +22,7 @@ const Homepage = () => {
         <Stack gap={1} my={1}>
             <Paper>
                 <Box p={1}>
-                    <Typography variant="h5">Latest Fast Laps</Typography>
+                    <Typography variant="h5">Latest Laps</Typography>
                 </Box>
                 <Divider />
                 {isLoadingLatestLaps ? (
