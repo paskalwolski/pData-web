@@ -1,12 +1,13 @@
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { DataGrid, GridColDef, GridEventListener } from "@mui/x-data-grid";
 import { useLatestLaps } from "../hooks/useLaps";
 import type { LapData } from "../types";
 import { formatDuration } from "../helpers/formatDuration";
 import { Timestamp } from "firebase/firestore";
+import { useCallback } from "react";
+import { navigate } from "wouter/use-browser-location";
 
 const getRowId = (row: LapData) => row.lapId;
 const columns: GridColDef<LapData>[] = [
-    { field: "lapId", headerName: "Lap ID" },
     { field: "lapTime", headerName: "Time", valueFormatter: formatDuration },
     {
         field: "trackName",
@@ -39,8 +40,22 @@ const columns: GridColDef<LapData>[] = [
     },
 ];
 
-const LapTable = () => {
+interface Props {
+    onLapSelect?: (lapId: string) => undefined;
+}
+
+const LapTable = ({ onLapSelect }: Props) => {
     const [lapData, isLoadingLapData] = useLatestLaps();
+
+    const navigateToLap = (lapId: string) => {
+        navigate(`/laps/${lapId}`);
+    };
+
+    const handleLapSelect: GridEventListener<"rowClick"> = useCallback(
+        ({ row }) =>
+            onLapSelect ? onLapSelect(row.lapId) : navigateToLap(row.lapId),
+        [onLapSelect],
+    );
 
     return (
         <DataGrid
@@ -48,6 +63,7 @@ const LapTable = () => {
             columns={columns}
             getRowId={getRowId}
             loading={isLoadingLapData}
+            onRowClick={handleLapSelect}
         />
     );
 };
