@@ -1,10 +1,12 @@
+import { Timestamp } from "firebase/firestore";
+
 export type SessionType = 'RACE' | 'PRACTICE' | 'QUALIFYING' | 'HOTLAP';
 
 export interface SessionData {
   driver: string;
   car: string;
   track: string;
-  sessionTime: string;
+  sessionTime: Timestamp;
   sessionType: SessionType;
   trackSession: boolean;
 }
@@ -14,10 +16,10 @@ export interface LapData {
   sessionId?: string;
   lapNumber: number;
   lapTime: number;
-  lapTimestamp: number;
+  lapTimestamp: Timestamp;
   isValid: boolean;
   isPit: boolean;
-  expiresAt?: string;
+  expiresAt?: Timestamp;
   sessionData: SessionData;
 }
 
