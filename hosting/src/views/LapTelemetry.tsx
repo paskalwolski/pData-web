@@ -18,7 +18,7 @@ interface Props {
     trackId: string;
 }
 
-export const TelemetrySection = ({ lapId, secondaryLapId, trackId }: Props) => {
+export const LapTelemetry = ({ lapId, secondaryLapId, trackId }: Props) => {
     const [lapTelemetry, isLoadingTelemetry] = useLapTelemetry(lapId);
     const [secondaryTelemetry, isLoadingSecondaryTelemetry] =
         useLapTelemetry(secondaryLapId);

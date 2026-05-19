@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import { useLap } from "../hooks/useLaps";
 import { SessionInfo } from "../components/SessionInfo.component";
-import { TelemetrySection } from "./TelemetrySection";
+import { LapTelemetry } from "./LapTelemetry";
 import { useRoute } from "wouter";
 import { TbAB, TbABOff, TbRoad } from "react-icons/tb";
 import { useCallback } from "react";
@@ -129,7 +129,7 @@ export const NewLapData = ({ lapId, secondaryLapId }: NewLapDataProps) => {
                 {isLoadingLapData || isLoadingSecondaryLapData ? (
                     <Typography>Loading...</Typography>
                 ) : (
-                    <TelemetrySection
+                    <LapTelemetry
                         trackId={lapData.sessionData.track}
                         lapId={lapId}
                         secondaryLapId={secondaryLapId}
