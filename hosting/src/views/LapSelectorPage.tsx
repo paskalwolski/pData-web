@@ -1,5 +1,5 @@
-import { Typography } from "@mui/material";
+import { LapTable } from "../components/LapTable.component";
 
 export const LapSelectorPage = () => {
-    return <Typography>Please select a Lap</Typography>;
+    return <LapTable />;
 };
