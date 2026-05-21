@@ -13,8 +13,9 @@ interface TelemetryChartProps {
     title: string;
     data: TelemetryDataSet;
     secondaryData?: TelemetryDataSet;
-    mode?: TelemetryMode;
     valueFormatter?: (v: number) => string;
+    mode?: TelemetryMode;
+    rawData?: TelemetryDataSet;
 }
 
 const TelemetryChart = ({
@@ -23,11 +24,14 @@ const TelemetryChart = ({
     secondaryData,
     valueFormatter,
     mode = "normal",
+    rawData,
 }: TelemetryChartProps) => {
     const { palette } = useTheme();
 
     const height = 200;
     const [containerRef, width] = useContainerSize();
+
+    const targetData = rawData ?? data;
 
     const yDomain = useMemo(
         () =>
@@ -227,6 +231,11 @@ const TelemetryChart = ({
                             xScale={xScale}
                             yScale={yScale}
                             stepped={mode === "stepped"}
+                            color={
+                                mode === "delta"
+                                    ? palette.success.dark
+                                    : undefined
+                            }
                         />
                         {secondaryData && (
                             <TelemetryLine
@@ -234,13 +243,18 @@ const TelemetryChart = ({
                                 xScale={xScale}
                                 yScale={yScale}
                                 stepped={mode === "stepped"}
-                                secondary
+                                color={
+                                    mode === "delta"
+                                        ? palette.error.dark
+                                        : undefined
+                                }
+                                secondary={mode !== "delta"}
                             />
                         )}
                         <TelemetryCrosshair
                             xScale={xScale}
                             yScale={yScale}
-                            data={data}
+                            data={targetData}
                         />
                         <rect
                             style={{

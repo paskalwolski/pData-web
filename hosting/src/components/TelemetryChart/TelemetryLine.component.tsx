@@ -8,6 +8,7 @@ interface TelemetryLineProps {
     stepped?: boolean;
     data: Array<number | undefined>;
     secondary?: boolean;
+    color?: string;
 }
 const TelemetryLine = React.memo(
     ({
@@ -16,8 +17,15 @@ const TelemetryLine = React.memo(
         yScale,
         stepped = false,
         secondary = false,
+        color,
     }: TelemetryLineProps) => {
         const { palette } = useTheme();
+
+        const resolvedColor = color
+            ? color
+            : secondary
+              ? palette.secondary.dark
+              : palette.primary.dark;
 
         const line = useMemo(() => {
             let d = d3
@@ -34,9 +42,7 @@ const TelemetryLine = React.memo(
         return (
             <path
                 d={line}
-                stroke={
-                    secondary ? palette.secondary.dark : palette.primary.dark
-                }
+                stroke={resolvedColor}
                 strokeWidth={2}
                 strokeDasharray={secondary ? "5 2" : "0"}
                 fill="none"
