@@ -27,9 +27,7 @@ const SessionInfo = ({
     variant = "normal",
     isComparison = false,
 }: SessionInfoCardProps) => {
-    const formattedDate = new Date(
-        sessionData.sessionTime,
-    ).toLocaleDateString();
+    const formattedDate = sessionData.sessionTime.toDate().toLocaleDateString();
     return (
         <Box m={1}>
             <Grid container columns={VARIANT_COLUMN_MAPPING[variant]}>
