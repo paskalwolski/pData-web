@@ -72,7 +72,7 @@ const TelemetryChart = ({
     const selectedYValue = data[selectedIndex];
     const secondaryYValue = secondaryData?.[selectedIndex];
     const diffYValue =
-        selectedYValue && secondaryYValue
+        selectedYValue != null && secondaryYValue != null
             ? selectedYValue - secondaryYValue
             : undefined;
 
@@ -167,12 +167,12 @@ const TelemetryChart = ({
                             color={palette.primary.light}
                             sx={{ minWidth: "8ch", textAlign: "right" }}
                         >
-                            {isFinite(selectedYValue) && !!selectedYValue
+                            {isFinite(selectedYValue) && selectedYValue != null
                                 ? (valueFormatter?.(selectedYValue) ??
                                   selectedYValue)
                                 : "-"}
                         </Typography>
-                        {isFinite(secondaryYValue) && !!secondaryYValue && (
+                        {isFinite(secondaryYValue) && secondaryYValue != null && (
                             <Typography
                                 color={palette.secondary.light}
                                 sx={{ minWidth: "8ch", textAlign: "right" }}
@@ -181,7 +181,7 @@ const TelemetryChart = ({
                                     secondaryYValue}
                             </Typography>
                         )}
-                        {isFinite(diffYValue) && !!diffYValue && (
+                        {isFinite(diffYValue) && diffYValue != null && (
                             <Typography
                                 color={palette.info.light}
                                 sx={{ minWidth: "8ch", textAlign: "right" }}
@@ -190,7 +190,7 @@ const TelemetryChart = ({
                             </Typography>
                         )}
                     </Stack>
-                    {isFinite(selectedIndex) && !!selectedIndex && (
+                    {isFinite(selectedIndex) && selectedIndex != null && (
                         <Typography>{selectedIndex}m</Typography>
                     )}
                 </Stack>
