@@ -5,9 +5,14 @@ import { LapInfo } from "./LapInfo.component";
 interface Props {
     trackId?: string;
     onClick: (lapId: string) => void;
+    excludeLap?: string;
 }
-const LapSelector = ({ trackId, onClick }: Props) => {
-    const [laps, isLoadingLaps] = useLatestLaps({ trackId, fetchLimit: 30 });
+const LapSelector = ({ trackId, onClick, excludeLap }: Props) => {
+    const [laps, isLoadingLaps] = useLatestLaps({
+        trackId,
+        fetchLimit: 30,
+        exclude: excludeLap,
+    });
 
     return isLoadingLaps ? (
         <Typography>Loading...</Typography>

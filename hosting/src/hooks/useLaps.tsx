@@ -12,6 +12,7 @@ import {
     getDocsFromServer,
     QueryConstraint,
     where,
+    documentId,
 } from "firebase/firestore";
 import { LapData, TelemetryData } from "../types";
 
@@ -108,8 +109,9 @@ const useLapTelemetry = (
 interface LatestLapsOpts {
     trackId?: string;
     fetchLimit?: number;
+    exclude?: string;
 }
-const useLatestLaps = ({ trackId, fetchLimit }: LatestLapsOpts = {}): [
+const useLatestLaps = ({ trackId, fetchLimit, exclude }: LatestLapsOpts = {}): [
     Array<LapData> | undefined,
     boolean,
 ] => {
@@ -126,6 +128,9 @@ const useLatestLaps = ({ trackId, fetchLimit }: LatestLapsOpts = {}): [
                 queryConstraints.push(
                     where("sessionData.track", "==", trackId),
                 );
+            }
+            if (exclude) {
+                queryConstraints.push(where(documentId(), "!=", exclude));
             }
             const q = query(collection(db, "test_laps"), ...queryConstraints);
 

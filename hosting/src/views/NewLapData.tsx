@@ -144,13 +144,12 @@ export const NewLapData = ({ lapId, secondaryLapId }: NewLapDataProps) => {
                     fullWidth
                     maxWidth="lg"
                 >
-                    <DialogTitle>
-                        Select Comparison Lap for {lapData.sessionData.track}
-                    </DialogTitle>
+                    <DialogTitle>Select Comparison Lap</DialogTitle>
                     <Box height="80vh">
                         <LapSelector
                             trackId={lapData.sessionData.track}
                             onClick={handleComparisonLapSelect}
+                            excludeLap={lapData.lapId}
                         />
                     </Box>
                 </Dialog>
