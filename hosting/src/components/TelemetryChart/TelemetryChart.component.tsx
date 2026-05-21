@@ -7,11 +7,13 @@ import { useTelemetryPointContext } from "../../hooks/useTelemetryPoint";
 import { TelemetryDataSet } from "../../types";
 import { TelemetryCrosshair } from "./TelemetryCrosshair";
 
+type TelemetryMode = "normal" | "stepped" | "delta";
+
 interface TelemetryChartProps {
     title: string;
     data: TelemetryDataSet;
     secondaryData?: TelemetryDataSet;
-    stepped?: boolean;
+    mode?: TelemetryMode;
     valueFormatter?: (v: number) => string;
 }
 
@@ -20,7 +22,7 @@ const TelemetryChart = ({
     data,
     secondaryData,
     valueFormatter,
-    stepped = false,
+    mode = "normal",
 }: TelemetryChartProps) => {
     const { palette } = useTheme();
 
@@ -224,14 +226,14 @@ const TelemetryChart = ({
                             data={data}
                             xScale={xScale}
                             yScale={yScale}
-                            stepped={stepped}
+                            stepped={mode === "stepped"}
                         />
                         {secondaryData && (
                             <TelemetryLine
                                 data={secondaryData}
                                 xScale={xScale}
                                 yScale={yScale}
-                                stepped={stepped}
+                                stepped={mode === "stepped"}
                                 secondary
                             />
                         )}

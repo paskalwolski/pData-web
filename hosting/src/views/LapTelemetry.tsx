@@ -73,6 +73,7 @@ export const LapTelemetry = ({ lapId, secondaryLapId, trackId }: Props) => {
                         title="Gear"
                         data={lapTelemetry.gear}
                         secondaryData={secondaryTelemetry?.gear}
+                        mode="stepped"
                     />
                     <TelemetryChart
                         title="RPM"

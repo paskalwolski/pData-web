@@ -23,6 +23,7 @@ const TimeDeltaChart = ({ primaryLapData, secondaryLapData }: Props) => {
             title={"Time Delta"}
             data={effectiveTimeDelta}
             valueFormatter={formatMillis}
+            mode="delta"
         />
     );
 };
