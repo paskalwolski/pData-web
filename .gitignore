@@ -27,4 +27,4 @@ dist-ssr
 # TypeScript build artifacts
 *.tsbuildinfo
 
-/docs
+# /docs
