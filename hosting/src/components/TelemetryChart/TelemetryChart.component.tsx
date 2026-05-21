@@ -10,7 +10,7 @@ import { TelemetryCrosshair } from "./TelemetryCrosshair";
 interface TelemetryChartProps {
     title: string;
     data: TelemetryDataSet;
-    secondaryData: TelemetryDataSet;
+    secondaryData?: TelemetryDataSet;
     stepped?: boolean;
     valueFormatter?: (v: number) => string;
 }

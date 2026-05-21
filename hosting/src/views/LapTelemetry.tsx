@@ -11,6 +11,7 @@ import {
     speedFormatter,
     steerFormatter,
 } from "../helpers/telemetryValueFormatter";
+import { TimeDeltaChart } from "./TimeDeltaChart";
 
 interface Props {
     lapId: string;
@@ -32,6 +33,12 @@ export const LapTelemetry = ({ lapId, secondaryLapId, trackId }: Props) => {
         <Stack direction="row" gap={2}>
             <TelemetryPointProvider>
                 <Stack gap={1} flex={1} minWidth={0}>
+                    {lapTelemetry && secondaryTelemetry && (
+                        <TimeDeltaChart
+                            primaryLapData={lapTelemetry.lapTime}
+                            secondaryLapData={secondaryTelemetry.lapTime}
+                        />
+                    )}
                     <TelemetryChart
                         title="Speed"
                         data={lapTelemetry.speed}
