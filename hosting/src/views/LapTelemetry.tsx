@@ -34,10 +34,19 @@ export const LapTelemetry = ({ lapId, secondaryLapId, trackId }: Props) => {
             <TelemetryPointProvider>
                 <Stack gap={1} flex={1} minWidth={0}>
                     {lapTelemetry && secondaryTelemetry && (
-                        <TimeDeltaChart
-                            primaryLapData={lapTelemetry.lapTime}
-                            secondaryLapData={secondaryTelemetry.lapTime}
-                        />
+                        <Box
+                            sx={{
+                                position: "sticky",
+                                top: 0,
+                                alignSelf: "flex-start",
+                                width: "100%",
+                            }}
+                        >
+                            <TimeDeltaChart
+                                primaryLapData={lapTelemetry.lapTime}
+                                secondaryLapData={secondaryTelemetry.lapTime}
+                            />
+                        </Box>
                     )}
                     <TelemetryChart
                         title="Speed"
@@ -85,14 +94,21 @@ export const LapTelemetry = ({ lapId, secondaryLapId, trackId }: Props) => {
                 <Box
                     sx={{
                         position: "sticky",
-                        top: 0,
+                        top: (theme) => `${theme.spacing(1)}`,
                         alignSelf: "flex-start",
                         flex: 1,
                         maxWidth: "1200px",
+                        mt: 1,
+                        height: (theme) => `calc(100vh - ${theme.spacing(2)})`,
                     }}
                 >
-                    <Paper>
-                        <Box sx={{ width: "100%", height: "100vh" }}>
+                    <Paper sx={{ height: "100%" }}>
+                        <Box
+                            sx={{
+                                width: "100%",
+                                height: "100%",
+                            }}
+                        >
                             <TrackDisplay
                                 telemetryData={lapTelemetry}
                                 secondaryTelemetryData={secondaryTelemetry}
