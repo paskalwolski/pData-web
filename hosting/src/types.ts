@@ -6,7 +6,7 @@ export interface SessionData {
   driver: string;
   car: string;
   track: string;
-  sessionTime: Timestamp;
+  sessionTime: string;
   sessionType: SessionType;
   trackSession: boolean;
 }
