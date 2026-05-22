@@ -54,7 +54,12 @@ const LapTable = ({ onLapSelect }: Props) => {
         pageSize: 10,
         page: 0,
     });
-    // TODO: Reset page when pageSize changes
+    const handlePaginationChange = (paginationModel: GridPaginationModel) =>
+        setPagination((prevPagination) =>
+            paginationModel.pageSize === prevPagination.pageSize
+                ? paginationModel
+                : { ...paginationModel, page: 0 },
+        );
     const [lapTableData, rowCount, isLoadingLapTableData] = useLapTableData({
         pagination,
     });
@@ -80,7 +85,7 @@ const LapTable = ({ onLapSelect }: Props) => {
             paginationMode="server"
             paginationModel={pagination}
             pageSizeOptions={[5, 10, 25]}
-            onPaginationModelChange={setPagination}
+            onPaginationModelChange={handlePaginationChange}
         />
     );
 };
