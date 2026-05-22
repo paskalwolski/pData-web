@@ -147,7 +147,7 @@ const useLatestLaps = ({ trackId, fetchLimit, exclude }: LatestLapsOpts = {}): [
         return () => {
             cancelled = true;
         };
-    }, [fetchLimit, trackId]);
+    }, [exclude, fetchLimit, trackId]);
 
     return [latestLaps, loading];
 };
