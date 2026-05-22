@@ -36,9 +36,8 @@ const columns: GridColDef<LapData>[] = [
         field: "lapTimestamp",
         headerName: "Date",
         valueFormatter: (value: Timestamp) => {
-            return value.toDate().toLocaleString(undefined, {
-                dateStyle: "medium",
-                timeStyle: "short",
+            return value.toDate().toLocaleString("en-fr", {
+                dateStyle: "short",
             });
         },
         width: 160,
