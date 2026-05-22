@@ -1,9 +1,14 @@
-import { DataGrid, GridColDef, GridEventListener } from "@mui/x-data-grid";
-import { useLatestLaps } from "../hooks/useLaps";
+import {
+    DataGrid,
+    GridColDef,
+    GridEventListener,
+    GridPaginationModel,
+} from "@mui/x-data-grid";
+import { useLapTableData } from "../hooks/useLaps";
 import type { LapData } from "../types";
 import { formatDuration } from "../helpers/formatDuration";
 import { Timestamp } from "firebase/firestore";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { navigate } from "wouter/use-browser-location";
 
 const getRowId = (row: LapData) => row.lapId;
@@ -45,7 +50,14 @@ interface Props {
 }
 
 const LapTable = ({ onLapSelect }: Props) => {
-    const [lapData, isLoadingLapData] = useLatestLaps();
+    const [pagination, setPagination] = useState<GridPaginationModel>({
+        pageSize: 10,
+        page: 0,
+    });
+    // TODO: Reset page when pageSize changes
+    const [lapTableData, rowCount, isLoadingLapTableData] = useLapTableData({
+        pagination,
+    });
 
     const navigateToLap = (lapId: string) => {
         navigate(`/laps/${lapId}`);
@@ -59,11 +71,16 @@ const LapTable = ({ onLapSelect }: Props) => {
 
     return (
         <DataGrid
-            rows={lapData}
+            rows={lapTableData}
             columns={columns}
             getRowId={getRowId}
-            loading={isLoadingLapData}
+            loading={isLoadingLapTableData}
+            rowCount={rowCount ?? -1}
             onRowClick={handleLapSelect}
+            paginationMode="server"
+            paginationModel={pagination}
+            pageSizeOptions={[5, 10, 25]}
+            onPaginationModelChange={setPagination}
         />
     );
 };

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { db } from "../firebase";
 import {
     getDoc,
@@ -13,8 +13,13 @@ import {
     QueryConstraint,
     where,
     documentId,
+    startAfter,
+    getCountFromServer,
+    DocumentSnapshot,
+    endBefore,
 } from "firebase/firestore";
 import { LapData, TelemetryData } from "../types";
+import { GridPaginationModel } from "@mui/x-data-grid";
 
 const useLap = (lapId: string): [LapData | undefined, boolean] => {
     const [lapData, setLapData] = useState<LapData | undefined>();
@@ -152,4 +157,75 @@ const useLatestLaps = ({ trackId, fetchLimit, exclude }: LatestLapsOpts = {}): [
     return [latestLaps, loading];
 };
 
-export { useLap, useLapTelemetry, useLatestLaps };
+interface LapTableDataProps {
+    pagination: GridPaginationModel;
+}
+
+const useLapTableData = ({ pagination }: LapTableDataProps) => {
+    const [loadedLaps, setLoadedLaps] = useState<LapData[]>();
+
+    const boundaryDocs =
+        useRef<[DocumentSnapshot, DocumentSnapshot]>(undefined);
+    const selectedPage = useRef(0);
+    const [totalLapCount, setTotalLapCount] = useState(-1);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        let cancelled = false;
+        setLoading(true);
+        async function fetchLatestLaps() {
+            const countQuery = query(collection(db, "test_laps"));
+            const awaitTotalCount = getCountFromServer(countQuery).then(
+                (snap) => {
+                    if (!cancelled) {
+                        setTotalLapCount(snap.data().count);
+                    }
+                },
+            );
+
+            const queryConstraints: QueryConstraint[] = [
+                // Default Ordering: TODO extract from ordering prop
+                orderBy("lapTimestamp", "desc"),
+                // Pagination
+                limit(pagination.pageSize),
+            ];
+
+            if (boundaryDocs.current && pagination.page !== 0) {
+                if (pagination.page < selectedPage.current) {
+                    queryConstraints.push(endBefore(boundaryDocs.current[0]));
+                }
+                if (pagination.page > selectedPage.current) {
+                    queryConstraints.push(startAfter(boundaryDocs.current[1]));
+                }
+            }
+            // TODO: Perform a count query without limits to get rowCount
+            const q = query(collection(db, "test_laps"), ...queryConstraints);
+
+            const awaitLapData = getDocs(q).then((snap) => {
+                if (!cancelled) {
+                    const laps = snap.docs.map(
+                        (doc) => ({ ...doc.data(), lapId: doc.id }) as LapData,
+                    );
+                    setLoadedLaps(laps);
+                    boundaryDocs.current = [
+                        snap.docs[0],
+                        snap.docs[snap.docs.length - 1],
+                    ];
+                    selectedPage.current = pagination.page;
+                }
+            });
+            await Promise.all([awaitTotalCount, awaitLapData]);
+            if (!cancelled) {
+                setLoading(false);
+            }
+        }
+        fetchLatestLaps();
+        return () => {
+            cancelled = true;
+        };
+    }, [pagination]);
+
+    return [loadedLaps, totalLapCount, loading] as const;
+};
+
+export { useLap, useLapTableData, useLapTelemetry, useLatestLaps };
