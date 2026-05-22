@@ -174,34 +174,38 @@ const useLapTableData = ({ pagination }: LapTableDataProps) => {
         let cancelled = false;
         setLoading(true);
         async function fetchLatestLaps() {
-            const countQuery = query(collection(db, "test_laps"));
-            const awaitTotalCount = getCountFromServer(countQuery).then(
-                (snap) => {
-                    if (!cancelled) {
-                        setTotalLapCount(snap.data().count);
-                    }
-                },
-            );
-
             const queryConstraints: QueryConstraint[] = [
                 // Default Ordering: TODO extract from ordering prop
                 orderBy("lapTimestamp", "desc"),
-                // Pagination
+            ];
+
+            const paginationConstraints: QueryConstraint[] = [
                 limit(pagination.pageSize),
             ];
 
             if (boundaryDocs.current && pagination.page !== 0) {
                 if (pagination.page < selectedPage.current) {
-                    queryConstraints.push(endBefore(boundaryDocs.current[0]));
+                    paginationConstraints.push(
+                        endBefore(boundaryDocs.current[0]),
+                    );
                 }
                 if (pagination.page > selectedPage.current) {
-                    queryConstraints.push(startAfter(boundaryDocs.current[1]));
+                    paginationConstraints.push(
+                        startAfter(boundaryDocs.current[1]),
+                    );
                 }
             }
-            // TODO: Perform a count query without limits to get rowCount
-            const q = query(collection(db, "test_laps"), ...queryConstraints);
+            const countQuery = query(
+                collection(db, "test_laps"),
+                ...queryConstraints,
+            );
+            const lapQuery = query(
+                collection(db, "test_laps"),
+                ...queryConstraints,
+                ...paginationConstraints,
+            );
 
-            const awaitLapData = getDocs(q).then((snap) => {
+            const awaitLapData = getDocs(lapQuery).then((snap) => {
                 if (!cancelled) {
                     const laps = snap.docs.map(
                         (doc) => ({ ...doc.data(), lapId: doc.id }) as LapData,
@@ -214,6 +218,14 @@ const useLapTableData = ({ pagination }: LapTableDataProps) => {
                     selectedPage.current = pagination.page;
                 }
             });
+            const awaitTotalCount = getCountFromServer(countQuery).then(
+                (snap) => {
+                    if (!cancelled) {
+                        setTotalLapCount(snap.data().count);
+                    }
+                },
+            );
+
             await Promise.all([awaitTotalCount, awaitLapData]);
             if (!cancelled) {
                 setLoading(false);
