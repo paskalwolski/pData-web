@@ -9,7 +9,6 @@ import type { LapData } from "../types";
 import { formatDuration } from "../helpers/formatDuration";
 import { Timestamp } from "firebase/firestore";
 import { useCallback, useMemo, useState } from "react";
-import { navigate } from "wouter/use-browser-location";
 import { TbClockX } from "react-icons/tb";
 import { Box, useTheme } from "@mui/material";
 import { GridSortModel } from "@mui/x-data-grid";
@@ -17,7 +16,7 @@ import { GridSortModel } from "@mui/x-data-grid";
 const getRowId = (row: LapData) => row.lapId;
 
 interface Props {
-    onLapSelect?: (lapId: string) => undefined;
+    onLapSelect: (lapId: string) => void;
     defaultSortBy?: "time" | "date";
 }
 
@@ -53,13 +52,8 @@ const LapTable = ({ onLapSelect, defaultSortBy = "date" }: Props) => {
         sorting,
     });
 
-    const navigateToLap = (lapId: string) => {
-        navigate(`/laps/${lapId}`);
-    };
-
     const handleLapSelect: GridEventListener<"rowClick"> = useCallback(
-        ({ row }) =>
-            onLapSelect ? onLapSelect(row.lapId) : navigateToLap(row.lapId),
+        ({ row }) => onLapSelect(row.lapId),
         [onLapSelect],
     );
 
