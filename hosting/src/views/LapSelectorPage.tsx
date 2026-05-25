@@ -1,5 +1,5 @@
 import { LapTable } from "../components/LapTable.component";
 
 export const LapSelectorPage = () => {
-    return <LapTable />;
+    return <LapTable defaultSortBy="date" />;
 };

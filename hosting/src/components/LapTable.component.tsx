@@ -16,16 +16,12 @@ import { GridSortModel } from "@mui/x-data-grid";
 
 const getRowId = (row: LapData) => row.lapId;
 
-// TODO: Infer from 'sortByField' prop
-const DEFAULT_SORTING_MODEL: GridSortModel = [
-    { field: "lapTimestamp", sort: "desc" },
-];
-
 interface Props {
     onLapSelect?: (lapId: string) => undefined;
+    defaultSortBy?: "time" | "date";
 }
 
-const LapTable = ({ onLapSelect }: Props) => {
+const LapTable = ({ onLapSelect, defaultSortBy = "date" }: Props) => {
     const { palette } = useTheme();
 
     const [pagination, setPagination] = useState<GridPaginationModel>({
@@ -39,13 +35,18 @@ const LapTable = ({ onLapSelect }: Props) => {
                 : { ...paginationModel, page: 0 },
         );
 
-    const [sorting, setSorting] = useState<GridSortModel>(
-        DEFAULT_SORTING_MODEL,
-    );
+    const defaultSortModel: GridSortModel =
+        defaultSortBy === "date"
+            ? [{ field: "lapTime", sort: "asc" }]
+            : [
+                  {
+                      field: "lapTimestamp",
+                      sort: "desc",
+                  },
+              ];
+    const [sorting, setSorting] = useState<GridSortModel>(defaultSortModel);
     const handleSortingChange = (newSortModel: GridSortModel) =>
-        setSorting(
-            newSortModel.length > 0 ? newSortModel : DEFAULT_SORTING_MODEL,
-        );
+        setSorting(newSortModel.length > 0 ? newSortModel : defaultSortModel);
 
     const [lapTableData, rowCount, isLoadingLapTableData] = useLapTableData({
         pagination,
