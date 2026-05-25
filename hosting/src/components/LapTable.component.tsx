@@ -12,8 +12,14 @@ import { useCallback, useMemo, useState } from "react";
 import { navigate } from "wouter/use-browser-location";
 import { TbClockX } from "react-icons/tb";
 import { Box, useTheme } from "@mui/material";
+import { GridSortModel } from "@mui/x-data-grid";
 
 const getRowId = (row: LapData) => row.lapId;
+
+// TODO: Infer from 'sortByField' prop
+const DEFAULT_SORTING_MODEL: GridSortModel = [
+    { field: "lapTimestamp", sort: "desc" },
+];
 
 interface Props {
     onLapSelect?: (lapId: string) => undefined;
@@ -32,8 +38,18 @@ const LapTable = ({ onLapSelect }: Props) => {
                 ? paginationModel
                 : { ...paginationModel, page: 0 },
         );
+
+    const [sorting, setSorting] = useState<GridSortModel>(
+        DEFAULT_SORTING_MODEL,
+    );
+    const handleSortingChange = (newSortModel: GridSortModel) =>
+        setSorting(
+            newSortModel.length > 0 ? newSortModel : DEFAULT_SORTING_MODEL,
+        );
+
     const [lapTableData, rowCount, isLoadingLapTableData] = useLapTableData({
         pagination,
+        sorting,
     });
 
     const navigateToLap = (lapId: string) => {
@@ -51,24 +67,28 @@ const LapTable = ({ onLapSelect }: Props) => {
             {
                 field: "lapTime",
                 headerName: "Time",
-                valueFormatter: formatDuration,
+                sortable: true,
                 sortingOrder: ["asc", null],
+                valueFormatter: formatDuration,
             },
             {
                 field: "trackName",
                 headerName: "Track",
+                sortable: false,
                 valueGetter: (_, row) => row.sessionData.track,
                 width: 250,
             },
             {
                 field: "carName",
                 headerName: "Car",
+                sortable: false,
                 valueGetter: (_, row) => row?.sessionData.car,
                 width: 250,
             },
             {
                 field: "driverName",
                 headerName: "Driver",
+                sortable: false,
                 valueGetter: (_, row: LapData) => row?.sessionData.driver,
                 width: 200,
             },
@@ -81,12 +101,13 @@ const LapTable = ({ onLapSelect }: Props) => {
                     });
                 },
                 width: 160,
-                sortingOrder: ["asc", null],
+                sortingOrder: ["desc", null],
             },
             {
                 field: "expiresAt",
                 headerName: "Expires",
                 width: 80,
+                sortable: false,
                 valueGetter: (value) => !!value,
                 renderCell: ({ value }) =>
                     value && (
@@ -117,6 +138,9 @@ const LapTable = ({ onLapSelect }: Props) => {
             paginationModel={pagination}
             pageSizeOptions={[5, 10, 25]}
             onPaginationModelChange={handlePaginationChange}
+            sortingMode="server"
+            sortModel={sorting}
+            onSortModelChange={handleSortingChange}
         />
     );
 };

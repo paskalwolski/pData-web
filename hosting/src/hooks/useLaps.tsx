@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { db } from "../firebase";
 import {
     getDoc,
@@ -20,6 +20,8 @@ import {
 } from "firebase/firestore";
 import { LapData, TelemetryData } from "../types";
 import { GridPaginationModel } from "@mui/x-data-grid";
+import { GridSortModel } from "@mui/x-data-grid";
+import { lapSortConvertor } from "./datagridConvertors";
 
 const useLap = (lapId: string): [LapData | undefined, boolean] => {
     const [lapData, setLapData] = useState<LapData | undefined>();
@@ -159,26 +161,26 @@ const useLatestLaps = ({ trackId, fetchLimit, exclude }: LatestLapsOpts = {}): [
 
 interface LapTableDataProps {
     pagination: GridPaginationModel;
+    sorting: GridSortModel;
 }
 
-const useLapTableData = ({ pagination }: LapTableDataProps) => {
+const useLapTableData = ({ pagination, sorting }: LapTableDataProps) => {
     const [loadedLaps, setLoadedLaps] = useState<LapData[]>();
+
+    const firebaseSorting = useMemo(() => lapSortConvertor(sorting), [sorting]);
 
     const boundaryDocs =
         useRef<[DocumentSnapshot, DocumentSnapshot]>(undefined);
     const selectedPage = useRef(0);
     const [totalLapCount, setTotalLapCount] = useState(-1);
+
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         let cancelled = false;
         setLoading(true);
         async function fetchLatestLaps() {
-            const queryConstraints: QueryConstraint[] = [
-                // Default Ordering: TODO extract from ordering prop
-                orderBy("lapTimestamp", "desc"),
-            ];
-
+            const queryConstraints: QueryConstraint[] = [...firebaseSorting];
             const paginationConstraints: QueryConstraint[] = [
                 limit(pagination.pageSize),
             ];
@@ -235,7 +237,7 @@ const useLapTableData = ({ pagination }: LapTableDataProps) => {
         return () => {
             cancelled = true;
         };
-    }, [pagination]);
+    }, [pagination, firebaseSorting]);
 
     return [loadedLaps, totalLapCount, loading] as const;
 };
