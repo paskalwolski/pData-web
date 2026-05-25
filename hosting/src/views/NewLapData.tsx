@@ -14,12 +14,12 @@ import { SessionInfo } from "../components/SessionInfo.component";
 import { LapTelemetry } from "./LapTelemetry";
 import { useRoute } from "wouter";
 import { TbAB, TbABOff, TbRoad } from "react-icons/tb";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { navigate } from "wouter/use-browser-location";
 import { LapInfo } from "../components/LapInfo.component";
 import { InfoCardValue } from "../components/InfoCardValue.component";
 import { useOpeneable } from "../hooks/useOpenable";
-import { LapSelector } from "../components/LapSelector.component";
+import { LapTable } from "../components/LapTable.component";
 
 interface NewLapDataProps {
     lapId: string;
@@ -46,6 +46,11 @@ export const NewLapData = ({ lapId, secondaryLapId }: NewLapDataProps) => {
     const removeComparisonLap = useCallback(() => {
         navigate(`/laps/${lapId}`);
     }, [lapId]);
+
+    const excludeLaps = useMemo(
+        () => [lapId, secondaryLapId],
+        [lapId, secondaryLapId],
+    );
 
     return (
         <>
@@ -146,10 +151,10 @@ export const NewLapData = ({ lapId, secondaryLapId }: NewLapDataProps) => {
                 >
                     <DialogTitle>Select Comparison Lap</DialogTitle>
                     <Box height="80vh">
-                        <LapSelector
-                            trackId={lapData.sessionData.track}
-                            onClick={handleComparisonLapSelect}
-                            excludeLap={lapData.lapId}
+                        <LapTable
+                            onLapSelect={handleComparisonLapSelect}
+                            defaultSortBy="time"
+                            excludeLaps={excludeLaps}
                         />
                     </Box>
                 </Dialog>

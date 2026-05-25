@@ -162,12 +162,29 @@ const useLatestLaps = ({ trackId, fetchLimit, exclude }: LatestLapsOpts = {}): [
 interface LapTableDataProps {
     pagination: GridPaginationModel;
     sorting: GridSortModel;
+    excludeLaps?: Array<string>;
 }
 
-const useLapTableData = ({ pagination, sorting }: LapTableDataProps) => {
+const useLapTableData = ({
+    pagination,
+    sorting,
+    excludeLaps,
+}: LapTableDataProps) => {
     const [loadedLaps, setLoadedLaps] = useState<LapData[]>();
 
     const firebaseSorting = useMemo(() => lapSortConvertor(sorting), [sorting]);
+
+    const excludeFilters = useMemo(
+        () =>
+            excludeLaps.length > 0
+                ? where(
+                      documentId(),
+                      "not-in",
+                      excludeLaps.filter((l) => Boolean(l)),
+                  )
+                : undefined,
+        [excludeLaps],
+    );
 
     const boundaryDocs =
         useRef<[DocumentSnapshot, DocumentSnapshot]>(undefined);
@@ -180,7 +197,10 @@ const useLapTableData = ({ pagination, sorting }: LapTableDataProps) => {
         let cancelled = false;
         setLoading(true);
         async function fetchLatestLaps() {
-            const queryConstraints: QueryConstraint[] = [...firebaseSorting];
+            const queryConstraints: QueryConstraint[] = [
+                ...firebaseSorting,
+                excludeFilters,
+            ];
             const paginationConstraints: QueryConstraint[] = [
                 limit(pagination.pageSize),
             ];
@@ -237,7 +257,7 @@ const useLapTableData = ({ pagination, sorting }: LapTableDataProps) => {
         return () => {
             cancelled = true;
         };
-    }, [pagination, firebaseSorting]);
+    }, [pagination, firebaseSorting, excludeFilters]);
 
     return [loadedLaps, totalLapCount, loading] as const;
 };

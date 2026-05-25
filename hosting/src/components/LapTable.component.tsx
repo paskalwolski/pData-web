@@ -18,9 +18,14 @@ const getRowId = (row: LapData) => row.lapId;
 interface Props {
     onLapSelect: (lapId: string) => void;
     defaultSortBy?: "time" | "date";
+    excludeLaps?: Array<string>;
 }
 
-const LapTable = ({ onLapSelect, defaultSortBy = "date" }: Props) => {
+const LapTable = ({
+    onLapSelect,
+    defaultSortBy = "date",
+    excludeLaps,
+}: Props) => {
     const { palette } = useTheme();
 
     const [pagination, setPagination] = useState<GridPaginationModel>({
@@ -50,6 +55,7 @@ const LapTable = ({ onLapSelect, defaultSortBy = "date" }: Props) => {
     const [lapTableData, rowCount, isLoadingLapTableData] = useLapTableData({
         pagination,
         sorting,
+        excludeLaps,
     });
 
     const handleLapSelect: GridEventListener<"rowClick"> = useCallback(
