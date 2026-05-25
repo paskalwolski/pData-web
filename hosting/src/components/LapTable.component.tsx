@@ -36,11 +36,11 @@ const LapTable = ({ onLapSelect, defaultSortBy = "date" }: Props) => {
 
     const defaultSortModel: GridSortModel =
         defaultSortBy === "date"
-            ? [{ field: "lapTime", sort: "asc" }]
+            ? [{ field: "lapTimestamp", sort: "desc" }]
             : [
                   {
-                      field: "lapTimestamp",
-                      sort: "desc",
+                      field: "lapTime",
+                      sort: "asc",
                   },
               ];
     const [sorting, setSorting] = useState<GridSortModel>(defaultSortModel);
