@@ -176,7 +176,7 @@ const useLapTableData = ({
 
     const excludeFilters = useMemo(
         () =>
-            excludeLaps.length > 0
+            (excludeLaps?.length ?? 0 > 0)
                 ? where(
                       documentId(),
                       "not-in",
@@ -197,10 +197,10 @@ const useLapTableData = ({
         let cancelled = false;
         setLoading(true);
         async function fetchLatestLaps() {
-            const queryConstraints: QueryConstraint[] = [
-                ...firebaseSorting,
-                excludeFilters,
-            ];
+            const queryConstraints: QueryConstraint[] = [...firebaseSorting];
+            if (excludeFilters) {
+                queryConstraints.push(excludeFilters);
+            }
             const paginationConstraints: QueryConstraint[] = [
                 limit(pagination.pageSize),
             ];
