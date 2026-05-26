@@ -12,8 +12,15 @@ import { useCallback, useMemo, useState } from "react";
 import { TbClockX } from "react-icons/tb";
 import { Box, useTheme } from "@mui/material";
 import { GridSortModel } from "@mui/x-data-grid";
+import { TableHeaderFilter } from "./TableFilter/TableHeaderFilter.component";
+import { FilteringProvider } from "../hooks/useFiltering";
 
 const getRowId = (row: LapData) => row.lapId;
+
+const CUSTOM_HEADER: Partial<GridColDef<LapData>> = {
+    renderHeader: (params) => <TableHeaderFilter params={params} />,
+    headerAlign: "left",
+};
 
 interface Props {
     onLapSelect: (lapId: string) => void;
@@ -71,27 +78,31 @@ const LapTable = ({
                 sortable: true,
                 sortingOrder: ["asc", null],
                 valueFormatter: formatDuration,
+                minWidth: 150,
             },
             {
                 field: "trackName",
                 headerName: "Track",
                 sortable: false,
                 valueGetter: (_, row) => row.sessionData.track,
-                width: 250,
+                minWidth: 200,
+                ...CUSTOM_HEADER,
             },
             {
                 field: "carName",
                 headerName: "Car",
                 sortable: false,
                 valueGetter: (_, row) => row?.sessionData.car,
-                width: 250,
+                minWidth: 250,
+                ...CUSTOM_HEADER,
             },
             {
                 field: "driverName",
                 headerName: "Driver",
                 sortable: false,
                 valueGetter: (_, row: LapData) => row?.sessionData.driver,
-                width: 200,
+                minWidth: 200,
+                ...CUSTOM_HEADER,
             },
             {
                 field: "lapTimestamp",
@@ -101,13 +112,15 @@ const LapTable = ({
                         dateStyle: "short",
                     });
                 },
-                width: 160,
+                minWidth: 160,
                 sortingOrder: ["desc", null],
             },
             {
                 field: "expiresAt",
                 headerName: "Expires",
-                width: 80,
+                minWidth: 110,
+                width: 110,
+                type: "boolean",
                 sortable: false,
                 valueGetter: (value) => !!value,
                 renderCell: ({ value }) =>
@@ -122,27 +135,32 @@ const LapTable = ({
                             <TbClockX color={palette.warning.main} />
                         </Box>
                     ),
+                ...CUSTOM_HEADER,
             },
         ],
         [palette],
     );
 
     return (
-        <DataGrid
-            rows={lapTableData}
-            columns={columns}
-            getRowId={getRowId}
-            loading={isLoadingLapTableData}
-            rowCount={rowCount ?? -1}
-            onRowClick={handleLapSelect}
-            paginationMode="server"
-            paginationModel={pagination}
-            pageSizeOptions={[5, 10, 25]}
-            onPaginationModelChange={handlePaginationChange}
-            sortingMode="server"
-            sortModel={sorting}
-            onSortModelChange={handleSortingChange}
-        />
+        <FilteringProvider>
+            <DataGrid
+                rows={lapTableData}
+                columns={columns}
+                getRowId={getRowId}
+                loading={isLoadingLapTableData}
+                rowCount={rowCount ?? -1}
+                onRowClick={handleLapSelect}
+                paginationMode="server"
+                paginationModel={pagination}
+                pageSizeOptions={[5, 10, 25]}
+                onPaginationModelChange={handlePaginationChange}
+                sortingMode="server"
+                sortModel={sorting}
+                onSortModelChange={handleSortingChange}
+                disableColumnMenu
+                disableColumnFilter
+            />
+        </FilteringProvider>
     );
 };
 
