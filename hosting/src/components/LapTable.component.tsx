@@ -2,6 +2,8 @@ import {
     DataGrid,
     GridColDef,
     GridEventListener,
+    GridFilterModel,
+    GridLogicOperator,
     GridPaginationModel,
 } from "@mui/x-data-grid";
 import { useLapTableData } from "../hooks/useLaps";
@@ -13,7 +15,7 @@ import { TbClockX } from "react-icons/tb";
 import { Box, useTheme } from "@mui/material";
 import { GridSortModel } from "@mui/x-data-grid";
 import { TableHeaderFilter } from "./TableHeaderFilter";
-import { FilteringProvider } from "../hooks/useFiltering";
+import { FilteringProvider, useFiltering } from "../hooks/useFiltering";
 
 const getRowId = (row: LapData) => row.lapId;
 
@@ -28,7 +30,7 @@ interface Props {
     excludeLaps?: Array<string>;
 }
 
-const LapTable = ({
+const LapTableDataGrid = ({
     onLapSelect,
     defaultSortBy = "date",
     excludeLaps,
@@ -59,9 +61,17 @@ const LapTable = ({
     const handleSortingChange = (newSortModel: GridSortModel) =>
         setSorting(newSortModel.length > 0 ? newSortModel : defaultSortModel);
 
+    const { filterItems } = useFiltering();
+
+    const filtering: GridFilterModel = useMemo(
+        () => ({ logicOperator: GridLogicOperator.And, items: filterItems }),
+        [filterItems],
+    );
+
     const [lapTableData, rowCount, isLoadingLapTableData] = useLapTableData({
         pagination,
         sorting,
+        filtering,
         excludeLaps,
     });
 
@@ -142,26 +152,30 @@ const LapTable = ({
     );
 
     return (
-        <FilteringProvider>
-            <DataGrid
-                rows={lapTableData}
-                columns={columns}
-                getRowId={getRowId}
-                loading={isLoadingLapTableData}
-                rowCount={rowCount ?? -1}
-                onRowClick={handleLapSelect}
-                paginationMode="server"
-                paginationModel={pagination}
-                pageSizeOptions={[5, 10, 25]}
-                onPaginationModelChange={handlePaginationChange}
-                sortingMode="server"
-                sortModel={sorting}
-                onSortModelChange={handleSortingChange}
-                disableColumnMenu
-                disableColumnFilter
-            />
-        </FilteringProvider>
+        <DataGrid
+            rows={lapTableData}
+            columns={columns}
+            getRowId={getRowId}
+            loading={isLoadingLapTableData}
+            rowCount={rowCount ?? -1}
+            onRowClick={handleLapSelect}
+            paginationMode="server"
+            paginationModel={pagination}
+            pageSizeOptions={[5, 10, 25]}
+            onPaginationModelChange={handlePaginationChange}
+            sortingMode="server"
+            sortModel={sorting}
+            onSortModelChange={handleSortingChange}
+            disableColumnMenu
+            disableColumnFilter
+        />
     );
 };
+
+const LapTable = (props: Props) => (
+    <FilteringProvider>
+        <LapTableDataGrid {...props} />
+    </FilteringProvider>
+);
 
 export { LapTable };

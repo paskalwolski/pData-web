@@ -1,5 +1,5 @@
-import { GridSortModel } from "@mui/x-data-grid";
-import { orderBy } from "firebase/firestore";
+import { GridFilterModel, GridSortModel } from "@mui/x-data-grid";
+import { orderBy, where } from "firebase/firestore";
 
 const createSortConvertor = (fieldMapping: Record<string, string>) => (sorting: GridSortModel ) => sorting.map(sortItem => orderBy(fieldMapping[sortItem.field], sortItem.sort))
 
@@ -12,7 +12,15 @@ const lapFieldMapping = {
     lapTimestamp: "lapTimestamp",
     expiresAt: "expiresAt",
 };
+const filterOperatorMapping = {
+    'isAnyOf': 'in',
+    '=': '=='
+}
 
 const lapSortConvertor = createSortConvertor(lapFieldMapping);
 
-export {createSortConvertor, lapSortConvertor}
+const createFilterConvertor = (fieldMapping: Record<string, string>) => (filtering: GridFilterModel) => filtering.items.map(f => (where(fieldMapping[f.field], filterOperatorMapping[f.operator], Array.isArray(f.value) ? f.value.map(v => v.id) : f.value)))
+
+const lapFilterConvertor = createFilterConvertor(lapFieldMapping);
+
+export {createSortConvertor, lapSortConvertor, lapFilterConvertor}

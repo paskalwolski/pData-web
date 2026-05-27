@@ -19,9 +19,9 @@ import {
     endBefore,
 } from "firebase/firestore";
 import { LapData, TelemetryData } from "../types";
-import { GridPaginationModel } from "@mui/x-data-grid";
+import { GridFilterModel, GridPaginationModel } from "@mui/x-data-grid";
 import { GridSortModel } from "@mui/x-data-grid";
-import { lapSortConvertor } from "./datagridConvertors";
+import { lapFilterConvertor, lapSortConvertor } from "./datagridConvertors";
 
 const useLap = (lapId: string): [LapData | undefined, boolean] => {
     const [lapData, setLapData] = useState<LapData | undefined>();
@@ -162,17 +162,24 @@ const useLatestLaps = ({ trackId, fetchLimit, exclude }: LatestLapsOpts = {}): [
 interface LapTableDataProps {
     pagination: GridPaginationModel;
     sorting: GridSortModel;
+    filtering: GridFilterModel;
     excludeLaps?: Array<string>;
 }
 
 const useLapTableData = ({
     pagination,
     sorting,
+    filtering,
     excludeLaps,
 }: LapTableDataProps) => {
     const [loadedLaps, setLoadedLaps] = useState<LapData[]>();
 
     const firebaseSorting = useMemo(() => lapSortConvertor(sorting), [sorting]);
+
+    const firebaseFiltering = useMemo(
+        () => lapFilterConvertor(filtering),
+        [filtering],
+    );
 
     const excludeFilters = useMemo(
         () =>
@@ -197,7 +204,10 @@ const useLapTableData = ({
         let cancelled = false;
         setLoading(true);
         async function fetchLatestLaps() {
-            const queryConstraints: QueryConstraint[] = [...firebaseSorting];
+            const queryConstraints: QueryConstraint[] = [
+                ...firebaseSorting,
+                ...firebaseFiltering,
+            ];
             if (excludeFilters) {
                 queryConstraints.push(excludeFilters);
             }
@@ -217,6 +227,7 @@ const useLapTableData = ({
                     );
                 }
             }
+
             const countQuery = query(
                 collection(db, "test_laps"),
                 ...queryConstraints,
@@ -257,7 +268,7 @@ const useLapTableData = ({
         return () => {
             cancelled = true;
         };
-    }, [pagination, firebaseSorting, excludeFilters]);
+    }, [pagination, firebaseSorting, firebaseFiltering, excludeFilters]);
 
     return [loadedLaps, totalLapCount, loading] as const;
 };

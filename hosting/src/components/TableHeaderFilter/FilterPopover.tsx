@@ -1,5 +1,5 @@
 import { Box, Popover } from "@mui/material";
-import { GridFilterItem, GridLogicOperator } from "@mui/x-data-grid";
+import { GridFilterItem } from "@mui/x-data-grid";
 import { FilterControl } from "./FilterControl";
 import { useFiltering } from "../../hooks/useFiltering";
 import { useCallback, useMemo } from "react";
@@ -21,13 +21,13 @@ export const FilterPopover = ({
     const { addFilterItem, replaceFilterItem, removeFilterItem } =
         useFiltering();
 
-    const defaultFilter = useMemo(
+    const defaultFilter: GridFilterItem = useMemo(
         () => ({
             field: colDef.field,
-            operator: GridLogicOperator.Or,
+            operator: colDef.type === "string" ? "isAnyOf" : "=",
             value: undefined,
         }),
-        [colDef.field],
+        [colDef.field, colDef.type],
     );
 
     const effectiveFilter = fieldFilter ?? defaultFilter;
