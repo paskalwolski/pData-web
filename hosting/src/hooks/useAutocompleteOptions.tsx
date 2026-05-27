@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
-import { AutocompleteOption } from "../components/TableFilter/types";
+import {
+    AutocompleteCollection,
+    AutocompleteOption,
+} from "../components/TableFilter/types";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 
@@ -8,9 +11,7 @@ import { db } from "../firebase";
 let cachedOptions: Record<
     AutocompleteCollection,
     AutocompleteOption[] | undefined
-> = { drivers: undefined };
-
-export type AutocompleteCollection = "drivers";
+> = { drivers: undefined, tracks: undefined, cars: undefined };
 
 const useAutocompleteOptions = (
     field: AutocompleteCollection,
