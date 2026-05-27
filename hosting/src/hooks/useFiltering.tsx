@@ -10,7 +10,7 @@ import {
 interface FilteringContext {
     filterItems: GridFilterItem[];
     addFilterItem: (filterItem: GridFilterItem) => void;
-    removeFilterItem: (filterId: string) => void;
+    removeFilterItem: (filterId: string | number) => void;
     clearFilterItems: () => void;
     replaceFilterItem: (filterItem: GridFilterItem) => void;
 }
@@ -25,7 +25,6 @@ const FilteringContext = createContext<FilteringContext>({
 
 const FilteringProvider = ({ children }: { children: React.ReactNode }) => {
     const [filterItems, setFilterItems] = useState<GridFilterItem[]>([]);
-
     const addFilterItem = useCallback(
         (filterItem: GridFilterItem) =>
             setFilterItems((existingItems) => [
@@ -36,9 +35,9 @@ const FilteringProvider = ({ children }: { children: React.ReactNode }) => {
     );
 
     const removeFilterItem = useCallback(
-        (filterId: string) =>
+        (filterId: string | number) =>
             setFilterItems((existingItems) =>
-                existingItems.filter((f) => f.id === filterId),
+                existingItems.filter((f) => f.id !== filterId),
             ),
         [],
     );

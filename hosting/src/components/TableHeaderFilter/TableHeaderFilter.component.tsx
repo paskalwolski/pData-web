@@ -1,9 +1,9 @@
-import { Box, IconButton, Popover, Stack, Typography } from "@mui/material";
-import { GridColumnHeaderParams, GridFilterItem } from "@mui/x-data-grid";
-import { useRef, useState } from "react";
+import { IconButton, Stack, Typography } from "@mui/material";
+import { GridColumnHeaderParams } from "@mui/x-data-grid";
+import { useMemo, useRef, useState } from "react";
 import { TbFilter, TbFilterFilled, TbFilterDown } from "react-icons/tb";
-import { FilterControl } from "./FilterControl";
-import { AutocompleteCollection } from "./types";
+import { useFiltering } from "../../hooks/useFiltering";
+import { FilterPopover } from "./FilterPopover";
 
 interface Props {
     params: GridColumnHeaderParams;
@@ -13,11 +13,15 @@ export const TableHeaderFilter = ({ params }: Props) => {
     const [anchor, setAnchor] = useState<HTMLElement | null>(null);
     const headerRef = useRef(undefined);
 
-    // TODO: Replace with context functions
-    const [localFilter, setLocalFilter] = useState<GridFilterItem>();
+    const { filterItems } = useFiltering();
+
+    const fieldFilter = useMemo(
+        () => filterItems.find((f) => f.field === params.field),
+        [filterItems, params.field],
+    );
 
     const iconSx = {
-        visibility: localFilter || anchor ? "visible" : "hidden",
+        visibility: fieldFilter || anchor ? "visible" : "hidden",
         ".MuiDataGrid-columnHeader:hover &": { visibility: "visible" },
     };
 
@@ -45,30 +49,18 @@ export const TableHeaderFilter = ({ params }: Props) => {
             >
                 {anchor ? (
                     <TbFilterDown size={16} />
-                ) : localFilter ? (
+                ) : fieldFilter ? (
                     <TbFilterFilled size={16} />
                 ) : (
                     <TbFilter size={16} />
                 )}
             </IconButton>
-            <Popover
-                open={Boolean(anchor)}
-                anchorEl={anchor}
-                onClose={() => setAnchor(null)}
-                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                transformOrigin={{ vertical: "top", horizontal: "center" }}
-            >
-                <Box p={1}>
-                    {params.colDef.type === "boolean" ? (
-                        <>No Bool Filter... yet</>
-                    ) : (
-                        <FilterControl
-                            fieldLabel={params.colDef.headerName}
-                            field={params.field as AutocompleteCollection}
-                        />
-                    )}
-                </Box>
-            </Popover>
+            <FilterPopover
+                anchor={anchor}
+                setAnchor={setAnchor}
+                colDef={params.colDef}
+                fieldFilter={fieldFilter}
+            />
         </Stack>
     );
 };

@@ -1,23 +1,30 @@
 import { Autocomplete, Box, Paper, TextField } from "@mui/material";
 import { GridFilterItem } from "@mui/x-data-grid";
-import { useState } from "react";
 import { useAutocompleteOptions } from "../../hooks/useAutocompleteOptions";
-import { FieldNameCollectionMapping } from "./types";
+import { AutocompleteCollection, FieldNameCollectionMapping } from "./types";
+import React, { useCallback } from "react";
 
 interface Props {
     fieldLabel: string;
     field: string;
+    filter?: GridFilterItem;
+    onChange: (value: []) => void;
 }
 
-export const FilterControl = ({ field, fieldLabel }: Props) => {
+export const FilterControl = ({
+    field,
+    fieldLabel,
+    filter,
+    onChange,
+}: Props) => {
     const [options, isLoading] = useAutocompleteOptions(
-        FieldNameCollectionMapping[field],
+        FieldNameCollectionMapping[field as AutocompleteCollection],
     );
 
-    const [localFilter, setLocalFilter] = useState<Partial<GridFilterItem>>({
-        field,
-        operator: undefined,
-    });
+    const handleChange = useCallback(
+        (e: React.SyntheticEvent, v: []) => onChange(v),
+        [onChange],
+    );
 
     return (
         <Paper sx={{ padding: 1 }}>
@@ -26,11 +33,12 @@ export const FilterControl = ({ field, fieldLabel }: Props) => {
                     options={options}
                     filterSelectedOptions
                     multiple
-                    value={localFilter.value}
+                    value={filter?.value ?? []}
                     renderInput={(params) => (
                         <TextField {...params} label={fieldLabel} />
                     )}
                     loading={isLoading}
+                    onChange={handleChange}
                 />
             </Box>
         </Paper>
