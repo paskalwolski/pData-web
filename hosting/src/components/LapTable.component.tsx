@@ -12,7 +12,7 @@ import { useCallback, useMemo, useState } from "react";
 import { TbClockX } from "react-icons/tb";
 import { Box, useTheme } from "@mui/material";
 import { GridSortModel } from "@mui/x-data-grid";
-import { TableHeaderFilter } from "./TableFilter/TableHeaderFilter.component";
+import { TableHeaderFilter } from "./TableHeaderFilter";
 import { FilteringProvider } from "../hooks/useFiltering";
 
 const getRowId = (row: LapData) => row.lapId;

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import {
     AutocompleteCollection,
     AutocompleteOption,
-} from "../components/TableFilter/types";
+} from "../components/TableHeaderFilter";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 

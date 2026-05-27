@@ -2,12 +2,14 @@ import { Box, IconButton, Popover, Stack, Typography } from "@mui/material";
 import { GridColumnHeaderParams, GridFilterItem } from "@mui/x-data-grid";
 import { useRef, useState } from "react";
 import { TbFilter, TbFilterFilled, TbFilterDown } from "react-icons/tb";
+import { FilterControl } from "./FilterControl";
+import { AutocompleteCollection } from "./types";
 
 interface Props {
     params: GridColumnHeaderParams;
 }
 
-const TableHeaderFilter = ({ params }: Props) => {
+export const TableHeaderFilter = ({ params }: Props) => {
     const [anchor, setAnchor] = useState<HTMLElement | null>(null);
     const headerRef = useRef(undefined);
 
@@ -53,14 +55,20 @@ const TableHeaderFilter = ({ params }: Props) => {
                 open={Boolean(anchor)}
                 anchorEl={anchor}
                 onClose={() => setAnchor(null)}
-                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                transformOrigin={{ vertical: "top", horizontal: "center" }}
             >
                 <Box p={1}>
-                    This is where my filtering would go... IF I HAD ANY
+                    {params.colDef.type === "boolean" ? (
+                        <>No Bool Filter... yet</>
+                    ) : (
+                        <FilterControl
+                            fieldLabel={params.colDef.headerName}
+                            field={params.field as AutocompleteCollection}
+                        />
+                    )}
                 </Box>
             </Popover>
         </Stack>
     );
 };
-
-export { TableHeaderFilter };
