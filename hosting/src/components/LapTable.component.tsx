@@ -2,6 +2,7 @@ import {
     DataGrid,
     GridColDef,
     GridEventListener,
+    GridFilterItem,
     GridFilterModel,
     GridLogicOperator,
     GridPaginationModel,
@@ -27,13 +28,13 @@ const CUSTOM_HEADER: Partial<GridColDef<LapData>> = {
 interface Props {
     onLapSelect: (lapId: string) => void;
     defaultSortBy?: "time" | "date";
-    excludeLaps?: Array<string>;
+    strictFilterItems?: Array<GridFilterItem>;
 }
 
 const LapTableDataGrid = ({
     onLapSelect,
     defaultSortBy = "date",
-    excludeLaps,
+    strictFilterItems,
 }: Props) => {
     const { palette } = useTheme();
 
@@ -64,15 +65,17 @@ const LapTableDataGrid = ({
     const { filterItems } = useFiltering();
 
     const filtering: GridFilterModel = useMemo(
-        () => ({ logicOperator: GridLogicOperator.And, items: filterItems }),
-        [filterItems],
+        () => ({
+            logicOperator: GridLogicOperator.And,
+            items: [...filterItems, ...(strictFilterItems ?? [])],
+        }),
+        [filterItems, strictFilterItems],
     );
 
     const [lapTableData, rowCount, isLoadingLapTableData] = useLapTableData({
         pagination,
         sorting,
         filtering,
-        excludeLaps,
     });
 
     const handleLapSelect: GridEventListener<"rowClick"> = useCallback(

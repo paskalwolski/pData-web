@@ -20,6 +20,8 @@ import { LapInfo } from "../components/LapInfo.component";
 import { InfoCardValue } from "../components/InfoCardValue.component";
 import { useOpeneable } from "../hooks/useOpenable";
 import { LapTable } from "../components/LapTable.component";
+import { GridFilterItem } from "@mui/x-data-grid";
+import { DOCUMENT_REF } from "../hooks/datagridConvertors";
 
 interface NewLapDataProps {
     lapId: string;
@@ -47,8 +49,16 @@ export const NewLapData = ({ lapId, secondaryLapId }: NewLapDataProps) => {
         navigate(`/laps/${lapId}`);
     }, [lapId]);
 
-    const excludeLaps = useMemo(
-        () => [lapId, secondaryLapId].filter((l) => Boolean(l)),
+    // TODO: Consider yanking these, LapData should not know about filter internals?
+    const excludeLapFilters: GridFilterItem[] = useMemo(
+        () =>
+            [lapId, secondaryLapId]
+                .filter((l) => Boolean(l))
+                .map((value) => ({
+                    field: DOCUMENT_REF,
+                    operator: "!=",
+                    value,
+                })),
         [lapId, secondaryLapId],
     );
 
@@ -154,7 +164,7 @@ export const NewLapData = ({ lapId, secondaryLapId }: NewLapDataProps) => {
                         <LapTable
                             onLapSelect={handleComparisonLapSelect}
                             defaultSortBy="time"
-                            excludeLaps={excludeLaps}
+                            strictFilterItems={excludeLapFilters}
                         />
                     </Box>
                 </Dialog>

@@ -163,14 +163,12 @@ interface LapTableDataProps {
     pagination: GridPaginationModel;
     sorting: GridSortModel;
     filtering: GridFilterModel;
-    excludeLaps?: Array<string>;
 }
 
 const useLapTableData = ({
     pagination,
     sorting,
     filtering,
-    excludeLaps,
 }: LapTableDataProps) => {
     const [loadedLaps, setLoadedLaps] = useState<LapData[]>();
 
@@ -179,14 +177,6 @@ const useLapTableData = ({
     const firebaseFiltering = useMemo(
         () => lapFilterConvertor(filtering),
         [filtering],
-    );
-
-    const excludeFilters = useMemo(
-        () =>
-            (excludeLaps?.length ?? 0 > 0)
-                ? excludeLaps.map((l) => where(documentId(), "!=", l))
-                : [],
-        [excludeLaps],
     );
 
     const boundaryDocs =
@@ -203,7 +193,6 @@ const useLapTableData = ({
             const queryConstraints: QueryConstraint[] = [
                 ...firebaseSorting,
                 ...firebaseFiltering,
-                ...excludeFilters,
             ];
             const paginationConstraints: QueryConstraint[] = [
                 limit(pagination.pageSize),
@@ -262,7 +251,7 @@ const useLapTableData = ({
         return () => {
             cancelled = true;
         };
-    }, [pagination, firebaseSorting, firebaseFiltering, excludeFilters]);
+    }, [pagination, firebaseSorting, firebaseFiltering]);
 
     return [loadedLaps, totalLapCount, loading] as const;
 };
