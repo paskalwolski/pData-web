@@ -13,6 +13,9 @@ interface FilteringContext {
     removeFilterItem: (filterId: string | number) => void;
     clearFilterItems: () => void;
     replaceFilterItem: (filterItem: GridFilterItem) => void;
+    upsertFilterItem: (filterItem: GridFilterItem) => void;
+    strictFilterIds: Array<string | number>;
+    setStrictFilterIds: (filterIds: Array<string | number>) => void;
 }
 
 const FilteringContext = createContext<FilteringContext>({
@@ -20,11 +23,18 @@ const FilteringContext = createContext<FilteringContext>({
     addFilterItem: () => undefined,
     removeFilterItem: () => undefined,
     replaceFilterItem: () => undefined,
+    upsertFilterItem: () => undefined,
     clearFilterItems: () => undefined,
+    strictFilterIds: [],
+    setStrictFilterIds: () => undefined,
 });
 
 const FilteringProvider = ({ children }: { children: React.ReactNode }) => {
     const [filterItems, setFilterItems] = useState<GridFilterItem[]>([]);
+    const [strictFilterIds, setStrictFilterIds] = useState<
+        Array<string | number>
+    >([]);
+
     const addFilterItem = useCallback(
         (filterItem: GridFilterItem) =>
             setFilterItems((existingItems) => [
@@ -41,6 +51,23 @@ const FilteringProvider = ({ children }: { children: React.ReactNode }) => {
             ),
         [],
     );
+
+    const upsertFilterItem = useCallback((filterItem: GridFilterItem) => {
+        setFilterItems((existingItems) => {
+            let found = false;
+            const updated = existingItems.map((i) => {
+                if (i.id === filterItem.id) {
+                    found = true;
+                    return filterItem;
+                }
+                return i;
+            });
+            if (!found) {
+                updated.push(filterItem);
+            }
+            return updated;
+        });
+    }, []);
 
     const replaceFilterItem = useCallback(
         (filterItem: GridFilterItem) =>
@@ -61,13 +88,18 @@ const FilteringProvider = ({ children }: { children: React.ReactNode }) => {
             clearFilterItems,
             removeFilterItem,
             replaceFilterItem,
+            upsertFilterItem,
+            strictFilterIds,
+            setStrictFilterIds,
         }),
         [
             addFilterItem,
             filterItems,
             removeFilterItem,
             replaceFilterItem,
+            upsertFilterItem,
             clearFilterItems,
+            strictFilterIds,
         ],
     );
 

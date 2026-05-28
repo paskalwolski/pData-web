@@ -67,9 +67,15 @@ export const NewLapData = ({ lapId, secondaryLapId }: NewLapDataProps) => {
             lapData?.sessionData?.track
                 ? [
                       {
+                          id: crypto.randomUUID(),
                           field: "trackName",
-                          operator: "=",
-                          value: lapData.sessionData.track,
+                          operator: "isAnyOf",
+                          value: [
+                              {
+                                  id: lapData.sessionData.track,
+                                  label: lapData.sessionData.track,
+                              },
+                          ],
                       },
                   ]
                 : [],

@@ -9,6 +9,7 @@ interface Props {
     field: string;
     filter?: GridFilterItem;
     onChange: (value: []) => void;
+    disabled?: boolean;
 }
 
 export const FilterControl = ({
@@ -16,6 +17,7 @@ export const FilterControl = ({
     fieldLabel,
     filter,
     onChange,
+    disabled,
 }: Props) => {
     const [options, isLoading] = useAutocompleteOptions(
         FieldNameCollectionMapping[field as AutocompleteCollection],
@@ -39,6 +41,7 @@ export const FilterControl = ({
                     )}
                     loading={isLoading}
                     onChange={handleChange}
+                    disabled={disabled}
                 />
             </Box>
         </Paper>

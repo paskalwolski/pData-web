@@ -11,7 +11,7 @@ import { useLapTableData } from "../hooks/useLaps";
 import type { LapData } from "../types";
 import { formatDuration } from "../helpers/formatDuration";
 import { Timestamp } from "firebase/firestore";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { TbClockX } from "react-icons/tb";
 import { Box, useTheme } from "@mui/material";
 import { GridSortModel } from "@mui/x-data-grid";
@@ -62,14 +62,25 @@ const LapTableDataGrid = ({
     const handleSortingChange = (newSortModel: GridSortModel) =>
         setSorting(newSortModel.length > 0 ? newSortModel : defaultSortModel);
 
-    const { filterItems } = useFiltering();
+    const { filterItems, upsertFilterItem, setStrictFilterIds } =
+        useFiltering();
+
+    useEffect(() => {
+        setStrictFilterIds(
+            strictFilterItems.map((i) => {
+                // Ensure we register this filter with the filterItems
+                upsertFilterItem(i);
+                return i.id;
+            }),
+        );
+    }, [setStrictFilterIds, strictFilterItems, upsertFilterItem]);
 
     const filtering: GridFilterModel = useMemo(
         () => ({
             logicOperator: GridLogicOperator.And,
-            items: [...filterItems, ...(strictFilterItems ?? [])],
+            items: [...filterItems],
         }),
-        [filterItems, strictFilterItems],
+        [filterItems],
     );
 
     const [lapTableData, rowCount, isLoadingLapTableData] = useLapTableData({

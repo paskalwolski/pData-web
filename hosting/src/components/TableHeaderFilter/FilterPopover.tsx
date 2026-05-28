@@ -18,8 +18,12 @@ export const FilterPopover = ({
     colDef,
     fieldFilter,
 }: Props) => {
-    const { addFilterItem, replaceFilterItem, removeFilterItem } =
-        useFiltering();
+    const {
+        addFilterItem,
+        replaceFilterItem,
+        removeFilterItem,
+        strictFilterIds,
+    } = useFiltering();
 
     const defaultFilter: GridFilterItem = useMemo(
         () => ({
@@ -30,7 +34,18 @@ export const FilterPopover = ({
         [colDef.field, colDef.type],
     );
 
-    const effectiveFilter = fieldFilter ?? defaultFilter;
+    const effectiveFilter = useMemo(
+        () => fieldFilter ?? defaultFilter,
+        [defaultFilter, fieldFilter],
+    );
+
+    const isStrictFilter = useMemo(
+        () =>
+            !!strictFilterIds.find(
+                (filterId) => effectiveFilter.id === filterId,
+            ),
+        [strictFilterIds, effectiveFilter],
+    );
 
     const handleSaveFilter = useCallback(
         (filter: GridFilterItem) => {
@@ -84,6 +99,7 @@ export const FilterPopover = ({
                         fieldLabel={colDef.headerName}
                         field={colDef.field}
                         filter={fieldFilter}
+                        disabled={isStrictFilter}
                         onChange={handleFilterChange}
                     />
                 )}
