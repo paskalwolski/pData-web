@@ -12,7 +12,6 @@ interface FilteringContext {
     addFilterItem: (filterItem: GridFilterItem) => void;
     removeFilterItem: (filterId: string | number) => void;
     clearFilterItems: () => void;
-    replaceFilterItem: (filterItem: GridFilterItem) => void;
     upsertFilterItem: (filterItem: GridFilterItem) => void;
     strictFilterIds: Array<string | number>;
     setStrictFilterIds: (filterIds: Array<string | number>) => void;
@@ -22,7 +21,6 @@ const FilteringContext = createContext<FilteringContext>({
     filterItems: [],
     addFilterItem: () => undefined,
     removeFilterItem: () => undefined,
-    replaceFilterItem: () => undefined,
     upsertFilterItem: () => undefined,
     clearFilterItems: () => undefined,
     strictFilterIds: [],
@@ -69,16 +67,6 @@ const FilteringProvider = ({ children }: { children: React.ReactNode }) => {
         });
     }, []);
 
-    const replaceFilterItem = useCallback(
-        (filterItem: GridFilterItem) =>
-            setFilterItems((existingItems) =>
-                existingItems.map((f) =>
-                    f.id === filterItem.id ? filterItem : f,
-                ),
-            ),
-        [],
-    );
-
     const clearFilterItems = useCallback(() => setFilterItems([]), []);
 
     const effectiveValue = useMemo(
@@ -87,7 +75,6 @@ const FilteringProvider = ({ children }: { children: React.ReactNode }) => {
             addFilterItem,
             clearFilterItems,
             removeFilterItem,
-            replaceFilterItem,
             upsertFilterItem,
             strictFilterIds,
             setStrictFilterIds,
@@ -96,7 +83,6 @@ const FilteringProvider = ({ children }: { children: React.ReactNode }) => {
             addFilterItem,
             filterItems,
             removeFilterItem,
-            replaceFilterItem,
             upsertFilterItem,
             clearFilterItems,
             strictFilterIds,

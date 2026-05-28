@@ -20,9 +20,9 @@ export const FilterPopover = ({
 }: Props) => {
     const {
         addFilterItem,
-        replaceFilterItem,
         removeFilterItem,
         strictFilterIds,
+        upsertFilterItem,
     } = useFiltering();
 
     const defaultFilter: GridFilterItem = useMemo(
@@ -55,7 +55,7 @@ export const FilterPopover = ({
                 // Existing filter
                 if (hasValue) {
                     // Update existing filter
-                    replaceFilterItem(filter);
+                    upsertFilterItem(filter);
                 } else {
                     // Remove existing filter
                     removeFilterItem(filter.id);
@@ -68,7 +68,7 @@ export const FilterPopover = ({
                 addFilterItem(filter);
             }
         },
-        [addFilterItem, removeFilterItem, replaceFilterItem],
+        [addFilterItem, removeFilterItem, upsertFilterItem],
     );
 
     const handleFilterChange = useCallback(
