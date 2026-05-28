@@ -143,6 +143,22 @@ export const handleLap = onRequest(async (request, response) => {
   const driverRef = firestore.collection('drivers').doc(driver);
   const bestLapsRef = driverRef.collection(track).doc(car);
 
+  const trackRef = firestore.collection('tracks').doc(track);
+
+  const trackUpdate = trackRef.get().then(async trackSnap => {
+    if (!trackSnap.exists) {
+      return trackRef.set({name: track});
+    }
+  });
+  const carRef = firestore.collection('cars').doc(car);
+  const carUpdate = carRef.get().then(trackSnap => {
+    if (!trackSnap.exists) {
+      return carRef.set({name: car});
+    }
+  });
+
+  const detailUpdates = Promise.all([trackUpdate, carUpdate]);
+
   const now = Date.now();
 
   const lapTimestamp = new Date(now);
@@ -226,6 +242,8 @@ export const handleLap = onRequest(async (request, response) => {
       });
     }
   });
+
+  await detailUpdates.catch(() => {});
 
   response.send({lapId: lapRef.id, sessionId: sessionRef.id});
   return;
