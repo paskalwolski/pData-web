@@ -21,7 +21,7 @@ import { InfoCardValue } from "../components/InfoCardValue.component";
 import { useOpeneable } from "../hooks/useOpenable";
 import { LapTable } from "../components/LapTable.component";
 import { GridFilterItem } from "@mui/x-data-grid";
-import { DOCUMENT_REF } from "../hooks/datagridConvertors";
+import { DOCUMENT_REF } from "../helpers/datagridConvertors";
 
 interface NewLapDataProps {
     lapId: string;

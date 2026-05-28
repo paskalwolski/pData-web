@@ -21,7 +21,7 @@ import {
 import { LapData, TelemetryData } from "../types";
 import { GridFilterModel, GridPaginationModel } from "@mui/x-data-grid";
 import { GridSortModel } from "@mui/x-data-grid";
-import { lapFilterConvertor, lapSortConvertor } from "./datagridConvertors";
+import { lapFilterConvertor, lapSortConvertor } from "../helpers/datagridConvertors";
 
 const useLap = (lapId: string): [LapData | undefined, boolean] => {
     const [lapData, setLapData] = useState<LapData | undefined>();
