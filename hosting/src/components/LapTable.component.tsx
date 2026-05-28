@@ -20,6 +20,8 @@ import { FilteringProvider, useFiltering } from "../hooks/useFiltering";
 
 const getRowId = (row: LapData) => row.lapId;
 
+const EMPTY_ARRAY = [] as const;
+
 const CUSTOM_HEADER: Partial<GridColDef<LapData>> = {
     renderHeader: (params) => <TableHeaderFilter params={params} />,
     headerAlign: "left",
@@ -67,7 +69,7 @@ const LapTableDataGrid = ({
 
     useEffect(() => {
         setStrictFilterIds(
-            strictFilterItems.map((i) => {
+            (strictFilterItems ?? EMPTY_ARRAY).map((i) => {
                 // Ensure we register this filter with the filterItems
                 upsertFilterItem(i);
                 return i.id;
