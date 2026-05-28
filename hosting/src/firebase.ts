@@ -1,10 +1,8 @@
 import { initializeApp } from "firebase/app";
 import {
     getFirestore,
-    doc,
-    getDoc,
 } from "firebase/firestore";
-import { getDownloadURL, getStorage, ref} from "firebase/storage";
+import { getStorage} from "firebase/storage";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDnFq6i1fT8dfPCNNO6HD9Fo05RtZDBQmk",
@@ -20,18 +18,4 @@ export const db = getFirestore(firebaseApp);
 
 export const storage = getStorage();
 
-export const getTrackData = async (trackName: string) => {
-    console.log("Getting track", trackName)
-    const trackData = await getDoc(doc(db, "tracks", trackName));
-    if (trackData.exists()){
-        const data = trackData.data();
-        if ('url' in data){
-            const imageRef = ref(storage, data.url);
-            const url = await getDownloadURL(imageRef)
-            data.url = url;
-        }
-        return data;
-    } else {
-        return null;
-    }
-}
+
