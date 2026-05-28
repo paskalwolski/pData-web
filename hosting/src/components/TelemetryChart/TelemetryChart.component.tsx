@@ -16,7 +16,7 @@ interface TelemetryChartProps {
     title: string;
     data: TelemetryDataSet;
     secondaryData?: TelemetryDataSet;
-    valueFormatter?: (v: number) => string;
+    valueFormatter?: (v: number) => React.ReactNode;
     mode?: TelemetryMode;
     rawData?: TelemetryDataSet;
     mutators?: TelemetryMutator[];
