@@ -6,8 +6,11 @@ import { Box, Paper, Stack, Typography, useTheme } from "@mui/material";
 import { useTelemetryPointContext } from "../../hooks/useTelemetryPoint";
 import { TelemetryDataSet } from "../../types";
 import { TelemetryCrosshair } from "./TelemetryCrosshair";
+import { TelemetryMutator } from "../../helpers/telemetryMutators";
 
 type TelemetryMode = "normal" | "stepped" | "delta";
+
+const EMPTY_ARRAY = [] as const;
 
 interface TelemetryChartProps {
     title: string;
@@ -16,6 +19,7 @@ interface TelemetryChartProps {
     valueFormatter?: (v: number) => string;
     mode?: TelemetryMode;
     rawData?: TelemetryDataSet;
+    mutators?: TelemetryMutator[];
 }
 
 const TelemetryChart = ({
@@ -25,21 +29,44 @@ const TelemetryChart = ({
     valueFormatter,
     mode = "normal",
     rawData,
+    mutators,
 }: TelemetryChartProps) => {
     const { palette } = useTheme();
 
     const height = 200;
     const [containerRef, width] = useContainerSize();
 
-    const targetData = rawData ?? data;
+    const mutatedPrimaryData = useMemo(
+        () => (mutators ?? EMPTY_ARRAY).reduce((d, m) => m(d), data),
+        [mutators, data],
+    );
+    const mutatedSecondaryData = useMemo(
+        () =>
+            secondaryData
+                ? (mutators ?? EMPTY_ARRAY).reduce(
+                      (d, m) => m(d),
+                      secondaryData,
+                  )
+                : undefined,
+        [mutators, secondaryData],
+    );
+    const mutatedRawData = useMemo(
+        () =>
+            rawData
+                ? (mutators ?? EMPTY_ARRAY).reduce((d, m) => m(d), rawData)
+                : undefined,
+        [mutators, rawData],
+    );
+
+    const targetData = mutatedRawData ?? mutatedPrimaryData;
 
     const yDomain = useMemo(
         () =>
             d3.extent([
-                ...d3.extent(data),
-                ...d3.extent(secondaryData ?? [undefined, undefined]),
+                ...d3.extent(mutatedPrimaryData),
+                ...d3.extent(mutatedSecondaryData ?? [undefined, undefined]),
             ]),
-        [data, secondaryData],
+        [mutatedPrimaryData, mutatedSecondaryData],
     );
 
     const {
@@ -59,8 +86,8 @@ const TelemetryChart = ({
         () =>
             selectionStartIndex != null && selectionEndIndex != null
                 ? [selectionStartIndex, selectionEndIndex]
-                : [0, data.length],
-        [data.length, selectionStartIndex, selectionEndIndex],
+                : [0, mutatedPrimaryData.length],
+        [mutatedPrimaryData.length, selectionStartIndex, selectionEndIndex],
     );
 
     const xScale = useMemo(
@@ -73,8 +100,8 @@ const TelemetryChart = ({
         [height, yDomain],
     );
 
-    const selectedYValue = data[selectedIndex];
-    const secondaryYValue = secondaryData?.[selectedIndex];
+    const selectedYValue = mutatedPrimaryData[selectedIndex];
+    const secondaryYValue = mutatedSecondaryData?.[selectedIndex];
     const diffYValue =
         selectedYValue != null && secondaryYValue != null
             ? selectedYValue - secondaryYValue
@@ -176,15 +203,16 @@ const TelemetryChart = ({
                                   selectedYValue)
                                 : "-"}
                         </Typography>
-                        {isFinite(secondaryYValue) && secondaryYValue != null && (
-                            <Typography
-                                color={palette.secondary.light}
-                                sx={{ minWidth: "8ch", textAlign: "right" }}
-                            >
-                                {valueFormatter?.(secondaryYValue) ??
-                                    secondaryYValue}
-                            </Typography>
-                        )}
+                        {isFinite(secondaryYValue) &&
+                            secondaryYValue != null && (
+                                <Typography
+                                    color={palette.secondary.light}
+                                    sx={{ minWidth: "8ch", textAlign: "right" }}
+                                >
+                                    {valueFormatter?.(secondaryYValue) ??
+                                        secondaryYValue}
+                                </Typography>
+                            )}
                         {isFinite(diffYValue) && diffYValue != null && (
                             <Typography
                                 color={palette.info.light}
@@ -227,7 +255,7 @@ const TelemetryChart = ({
                             />
                         )}
                         <TelemetryLine
-                            data={data}
+                            data={mutatedPrimaryData}
                             xScale={xScale}
                             yScale={yScale}
                             stepped={mode === "stepped"}
@@ -239,7 +267,7 @@ const TelemetryChart = ({
                         />
                         {secondaryData && (
                             <TelemetryLine
-                                data={secondaryData}
+                                data={mutatedSecondaryData}
                                 xScale={xScale}
                                 yScale={yScale}
                                 stepped={mode === "stepped"}
