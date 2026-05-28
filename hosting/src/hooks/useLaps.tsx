@@ -184,12 +184,8 @@ const useLapTableData = ({
     const excludeFilters = useMemo(
         () =>
             (excludeLaps?.length ?? 0 > 0)
-                ? where(
-                      documentId(),
-                      "not-in",
-                      excludeLaps.filter((l) => Boolean(l)),
-                  )
-                : undefined,
+                ? excludeLaps.map((l) => where(documentId(), "!=", l))
+                : [],
         [excludeLaps],
     );
 
@@ -207,10 +203,8 @@ const useLapTableData = ({
             const queryConstraints: QueryConstraint[] = [
                 ...firebaseSorting,
                 ...firebaseFiltering,
+                ...excludeFilters,
             ];
-            if (excludeFilters) {
-                queryConstraints.push(excludeFilters);
-            }
             const paginationConstraints: QueryConstraint[] = [
                 limit(pagination.pageSize),
             ];

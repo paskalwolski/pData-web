@@ -48,7 +48,7 @@ export const NewLapData = ({ lapId, secondaryLapId }: NewLapDataProps) => {
     }, [lapId]);
 
     const excludeLaps = useMemo(
-        () => [lapId, secondaryLapId],
+        () => [lapId, secondaryLapId].filter((l) => Boolean(l)),
         [lapId, secondaryLapId],
     );
 
