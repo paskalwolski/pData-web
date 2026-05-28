@@ -62,6 +62,25 @@ export const NewLapData = ({ lapId, secondaryLapId }: NewLapDataProps) => {
         [lapId, secondaryLapId],
     );
 
+    const strictTrackFilters: GridFilterItem[] = useMemo(
+        () =>
+            lapData?.sessionData?.track
+                ? [
+                      {
+                          field: "trackName",
+                          operator: "=",
+                          value: lapData.sessionData.track,
+                      },
+                  ]
+                : [],
+        [lapData?.sessionData?.track],
+    );
+
+    const strictFilterItems = useMemo(
+        () => [...excludeLapFilters, ...strictTrackFilters],
+        [excludeLapFilters, strictTrackFilters],
+    );
+
     return (
         <>
             <Stack spacing={1} width={1}>
@@ -164,7 +183,7 @@ export const NewLapData = ({ lapId, secondaryLapId }: NewLapDataProps) => {
                         <LapTable
                             onLapSelect={handleComparisonLapSelect}
                             defaultSortBy="time"
-                            strictFilterItems={excludeLapFilters}
+                            strictFilterItems={strictFilterItems}
                         />
                     </Box>
                 </Dialog>
