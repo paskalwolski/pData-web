@@ -4,23 +4,12 @@ import * as d3 from "d3";
 import { useContainerSize } from "../../hooks/useContainerSize";
 import { Box, Paper, Stack, Typography, useTheme } from "@mui/material";
 import { useTelemetryPointContext } from "../../hooks/useTelemetryPoint";
-import { TelemetryDataSet } from "../../types";
 import { TelemetryCrosshair } from "./TelemetryCrosshair";
-import { TelemetryMutator } from "../../helpers/telemetryMutators";
-
-type TelemetryMode = "normal" | "stepped" | "delta";
+import { TelemetryChartProps, TelemetryValueDisplayProps } from "./types";
+import { TelemetryValueRender } from "./TelemetryValueRender";
+import { deltaFormatter as baseDeltaFormatter } from "../../helpers/telemetryValueFormatter";
 
 const EMPTY_ARRAY = [] as const;
-
-interface TelemetryChartProps {
-    title: string;
-    data: TelemetryDataSet;
-    secondaryData?: TelemetryDataSet;
-    valueFormatter?: (v: number) => React.ReactNode;
-    mode?: TelemetryMode;
-    rawData?: TelemetryDataSet;
-    mutators?: TelemetryMutator[];
-}
 
 const TelemetryChart = ({
     title,
@@ -30,6 +19,7 @@ const TelemetryChart = ({
     mode = "normal",
     rawData,
     mutators,
+    slots,
 }: TelemetryChartProps) => {
     const { palette } = useTheme();
 
@@ -188,38 +178,69 @@ const TelemetryChart = ({
         ],
     );
 
+    const deltaFormatter = useCallback(
+        (v?: number) => baseDeltaFormatter(valueFormatter(v)),
+        [valueFormatter],
+    );
+
+    const slotProps: Omit<TelemetryValueDisplayProps, "variant"> = {
+        index: selectedIndex,
+        valueFormatter,
+        primaryValue: selectedYValue,
+        secondaryValue: secondaryYValue,
+        deltaValue: diffYValue,
+    };
+
     return (
         <Paper>
             <Stack spacing={1} margin={1}>
                 <Stack width={1} justifyContent="space-between" direction="row">
                     <Stack justifyContent="start" direction="row" spacing={1}>
-                        <Typography>{title}</Typography>
-                        <Typography
-                            color={palette.primary.light}
-                            sx={{ minWidth: "8ch", textAlign: "right" }}
-                        >
-                            {isFinite(selectedYValue) && selectedYValue != null
-                                ? (valueFormatter?.(selectedYValue) ??
-                                  selectedYValue)
-                                : "-"}
-                        </Typography>
-                        {isFinite(secondaryYValue) &&
-                            secondaryYValue != null && (
-                                <Typography
-                                    color={palette.secondary.light}
-                                    sx={{ minWidth: "8ch", textAlign: "right" }}
-                                >
-                                    {valueFormatter?.(secondaryYValue) ??
-                                        secondaryYValue}
-                                </Typography>
-                            )}
-                        {isFinite(diffYValue) && diffYValue != null && (
-                            <Typography
-                                color={palette.info.light}
-                                sx={{ minWidth: "8ch", textAlign: "right" }}
-                            >
-                                ∆ {valueFormatter?.(diffYValue) ?? diffYValue}
-                            </Typography>
+                        {slots?.title ? (
+                            <slots.title title={title} />
+                        ) : (
+                            <Typography>{title}</Typography>
+                        )}
+                        {slots?.primaryValue ? (
+                            <slots.primaryValue
+                                variant="primary"
+                                color={palette.primary.light}
+                                {...slotProps}
+                            />
+                        ) : (
+                            <TelemetryValueRender
+                                value={selectedYValue}
+                                valueFormatter={valueFormatter}
+                                color={palette.primary.light}
+                            />
+                        )}
+                        {secondaryData && (
+                            <>
+                                {slots?.secondaryValue ? (
+                                    <slots.secondaryValue
+                                        variant="secondary"
+                                        color={palette.secondary.light}
+                                        {...slotProps}
+                                    />
+                                ) : (
+                                    <TelemetryValueRender
+                                        value={secondaryYValue}
+                                        valueFormatter={valueFormatter}
+                                        color={palette.secondary.light}
+                                    />
+                                )}
+                                {slots?.deltaValue ? (
+                                    <slots.deltaValue
+                                        variant="delta"
+                                        {...slotProps}
+                                    />
+                                ) : (
+                                    <TelemetryValueRender
+                                        value={diffYValue}
+                                        valueFormatter={deltaFormatter}
+                                    />
+                                )}
+                            </>
                         )}
                     </Stack>
                     {isFinite(selectedIndex) && selectedIndex != null && (

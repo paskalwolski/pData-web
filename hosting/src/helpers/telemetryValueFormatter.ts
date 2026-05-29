@@ -14,4 +14,6 @@ const gearFormatter = (v: number) => {
     return v - 1
 }
 
-export {pedalFormatter, speedFormatter, steerFormatter, ersFormatter, rpmFormatter, gearFormatter}
+const deltaFormatter = (v: number | string) => `∆ ${v}`
+
+export {deltaFormatter, pedalFormatter, speedFormatter, steerFormatter, ersFormatter, rpmFormatter, gearFormatter}
