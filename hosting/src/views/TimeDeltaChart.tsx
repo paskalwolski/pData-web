@@ -1,6 +1,8 @@
 import { useMemo } from "react";
 import { TelemetryDataSet } from "../types";
 import TelemetryChart from "../components/TelemetryChart";
+import { TelemetryValueDisplayProps } from "../components/TelemetryChart/types";
+import { TelemetryValueRender } from "../components/TelemetryChart/TelemetryValueRender";
 
 const formatMillis = (t: number) => (t / 1000).toFixed(3) + "s";
 
@@ -64,6 +66,25 @@ const TimeDeltaChart = ({ primaryLapData, secondaryLapData }: Props) => {
             valueFormatter={formatMillis}
             mode="delta"
             rawData={rawData}
+            slots={{
+                primaryValue: false,
+                secondaryValue: false,
+                deltaValue: TimeDeltaValue,
+            }}
+        />
+    );
+};
+
+const TimeDeltaValue = ({
+    primaryValue,
+    secondaryValue,
+    valueFormatter,
+}: TelemetryValueDisplayProps) => {
+    const deltaValue = primaryValue ?? secondaryValue;
+    return (
+        <TelemetryValueRender
+            valueFormatter={valueFormatter}
+            value={deltaValue}
         />
     );
 };
