@@ -15,10 +15,10 @@ export type TelemetryChartProps = {
 type TitleProps = {title: string}
 
 export interface Slots {
-    title?: React.ComponentType<TitleProps>;
-    primaryValue?: React.ComponentType<TelemetryValueDisplayProps>;
-    secondaryValue?: React.ComponentType<TelemetryValueDisplayProps>;
-    deltaValue?: React.ComponentType<TelemetryValueDisplayProps>;
+    title?: React.ComponentType<TitleProps> | false;
+    primaryValue?: React.ComponentType<TelemetryValueDisplayProps> | false;
+    secondaryValue?: React.ComponentType<TelemetryValueDisplayProps> | false;
+    deltaValue?: React.ComponentType<TelemetryValueDisplayProps> | false;
 }
 
 export type SlotVariant = "primary" | "secondary" | "delta";

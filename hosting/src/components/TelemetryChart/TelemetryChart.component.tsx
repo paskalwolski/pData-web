@@ -196,50 +196,54 @@ const TelemetryChart = ({
             <Stack spacing={1} margin={1}>
                 <Stack width={1} justifyContent="space-between" direction="row">
                     <Stack justifyContent="start" direction="row" spacing={1}>
-                        {slots?.title ? (
-                            <slots.title title={title} />
-                        ) : (
-                            <Typography>{title}</Typography>
-                        )}
-                        {slots?.primaryValue ? (
-                            <slots.primaryValue
-                                variant="primary"
-                                color={palette.primary.light}
-                                {...slotProps}
-                            />
-                        ) : (
-                            <TelemetryValueRender
-                                value={selectedYValue}
-                                valueFormatter={valueFormatter}
-                                color={palette.primary.light}
-                            />
-                        )}
+                        {slots?.title !== false &&
+                            (slots?.title ? (
+                                <slots.title title={title} />
+                            ) : (
+                                <Typography>{title}</Typography>
+                            ))}
+                        {slots?.primaryValue !== false &&
+                            (slots?.primaryValue ? (
+                                <slots.primaryValue
+                                    variant="primary"
+                                    color={palette.primary.light}
+                                    {...slotProps}
+                                />
+                            ) : (
+                                <TelemetryValueRender
+                                    value={selectedYValue}
+                                    valueFormatter={valueFormatter}
+                                    color={palette.primary.light}
+                                />
+                            ))}
                         {secondaryData && (
                             <>
-                                {slots?.secondaryValue ? (
-                                    <slots.secondaryValue
-                                        variant="secondary"
-                                        color={palette.secondary.light}
-                                        {...slotProps}
-                                    />
-                                ) : (
-                                    <TelemetryValueRender
-                                        value={secondaryYValue}
-                                        valueFormatter={valueFormatter}
-                                        color={palette.secondary.light}
-                                    />
-                                )}
-                                {slots?.deltaValue ? (
-                                    <slots.deltaValue
-                                        variant="delta"
-                                        {...slotProps}
-                                    />
-                                ) : (
-                                    <TelemetryValueRender
-                                        value={diffYValue}
-                                        valueFormatter={deltaFormatter}
-                                    />
-                                )}
+                                {slots?.secondaryValue !== false &&
+                                    (slots?.secondaryValue ? (
+                                        <slots.secondaryValue
+                                            variant="secondary"
+                                            color={palette.secondary.light}
+                                            {...slotProps}
+                                        />
+                                    ) : (
+                                        <TelemetryValueRender
+                                            value={secondaryYValue}
+                                            valueFormatter={valueFormatter}
+                                            color={palette.secondary.light}
+                                        />
+                                    ))}
+                                {slots?.deltaValue !== false &&
+                                    (slots?.deltaValue ? (
+                                        <slots.deltaValue
+                                            variant="delta"
+                                            {...slotProps}
+                                        />
+                                    ) : (
+                                        <TelemetryValueRender
+                                            value={diffYValue}
+                                            valueFormatter={deltaFormatter}
+                                        />
+                                    ))}
                             </>
                         )}
                     </Stack>
