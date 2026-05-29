@@ -12,8 +12,9 @@ import {
     steerFormatter,
     gearFormatter,
 } from "../helpers/telemetryValueFormatter";
-import { TimeDeltaChart } from "./TimeDeltaChart";
+import { TimeDeltaChart } from "../components/CustomTelemetry/TimeDeltaChart";
 import { invert } from "../helpers/telemetryMutators";
+import { SteeringAngleDisplay } from "../components/CustomTelemetry/SteeringAngleDisplay";
 
 interface Props {
     lapId: string;
@@ -76,6 +77,10 @@ export const LapTelemetry = ({ lapId, secondaryLapId, trackId }: Props) => {
                         secondaryData={secondaryTelemetry?.steer}
                         valueFormatter={steerFormatter}
                         mutators={STEER_MUTATORS}
+                        slots={{
+                            primaryValue: SteeringAngleDisplay,
+                            secondaryValue: SteeringAngleDisplay,
+                        }}
                     />
                     <TelemetryChart
                         title="ERS Deployment (Joules)"

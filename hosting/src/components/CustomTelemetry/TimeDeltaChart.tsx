@@ -1,8 +1,8 @@
 import { useMemo } from "react";
-import { TelemetryDataSet } from "../types";
-import TelemetryChart from "../components/TelemetryChart";
-import { TelemetryValueDisplayProps } from "../components/TelemetryChart/types";
-import { TelemetryValueRender } from "../components/TelemetryChart/TelemetryValueRender";
+import { TelemetryDataSet } from "../../types";
+import TelemetryChart from "../TelemetryChart";
+import { TelemetryValueDisplayProps } from "../TelemetryChart/types";
+import { TelemetryValueRender } from "../TelemetryChart/TelemetryValueRender";
 
 const formatMillis = (t: number) => (t / 1000).toFixed(3) + "s";
 
