@@ -10,7 +10,8 @@ export const SteeringAngleDisplay = ({
     valueFormatter,
     color,
 }: TelemetryValueDisplayProps) => {
-    const targetValue = variant === "secondary" ? secondaryValue : primaryValue;
+    const targetValue =
+        (variant === "secondary" ? secondaryValue : primaryValue) * -1;
     return (
         <Stack direction="row" width="100%" alignItems="center" spacing={1}>
             <TelemetryValueRender
