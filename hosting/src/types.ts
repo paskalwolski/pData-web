@@ -37,7 +37,7 @@ export interface TrackSegment {
     indexEnd?: number;
 }
 
-export type TrackSegmentType = 'gas' | 'brake' | 'coast';
+export type TrackSegmentType = 'positive' | 'negative' | 'neutral';
 
 export interface TelemetryData {
   brake?: TelemetryDataSet;

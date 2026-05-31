@@ -5,9 +5,9 @@ import { useTelemetryPointContext } from "../../hooks/useTelemetryPoint";
 import { useTheme } from "@mui/material";
 
 const SEGMENT_COLOR_MAP: Record<TrackSegmentType, string> = {
-    gas: "rgb(0, 255, 0)",
-    brake: "#FF0000",
-    coast: "#FFFFFF",
+    positive: "rgb(0, 255, 0)",
+    negative: "#FF0000",
+    neutral: "#FFFFFF",
 };
 interface TrackTraceSegmentProps {
     lineGenerator: d3.Line<TrackPositionData>;
