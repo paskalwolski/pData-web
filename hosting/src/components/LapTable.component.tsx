@@ -154,6 +154,8 @@ const LapTableDataGrid = ({
             {
                 field: "expiresAt",
                 headerName: "Expires",
+                description:
+                    "Laps will auto-expire after 24hrs. The 3 fastest laps for a combination of driver-car-track will not expire.",
                 minWidth: 110,
                 width: 110,
                 type: "boolean",

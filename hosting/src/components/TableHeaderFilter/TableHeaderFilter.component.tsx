@@ -1,4 +1,4 @@
-import { IconButton, Stack, Typography } from "@mui/material";
+import { IconButton, Stack, Tooltip, Typography } from "@mui/material";
 import { GridColumnHeaderParams } from "@mui/x-data-grid";
 import { useMemo, useRef, useState } from "react";
 import { TbFilter, TbFilterFilled, TbFilterDown } from "react-icons/tb";
@@ -35,14 +35,16 @@ export const TableHeaderFilter = ({ params }: Props) => {
             ref={headerRef}
             role="button"
         >
-            <Typography
-                variant="body2"
-                overflow="hidden"
-                textOverflow="ellipsis"
-                noWrap
-            >
-                {params.colDef.headerName}
-            </Typography>
+            <Tooltip title={params.colDef.description}>
+                <Typography
+                    variant="body2"
+                    overflow="hidden"
+                    textOverflow="ellipsis"
+                    noWrap
+                >
+                    {params.colDef.headerName}
+                </Typography>
+            </Tooltip>
             <IconButton
                 sx={iconSx}
                 onClick={() => setAnchor(headerRef.current)}
