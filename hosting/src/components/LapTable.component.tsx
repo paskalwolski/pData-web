@@ -13,7 +13,7 @@ import { formatDuration } from "../helpers/formatDuration";
 import { Timestamp } from "firebase/firestore";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { TbClockX } from "react-icons/tb";
-import { Box, useTheme } from "@mui/material";
+import { Box, Tooltip, useTheme } from "@mui/material";
 import { GridSortModel } from "@mui/x-data-grid";
 import { TableHeaderFilter } from "./TableHeaderFilter";
 import { FilteringProvider, useFiltering } from "../hooks/useFiltering";
@@ -140,6 +140,16 @@ const LapTableDataGrid = ({
                 },
                 minWidth: 160,
                 sortingOrder: ["desc", null],
+                renderCell: ({ value, formattedValue }) => (
+                    <Tooltip
+                        title={value.toDate().toLocaleString("en-fr", {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                        })}
+                    >
+                        <span>{formattedValue}</span>
+                    </Tooltip>
+                ),
             },
             {
                 field: "expiresAt",
@@ -149,7 +159,7 @@ const LapTableDataGrid = ({
                 type: "boolean",
                 sortable: false,
                 valueGetter: (value) => !!value,
-                renderCell: ({ value }) =>
+                renderCell: ({ row, value }) =>
                     value && (
                         <Box
                             display="flex"
@@ -158,7 +168,11 @@ const LapTableDataGrid = ({
                             alignItems="center"
                             height="stretch"
                         >
-                            <TbClockX color={palette.warning.main} />
+                            <Tooltip
+                                title={`Automatically expires on ${row.expiresAt.toDate().toLocaleString("en-fr", { dateStyle: "short", timeStyle: "short" })}`}
+                            >
+                                <TbClockX color={palette.warning.main} />
+                            </Tooltip>
                         </Box>
                     ),
                 ...CUSTOM_HEADER,
