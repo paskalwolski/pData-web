@@ -19,7 +19,9 @@ export const SteeringAngleDisplay = ({
                 color={color}
                 valueFormatter={valueFormatter}
             />
-            <WheelIcon color={color} rotate={targetValue} />
+            {isFinite(targetValue) && (
+                <WheelIcon color={color} rotate={targetValue} />
+            )}
         </Stack>
     );
 };
