@@ -1,4 +1,14 @@
-import { TelemetryData, TrackPositionData, TrackSegment, TrackSegmentType } from "../types";
+import {
+    TelemetryData,
+    TelemetryDataSet,
+    TrackPositionData,
+    TrackSegment,
+    TrackSegmentType,
+} from "../types";
+import {
+    computeDeltaSegmentBounds,
+    computeSmoothedDeltas,
+} from "./computeTimeDeltas";
 
 const BLIP_THRESHOLD = 5;
 
@@ -14,9 +24,9 @@ const getTrackPedalSegmentType = (
     return "neutral";
 };
 
-
-
-export const prepareTrackPedalSegments = (telemetryData: TelemetryData): TrackSegment[] => {
+const prepareTrackPedalSegments = (
+    telemetryData: TelemetryData,
+): TrackSegment[] => {
     const rawSegments: TrackSegment[] = [];
     let currentSegmentPositionData: TrackPositionData[] = [];
     let currentSegmentType: TrackSegmentType | undefined = undefined;
@@ -80,3 +90,50 @@ export const prepareTrackPedalSegments = (telemetryData: TelemetryData): TrackSe
 
     return merged;
 };
+
+const getTrackSegmentPositionData = (
+    xData: TelemetryDataSet,
+    zData: TelemetryDataSet,
+    startIndex: number,
+    endIndex: number,
+): Array<TrackPositionData> => {
+    const positionData: TrackPositionData[] = [];
+    for (let i = startIndex; i < endIndex + 1; i++) {
+        positionData.push({ x: xData[i], z: zData[i] });
+    }
+    return positionData;
+};
+
+const prepareTrackDeltaSegments = (
+    primaryData: TelemetryData,
+    secondaryData: TelemetryData,
+) => {
+    if (!secondaryData) {
+        return undefined;
+    }
+    const [, smoothedDeltaSlopes] = computeSmoothedDeltas(
+        primaryData,
+        secondaryData,
+    );
+
+    const segmentBounds = computeDeltaSegmentBounds(smoothedDeltaSlopes);
+
+    const trackSegmentData = Object.entries(segmentBounds).flatMap(
+        ([segmentType, segmentChunks]) =>
+            segmentChunks.map(([segmentStart, segmentEnd]) => ({
+                data: getTrackSegmentPositionData(
+                    primaryData.posX,
+                    primaryData.posZ,
+                    segmentStart,
+                    segmentEnd,
+                ),
+                type: segmentType as TrackSegmentType,
+                indexStart: segmentStart,
+                indexEnd: segmentEnd,
+            })),
+    );
+
+    return trackSegmentData;
+};
+
+export { prepareTrackPedalSegments, prepareTrackDeltaSegments };
