@@ -48,8 +48,8 @@ export const LapTelemetry = ({ lapId, secondaryLapId, trackId }: Props) => {
                             }}
                         >
                             <TimeDeltaChart
-                                primaryLapData={lapTelemetry.lapTime}
-                                secondaryLapData={secondaryTelemetry.lapTime}
+                                primaryData={lapTelemetry}
+                                secondaryData={secondaryTelemetry}
                             />
                         </Box>
                     )}
