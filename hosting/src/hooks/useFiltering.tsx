@@ -98,4 +98,5 @@ const FilteringProvider = ({ children }: { children: React.ReactNode }) => {
 
 const useFiltering = () => useContext(FilteringContext);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { FilteringProvider, useFiltering };

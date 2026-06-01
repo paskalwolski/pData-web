@@ -1,7 +1,7 @@
 import { TelemetryDataSet } from "../types";
 
-export type TelemetryMutator = (data: TelemetryDataSet) => TelemetryDataSet
+export type TelemetryMutator = (data: TelemetryDataSet) => TelemetryDataSet;
 
-const invert: TelemetryMutator = (data) => data.map(d => -d)
+const invert: TelemetryMutator = (data) => data.map((d) => -d);
 
-export {invert}
+export { invert };

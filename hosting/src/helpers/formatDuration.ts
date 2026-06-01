@@ -3,6 +3,6 @@ const formatDuration = (ms: number): string => {
     const seconds = Math.floor((ms % 60000) / 1000);
     const millis = ms % 1000;
     return `${minutes}:${String(seconds).padStart(2, "0")}.${String(millis).padStart(3, "0")}`;
-}
+};
 
-export {formatDuration}
+export { formatDuration };

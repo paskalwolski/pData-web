@@ -26,7 +26,7 @@ export const WheelIcon = ({
             fill={color}
         />
         <circle cx="64" cy="64" r="16" fill={color} />
-        <path d="M64 64L64 116" stroke={color} stroke-width="12" />
-        <path d="M12 64L116 64" stroke={color} stroke-width="16" />
+        <path d="M64 64L64 116" stroke={color} strokeWidth="12" />
+        <path d="M12 64L116 64" stroke={color} strokeWidth="16" />
     </svg>
 );

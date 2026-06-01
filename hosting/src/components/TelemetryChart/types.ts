@@ -12,7 +12,7 @@ export type TelemetryChartProps = {
     slots?: Slots;
 };
 
-type TitleProps = {title: string}
+type TitleProps = { title: string };
 
 export interface Slots {
     title?: React.ComponentType<TitleProps> | false;
