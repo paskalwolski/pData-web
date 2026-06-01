@@ -1,12 +1,18 @@
 import { Box } from "@mui/material";
 import * as d3 from "d3";
 import { useContainerSize } from "../../hooks/useContainerSize";
-import { TelemetryData, TrackData, TrackPositionData } from "../../types";
+import {
+    TelemetryData,
+    TrackData,
+    TrackPositionData,
+    TrackSegmentMode,
+} from "../../types";
 import { useMemo, useState } from "react";
 import { TrackPath } from "./TrackPath.component";
 import { useTelemetryPointContext } from "../../hooks/useTelemetryPoint";
 import { TrackCrosshair } from "./TrackCrosshair.component";
 import { useTrackSegments } from "../../hooks/useTrackSegments";
+import { TrackDisplayMenu } from "./TrackDisplayMenu.component";
 
 interface Props {
     trackData?: TrackData;
@@ -23,7 +29,7 @@ const TrackDisplay = ({
     const { selectionStartIndex, selectionEndIndex } =
         useTelemetryPointContext();
 
-    const [segmentMode, setSegmentMode] = useState("pedals");
+    const [segmentMode, setSegmentMode] = useState<TrackSegmentMode>("pedals");
 
     const activeSegmentData = useTrackSegments(
         telemetryData,
@@ -228,6 +234,11 @@ const TrackDisplay = ({
                 overflow: "hidden",
             }}
         >
+            <TrackDisplayMenu
+                segmentMode={segmentMode}
+                setSegmentMode={setSegmentMode}
+                hasComparisonLap={!!secondaryTelemetryData}
+            />
             <svg
                 style={{ position: "absolute", top: 0, left: 0 }}
                 width={fullWidth}
