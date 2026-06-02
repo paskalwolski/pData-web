@@ -39,14 +39,14 @@ const computeSmoothedDeltas = (
 const computeDeltaSegmentBounds = (
     deltaSetSlopes: TelemetryDataSet,
     threshold: number = 0.3,
-): Record<TrackSegmentType, Array<[number, number]>> => {
+): Partial<Record<TrackSegmentType, Array<[number, number]>>> => {
     let lastSegmentType: TrackSegmentType = "positive";
     let currentSegmentStart: number = 0;
-    const segments: Record<TrackSegmentType, Array<[number, number]>> = {
-        negative: [],
-        positive: [],
-        neutral: [],
-    };
+    const segments: Partial<Record<TrackSegmentType, Array<[number, number]>>> =
+        {
+            negative: [],
+            positive: [],
+        };
 
     deltaSetSlopes.forEach((d, i) => {
         const currentSegmentType: TrackSegmentType =
