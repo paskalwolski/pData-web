@@ -1,12 +1,7 @@
 import { Box } from "@mui/material";
 import * as d3 from "d3";
 import { useContainerSize } from "../../hooks/useContainerSize";
-import {
-    TelemetryData,
-    TrackData,
-    TrackPositionData,
-    TrackDisplayMode,
-} from "../../types";
+import { TelemetryData, TrackData, TrackDisplayMode } from "../../types";
 import { useMemo, useState } from "react";
 import { TrackPath } from "./TrackPath.component";
 import { useTelemetryPointContext } from "../../hooks/useTelemetryPoint";
@@ -19,6 +14,12 @@ interface Props {
     telemetryData: TelemetryData;
     secondaryTelemetryData?: TelemetryData;
 }
+
+const getPositionData = (data: TelemetryData) => {
+    if (!data) return undefined;
+    const { posX, posZ } = data;
+    return posX.map((_, i) => ({ x: posX[i], z: posZ[i] }));
+};
 
 const TrackDisplay = ({
     trackData,
@@ -37,19 +38,15 @@ const TrackDisplay = ({
         displayMode,
     );
 
-    const primaryPositionData = useMemo<TrackPositionData[] | undefined>(() => {
-        if (!telemetryData) return undefined;
-        const { posX, posZ } = telemetryData;
-        return posX.map((_, i) => ({ x: posX[i], z: posZ[i] }));
-    }, [telemetryData]);
+    const primaryPositionData = useMemo(
+        () => getPositionData(telemetryData),
+        [telemetryData],
+    );
 
-    const secondaryPositionData = useMemo<
-        TrackPositionData[] | undefined
-    >(() => {
-        if (!secondaryTelemetryData) return undefined;
-        const { posX, posZ } = secondaryTelemetryData;
-        return posX.map((_, i) => ({ x: posX[i], z: posZ[i] }));
-    }, [secondaryTelemetryData]);
+    const secondaryPositionData = useMemo(
+        () => getPositionData(secondaryTelemetryData),
+        [secondaryTelemetryData],
+    );
 
     // TODO: Clean the calculation pipeline for this
     const fallbackDimensions = useMemo(() => {
