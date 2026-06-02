@@ -2,24 +2,22 @@ import {
     prepareTrackDeltaSegments,
     prepareTrackPedalSegments,
 } from "../helpers/trackSegmentors";
-import { TelemetryData } from "../types";
+import { TelemetryData, TrackDisplayMode, TrackSegment } from "../types";
 
 const useTrackSegments = (
     data: TelemetryData,
     secondaryData?: TelemetryData,
-    mode = "pedals",
+    mode: TrackDisplayMode = "pedals",
 ) => {
-    const trackPedalSegments = prepareTrackPedalSegments(data);
-    const trackDeltaSegments = prepareTrackDeltaSegments(data, secondaryData);
+    const segmentData: Record<TrackDisplayMode, TrackSegment[] | undefined> = {
+        pedals: prepareTrackPedalSegments(data),
+        delta: prepareTrackDeltaSegments(data, secondaryData),
+        lines: null,
+    };
 
-    const selectedSegments =
-        mode === "pedals"
-            ? trackPedalSegments
-            : mode === "delta"
-              ? trackDeltaSegments
-              : trackPedalSegments;
+    const displayVariant = mode === "lines" ? "plain" : "segments";
 
-    return selectedSegments;
+    return [displayVariant, segmentData[mode]] as const;
 };
 
 export { useTrackSegments };

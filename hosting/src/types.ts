@@ -39,7 +39,7 @@ export interface TrackSegment {
 
 export type TrackSegmentType = "positive" | "negative" | "neutral";
 
-export type TrackSegmentMode = "pedals" | "delta";
+export type TrackDisplayMode = "pedals" | "delta" | "lines";
 
 export interface TelemetryData {
     brake?: TelemetryDataSet;

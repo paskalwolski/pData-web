@@ -12,18 +12,18 @@ import {
 } from "@mui/material";
 import { TbSettingsOff, TbSettings } from "react-icons/tb";
 import { useOpeneable } from "../../hooks/useOpenable";
-import { TrackSegmentMode } from "../../types";
+import { TrackDisplayMode } from "../../types";
 import { useCallback } from "react";
 
 interface Props {
-    segmentMode: TrackSegmentMode;
-    setSegmentMode: (mode: TrackSegmentMode) => void;
+    displayMode: TrackDisplayMode;
+    setDisplayMode: (mode: TrackDisplayMode) => void;
     hasComparisonLap: boolean;
 }
 
 const TrackDisplayMenu = ({
-    segmentMode,
-    setSegmentMode,
+    displayMode,
+    setDisplayMode,
     hasComparisonLap = false,
 }: Props) => {
     const { isOpen, handleOpen, handleClose } = useOpeneable();
@@ -31,8 +31,8 @@ const TrackDisplayMenu = ({
     const { palette } = useTheme();
 
     const handleSegmentModeClick = useCallback(
-        (_, v: TrackSegmentMode) => v && setSegmentMode(v),
-        [setSegmentMode],
+        (_, v: TrackDisplayMode) => v && setDisplayMode(v),
+        [setDisplayMode],
     );
 
     return isOpen ? (
@@ -77,11 +77,12 @@ const TrackDisplayMenu = ({
                     <Typography variant="overline">Segment Mode</Typography>
                     <ToggleButtonGroup
                         orientation="vertical"
-                        value={segmentMode}
+                        value={displayMode}
                         exclusive
                         onChange={handleSegmentModeClick}
                     >
                         <ToggleButton value="pedals">Pedals</ToggleButton>
+                        <ToggleButton value="lines">Racing Line</ToggleButton>
                         <ToggleButton
                             value="delta"
                             disabled={!hasComparisonLap}

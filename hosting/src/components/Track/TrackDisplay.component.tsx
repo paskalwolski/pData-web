@@ -5,7 +5,7 @@ import {
     TelemetryData,
     TrackData,
     TrackPositionData,
-    TrackSegmentMode,
+    TrackDisplayMode,
 } from "../../types";
 import { useMemo, useState } from "react";
 import { TrackPath } from "./TrackPath.component";
@@ -29,13 +29,19 @@ const TrackDisplay = ({
     const { selectionStartIndex, selectionEndIndex } =
         useTelemetryPointContext();
 
-    const [segmentMode, setSegmentMode] = useState<TrackSegmentMode>("pedals");
+    const [displayMode, setDisplayMode] = useState<TrackDisplayMode>("pedals");
 
-    const activeSegmentData = useTrackSegments(
+    const [displayVariant, activeSegmentData] = useTrackSegments(
         telemetryData,
         secondaryTelemetryData,
-        segmentMode,
+        displayMode,
     );
+
+    const primaryPositionData = useMemo<TrackPositionData[] | undefined>(() => {
+        if (!telemetryData) return undefined;
+        const { posX, posZ } = telemetryData;
+        return posX.map((_, i) => ({ x: posX[i], z: posZ[i] }));
+    }, [telemetryData]);
 
     const secondaryPositionData = useMemo<
         TrackPositionData[] | undefined
@@ -235,8 +241,8 @@ const TrackDisplay = ({
             }}
         >
             <TrackDisplayMenu
-                segmentMode={segmentMode}
-                setSegmentMode={setSegmentMode}
+                displayMode={displayMode}
+                setDisplayMode={setDisplayMode}
                 hasComparisonLap={!!secondaryTelemetryData}
             />
             <svg
@@ -281,7 +287,8 @@ const TrackDisplay = ({
                 )}
                 {/* TODO: Add position data for primary lap fallback */}
                 <TrackPath
-                    variant="segments"
+                    variant={displayVariant}
+                    positionData={primaryPositionData}
                     trackSegmentData={activeSegmentData}
                     xScale={xScale}
                     yScale={yScale}
