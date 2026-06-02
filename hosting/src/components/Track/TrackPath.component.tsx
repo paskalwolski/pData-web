@@ -1,22 +1,23 @@
 import * as d3 from "d3";
 import React, { useCallback, useMemo } from "react";
-import { TrackPositionData, TrackSegment, TrackSegmentType } from "../../types";
+import { TrackDisplayMode, TrackPositionData, TrackSegment } from "../../types";
 import { useTelemetryPointContext } from "../../hooks/useTelemetryPoint";
 import { useTheme } from "@mui/material";
+import { useSegmentTheme } from "../../hooks/useTrackTheme";
 
-const SEGMENT_COLOR_MAP: Record<TrackSegmentType, string> = {
-    positive: "rgb(0, 255, 0)",
-    negative: "#FF0000",
-    neutral: "#FFFFFF",
-};
 interface TrackTraceSegmentProps {
     lineGenerator: d3.Line<TrackPositionData>;
     segment: TrackSegment;
+    displayMode: TrackDisplayMode;
 }
 const TrackTraceSegment = ({
     lineGenerator,
     segment,
+    displayMode,
 }: TrackTraceSegmentProps) => {
+    const theme = useSegmentTheme();
+    const segmentTheme = theme[segment.type];
+
     const {
         highlightStartIndex,
         setHighlightStartIndex,
@@ -93,8 +94,14 @@ const TrackTraceSegment = ({
         <path
             d={lineGenerator(segment.data)}
             fill="none"
-            stroke={SEGMENT_COLOR_MAP[segment.type]}
-            strokeWidth={isSegmentHighlighted || isSegmentSelected ? 8 : 2}
+            stroke={segmentTheme}
+            strokeWidth={
+                isSegmentHighlighted || isSegmentSelected
+                    ? 8
+                    : displayMode === "delta"
+                      ? 4
+                      : 2
+            }
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             onClick={handleClick}
@@ -118,11 +125,13 @@ type Props = (
     xScale: d3.ScaleLinear<number, number, never>;
     yScale: d3.ScaleLinear<number, number, never>;
     secondary?: boolean;
+    displayMode: TrackDisplayMode;
 };
 
 const TrackPath = React.memo(
     ({
         variant,
+        displayMode,
         trackSegmentData,
         positionData,
         xScale,
@@ -150,11 +159,13 @@ const TrackPath = React.memo(
                         fill="none"
                         stroke={
                             secondary
-                                ? palette.secondary.dark
-                                : palette.primary.dark
+                                ? palette.secondary.main
+                                : palette.primary.main
                         }
-                        strokeDasharray={secondary ? "5 2" : "0"}
-                        strokeWidth={2}
+                        strokeDasharray={
+                            secondary && displayMode !== "lines" ? "5 2" : "0"
+                        }
+                        strokeWidth={secondary ? 2 : 3}
                     />
                 )}
                 {variant === "segments" &&
@@ -163,6 +174,7 @@ const TrackPath = React.memo(
                             key={`segment-${i}`}
                             lineGenerator={lineGen}
                             segment={s}
+                            displayMode={displayMode}
                         />
                     ))}
             </g>

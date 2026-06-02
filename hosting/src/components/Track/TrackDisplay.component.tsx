@@ -277,29 +277,31 @@ const TrackDisplay = ({
                             y={actualImageBounds.y}
                             width={actualImageBounds.width}
                             height={actualImageBounds.height}
-                            fill="darkgray"
+                            fill="dimgray"
                             mask="url(#track-mask)"
                         />
                     </>
                 )}
-                {/* TODO: Add position data for primary lap fallback */}
-                <TrackPath
-                    variant={displayVariant}
-                    positionData={primaryPositionData}
-                    trackSegmentData={activeSegmentData}
-                    xScale={xScale}
-                    yScale={yScale}
-                />
-
                 {secondaryTelemetryData && (
                     <TrackPath
                         variant="plain"
+                        displayMode={displayMode}
                         positionData={secondaryPositionData}
                         xScale={xScale}
                         yScale={yScale}
                         secondary
                     />
                 )}
+                {/* TODO: Add position data for primary lap fallback */}
+                <TrackPath
+                    variant={displayVariant}
+                    displayMode={displayMode}
+                    positionData={primaryPositionData}
+                    trackSegmentData={activeSegmentData}
+                    xScale={xScale}
+                    yScale={yScale}
+                />
+
                 <TrackCrosshair
                     xScale={xScale}
                     yScale={yScale}
