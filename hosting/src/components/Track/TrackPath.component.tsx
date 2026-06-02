@@ -9,11 +9,13 @@ interface TrackTraceSegmentProps {
     lineGenerator: d3.Line<TrackPositionData>;
     segment: TrackSegment;
     displayMode: TrackDisplayMode;
+    renderScale: number;
 }
 const TrackTraceSegment = ({
     lineGenerator,
     segment,
     displayMode,
+    renderScale,
 }: TrackTraceSegmentProps) => {
     const theme = useSegmentTheme();
     const segmentTheme = theme[segment.type];
@@ -100,7 +102,7 @@ const TrackTraceSegment = ({
                     ? 8
                     : displayMode === "delta"
                       ? 4
-                      : 2
+                      : 3 * renderScale
             }
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
@@ -126,6 +128,7 @@ type Props = (
     yScale: d3.ScaleLinear<number, number, never>;
     secondary?: boolean;
     displayMode: TrackDisplayMode;
+    renderScale: number;
 };
 
 const TrackPath = React.memo(
@@ -137,6 +140,7 @@ const TrackPath = React.memo(
         xScale,
         yScale,
         secondary = false,
+        renderScale,
     }: Props) => {
         const { palette } = useTheme();
 
@@ -165,7 +169,7 @@ const TrackPath = React.memo(
                         strokeDasharray={
                             secondary && displayMode !== "lines" ? "5 2" : "0"
                         }
-                        strokeWidth={secondary ? 2 : 3}
+                        strokeWidth={(secondary ? 2 : 3) * renderScale}
                     />
                 )}
                 {variant === "segments" &&
@@ -175,6 +179,7 @@ const TrackPath = React.memo(
                             lineGenerator={lineGen}
                             segment={s}
                             displayMode={displayMode}
+                            renderScale={renderScale}
                         />
                     ))}
             </g>

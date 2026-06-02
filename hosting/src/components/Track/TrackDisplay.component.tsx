@@ -135,13 +135,14 @@ const TrackDisplay = ({
         telemetryData.posZ,
     ]);
 
-    const { renderedWidth, renderedHeight, imageX, imageY } = useMemo(() => {
+    const { renderedWidth, renderedHeight, imageX, imageY, renderScale } = useMemo(() => {
         if (!viewportDimensions)
             return {
                 renderedWidth: 0,
                 renderedHeight: 0,
                 imageX: 0,
                 imageY: 0,
+                renderScale: 1,
             };
 
         // Step 1 — How much would we need to scale the viewport to fill each axis exactly?
@@ -167,7 +168,7 @@ const TrackDisplay = ({
         const imageX = spareWidth / 2;
         const imageY = spareHeight / 2;
 
-        return { renderedWidth, renderedHeight, imageX, imageY };
+        return { renderedWidth, renderedHeight, imageX, imageY, renderScale: scale };
     }, [fullWidth, fullHeight, viewportDimensions]);
 
     // xScale / yScale map world-space coordinates (posX, posZ) onto SVG pixels,
@@ -289,6 +290,7 @@ const TrackDisplay = ({
                         positionData={secondaryPositionData}
                         xScale={xScale}
                         yScale={yScale}
+                        renderScale={renderScale}
                         secondary
                     />
                 )}
@@ -300,6 +302,7 @@ const TrackDisplay = ({
                     trackSegmentData={activeSegmentData}
                     xScale={xScale}
                     yScale={yScale}
+                    renderScale={renderScale}
                 />
 
                 <TrackCrosshair
