@@ -13,7 +13,7 @@ import {
 import { TbSettingsOff, TbSettings } from "react-icons/tb";
 import { useOpeneable } from "../../hooks/useOpenable";
 import { TrackDisplayMode } from "../../types";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
 interface Props {
     displayMode: TrackDisplayMode;
@@ -34,6 +34,12 @@ const TrackDisplayMenu = ({
         (_, v: TrackDisplayMode) => v && setDisplayMode(v),
         [setDisplayMode],
     );
+
+    useEffect(() => {
+        if (!hasComparisonLap) {
+            setDisplayMode("pedals");
+        }
+    }, [hasComparisonLap, setDisplayMode]);
 
     return isOpen ? (
         <Box
