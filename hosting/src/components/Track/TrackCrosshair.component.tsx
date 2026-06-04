@@ -1,6 +1,6 @@
 import { useTheme } from "@mui/material";
 import { TelemetryData } from "../../types";
-import { useTelemetryPointContext } from "../../hooks/useTelemetryPoint";
+import { useTelemetryPointContext } from "../../context/useTelemetryPoint";
 import { useCallback } from "react";
 
 interface Props {

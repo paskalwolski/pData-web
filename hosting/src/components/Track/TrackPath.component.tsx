@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 import React, { useCallback, useMemo } from "react";
 import { TrackDisplayMode, TrackPositionData, TrackSegment } from "../../types";
-import { useTelemetryPointContext } from "../../hooks/useTelemetryPoint";
+import { useTelemetryPointContext } from "../../context/useTelemetryPoint";
 import { useTheme } from "@mui/material";
 import { useSegmentTheme } from "../../hooks/useTrackTheme";
 

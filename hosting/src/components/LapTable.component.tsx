@@ -16,7 +16,7 @@ import { TbClockX } from "react-icons/tb";
 import { Box, Tooltip, useTheme } from "@mui/material";
 import { GridSortModel } from "@mui/x-data-grid";
 import { TableHeaderFilter } from "./TableHeaderFilter";
-import { FilteringProvider, useFiltering } from "../hooks/useFiltering";
+import { FilteringProvider, useFiltering } from "../context/useFiltering";
 
 const getRowId = (row: LapData) => row.lapId;
 

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { TelemetryDataSet } from "../../types";
-import { useTelemetryPointContext } from "../../hooks/useTelemetryPoint";
+import { useTelemetryPointContext } from "../../context/useTelemetryPoint";
 import { useTheme } from "@mui/material";
 import { createInterceptor } from "../../hooks/useInterceptor";
 

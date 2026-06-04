@@ -2,7 +2,7 @@ import { IconButton, Stack, Tooltip, Typography } from "@mui/material";
 import { GridColumnHeaderParams } from "@mui/x-data-grid";
 import { useMemo, useRef, useState } from "react";
 import { TbFilter, TbFilterFilled, TbFilterDown } from "react-icons/tb";
-import { useFiltering } from "../../hooks/useFiltering";
+import { useFiltering } from "../../context/useFiltering";
 import { FilterPopover } from "./FilterPopover";
 
 interface Props {
