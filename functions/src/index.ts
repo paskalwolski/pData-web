@@ -46,10 +46,12 @@ export const checkTrackData = onRequest(async (request, response) => {
 export const handleTrackData = onRequest(async (request, response) => {
   const body = (await request.body) as TrackPayload;
 
+  const {trackId, trackData: trackBundle} = body;
   const {
-    trackId,
-    trackData: {image, ...trackData},
-  } = body;
+    trackData,
+    mapData: {image, ...mapData},
+    sectionData,
+  } = trackBundle;
   const trackDoc = firestore.collection('tracks').doc(trackId);
   const imageBuffer = Buffer.from(image, 'base64');
   const bucket = storage.bucket();
@@ -57,8 +59,13 @@ export const handleTrackData = onRequest(async (request, response) => {
   const file = bucket.file(`tracks/${trackId}.png`);
   await file.save(imageBuffer);
   // await file.makePublic();
-  // TODO: Fix for new object structure
-  const trackDocUpdate = trackDoc.set({...trackData, url: file.publicUrl()});
+
+  const trackDocUpdate = trackDoc.set({
+    name: trackData.trackName,
+    ...trackData,
+    mapData: {...mapData, url: file.publicUrl()},
+    sectionData,
+  });
   const metaUpdate = updateCollectionMeta(firestore, ['tracks']);
   await Promise.all([trackDocUpdate, metaUpdate]);
   response.send();

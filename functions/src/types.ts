@@ -55,17 +55,26 @@ interface SectionData {
   end: number;
 }
 
-interface TrackData {
-  trackName: string;
+export interface TrackBundle {
+  trackData: TrackData;
   sectionData: Array<SectionData>;
-  width: number;
+  mapData: MapData;
+}
+
+interface MapData {
   height: number;
+  width: number;
+  margin: number;
   xOffset: number;
   yOffset: number;
-  margin: number;
   image: string;
+}
+
+interface TrackData {
+  trackLength: number;
+  trackName: string;
 }
 export interface TrackPayload {
   trackId: string;
-  trackData: TrackData;
+  trackData: TrackBundle;
 }
