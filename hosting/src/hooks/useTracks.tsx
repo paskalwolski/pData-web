@@ -15,10 +15,10 @@ const useTrackData = (trackId: string): [TrackData | null, boolean] => {
             if (!cancelled) {
                 if (snapshot.exists()) {
                     const trackData = snapshot.data() as TrackData;
-                    if ("url" in trackData) {
-                        const imageRef = ref(storage, trackData.url);
+                    if (trackData?.mapData?.url) {
+                        const imageRef = ref(storage, trackData.mapData.url);
                         const downloadUrl = await getDownloadURL(imageRef);
-                        trackData.url = downloadUrl;
+                        trackData.mapData.url = downloadUrl;
                     }
                     setLoading(false);
                     setTrackData(trackData);

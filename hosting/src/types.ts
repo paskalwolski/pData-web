@@ -56,12 +56,30 @@ export interface TelemetryData {
 }
 
 export interface TrackData {
+    trackData?: TrackInfo;
+    mapData?: MapData;
+    sectionData?: SectionData[];
+    name: string;
+}
+
+interface TrackInfo {
+    trackName: string;
+    trackLength: number;
+}
+
+interface MapData {
     height: number;
     width: number;
     xOffset: number;
     yOffset: number;
     url: string;
     margin: number;
+}
+
+interface SectionData {
+    name: string;
+    start: number;
+    end: number;
 }
 
 export type Entity = "drivers" | "cars" | "tracks";

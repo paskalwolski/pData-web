@@ -81,7 +81,7 @@ const TrackDisplay = ({
     ]);
 
     const effectiveDimensions = useMemo(
-        () => ({ ...fallbackDimensions, ...trackData }),
+        () => ({ ...fallbackDimensions, ...(trackData.mapData ?? {}) }),
         [fallbackDimensions, trackData],
     );
 
@@ -135,41 +135,48 @@ const TrackDisplay = ({
         telemetryData.posZ,
     ]);
 
-    const { renderedWidth, renderedHeight, imageX, imageY, renderScale } = useMemo(() => {
-        if (!viewportDimensions)
+    const { renderedWidth, renderedHeight, imageX, imageY, renderScale } =
+        useMemo(() => {
+            if (!viewportDimensions)
+                return {
+                    renderedWidth: 0,
+                    renderedHeight: 0,
+                    imageX: 0,
+                    imageY: 0,
+                    renderScale: 1,
+                };
+
+            // Step 1 — How much would we need to scale the viewport to fill each axis exactly?
+            //   If this scale were used alone, the viewport would touch that edge perfectly,
+            //   but might overflow the other axis.
+            const scaleToFillWidth = fullWidth / viewportDimensions.width;
+            const scaleToFillHeight = fullHeight / viewportDimensions.height;
+
+            // Step 2 — Use the smaller of the two scales.
+            //   The smaller scale is always the one that is constrained (i.e. would overflow
+            //   first). Using it ensures the viewport fits within both axes simultaneously.
+            const scale = Math.min(scaleToFillWidth, scaleToFillHeight);
+
+            // Step 3 — Apply the scale to the viewport's natural dimensions.
+            //   This gives us the pixel size the viewport will actually be rendered at.
+            const renderedWidth = viewportDimensions.width * scale;
+            const renderedHeight = viewportDimensions.height * scale;
+
+            // Step 4 — Centre the rendered viewport within the SVG canvas.
+            //   Any leftover space is split equally either side.
+            const spareWidth = fullWidth - renderedWidth;
+            const spareHeight = fullHeight - renderedHeight;
+            const imageX = spareWidth / 2;
+            const imageY = spareHeight / 2;
+
             return {
-                renderedWidth: 0,
-                renderedHeight: 0,
-                imageX: 0,
-                imageY: 0,
-                renderScale: 1,
+                renderedWidth,
+                renderedHeight,
+                imageX,
+                imageY,
+                renderScale: scale,
             };
-
-        // Step 1 — How much would we need to scale the viewport to fill each axis exactly?
-        //   If this scale were used alone, the viewport would touch that edge perfectly,
-        //   but might overflow the other axis.
-        const scaleToFillWidth = fullWidth / viewportDimensions.width;
-        const scaleToFillHeight = fullHeight / viewportDimensions.height;
-
-        // Step 2 — Use the smaller of the two scales.
-        //   The smaller scale is always the one that is constrained (i.e. would overflow
-        //   first). Using it ensures the viewport fits within both axes simultaneously.
-        const scale = Math.min(scaleToFillWidth, scaleToFillHeight);
-
-        // Step 3 — Apply the scale to the viewport's natural dimensions.
-        //   This gives us the pixel size the viewport will actually be rendered at.
-        const renderedWidth = viewportDimensions.width * scale;
-        const renderedHeight = viewportDimensions.height * scale;
-
-        // Step 4 — Centre the rendered viewport within the SVG canvas.
-        //   Any leftover space is split equally either side.
-        const spareWidth = fullWidth - renderedWidth;
-        const spareHeight = fullHeight - renderedHeight;
-        const imageX = spareWidth / 2;
-        const imageY = spareHeight / 2;
-
-        return { renderedWidth, renderedHeight, imageX, imageY, renderScale: scale };
-    }, [fullWidth, fullHeight, viewportDimensions]);
+        }, [fullWidth, fullHeight, viewportDimensions]);
 
     // xScale / yScale map world-space coordinates (posX, posZ) onto SVG pixels,
     // calibrated to the current viewport (full track or selection bbox).
@@ -260,7 +267,7 @@ const TrackDisplay = ({
                             */}
                             <mask id="track-mask">
                                 <image
-                                    href={trackData.url}
+                                    href={trackData?.mapData?.url}
                                     x={actualImageBounds.x}
                                     y={actualImageBounds.y}
                                     width={actualImageBounds.width}
