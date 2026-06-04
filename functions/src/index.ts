@@ -22,6 +22,8 @@ const SESSIONS = 'test_sessions';
 
 const adminApp = initializeApp();
 const firestore = getFirestore();
+firestore.settings({ignoreUndefinedProperties: true});
+
 const storage = getStorage(adminApp);
 
 export const checkTrackData = onRequest(async (request, response) => {
@@ -57,7 +59,7 @@ export const handleTrackData = onRequest(async (request, response) => {
   const bucket = storage.bucket();
 
   const file = bucket.file(`tracks/${trackId}.png`);
-  await file.save(imageBuffer);
+  await file.save(imageBuffer, {metadata: {contentType: 'image/png'}});
   // await file.makePublic();
 
   const trackDocUpdate = trackDoc.set({
