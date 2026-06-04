@@ -1,23 +1,22 @@
 import { useEffect, useState } from "react";
+import { AutocompleteOption } from "../components/TableHeaderFilter";
 import {
-    AutocompleteCollection,
-    AutocompleteOption,
-} from "../components/TableHeaderFilter";
-import { collection, getDocs } from "firebase/firestore";
+    collection,
+    getDocsFromCache,
+    getDocsFromServer,
+} from "firebase/firestore";
 import { db } from "../firebase";
-
-// Allow 'let' so that we maintain this value until page refresh
-// eslint-disable-next-line prefer-const
-let cachedOptions: Record<
-    AutocompleteCollection,
-    AutocompleteOption[] | undefined
-> = { drivers: undefined, tracks: undefined, cars: undefined };
+import { Entity } from "../types";
+import { useCollectionMetadataState } from "./useCollectionMeta";
 
 const useAutocompleteOptions = (
-    field: AutocompleteCollection,
+    field: Entity,
 ): [AutocompleteOption[], boolean] => {
     const [options, setOptions] = useState<AutocompleteOption[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const [entityCollectionState, isLoadingEntityState] =
+        useCollectionMetadataState();
 
     useEffect(() => {
         let cancelled = false;
@@ -29,18 +28,22 @@ const useAutocompleteOptions = (
         }
 
         async function fetchFilterOptions() {
-            if (cachedOptions[field]) {
-                setOptions(cachedOptions[field]);
-                setLoading(false);
+            if (isLoadingEntityState) {
                 return;
             }
 
-            const snapshot = await getDocs(collection(db, field));
-            const optionValues = snapshot.docs.map((d) => ({
+            const shouldFetchFieldDocs = entityCollectionState[field];
+            const fieldDocGetter = shouldFetchFieldDocs
+                ? getDocsFromServer(collection(db, field))
+                : getDocsFromCache(collection(db, field)).catch(() =>
+                      getDocsFromServer(collection(db, field)),
+                  );
+            const fieldDocs = await fieldDocGetter;
+            const optionValues = fieldDocs.docs.map((d) => ({
                 id: d.id,
-                label: d.id,
+                label: d.data()?.name ?? d.id,
             }));
-            cachedOptions[field] = optionValues;
+
             if (!cancelled) {
                 setOptions(optionValues);
                 setLoading(false);
@@ -52,7 +55,7 @@ const useAutocompleteOptions = (
             // Cleanup: Discard the result
             cancelled = true;
         };
-    }, [field]);
+    }, [entityCollectionState, field, isLoadingEntityState]);
 
     return [options, loading];
 };

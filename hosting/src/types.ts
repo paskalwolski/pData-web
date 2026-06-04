@@ -63,3 +63,8 @@ export interface TrackData {
     url: string;
     margin: number;
 }
+
+export type Entity = "drivers" | "cars" | "tracks";
+export const ENTITIES: Entity[] = ["drivers", "cars", "tracks"] as const;
+
+export type EntityMetadata = Record<Entity, Timestamp>;
