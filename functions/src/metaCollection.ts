@@ -8,10 +8,12 @@ const updateCollectionMeta = async (
     return;
   }
   const timestamp = Timestamp.now();
-  const collectionRef = firestore.collection('meta').doc('lastUpdatedAt');
-  await collectionRef.update(
-    Object.fromEntries(collectionNames.map(c => [c, timestamp])),
-  );
+  const batch = firestore.batch();
+  collectionNames.forEach(cName => {
+    const colRef = firestore.collection('meta').doc(cName);
+    batch.set(colRef, {lastUpdated: timestamp}, {merge: true});
+  });
+  await batch.commit();
 };
 
 export {updateCollectionMeta};
