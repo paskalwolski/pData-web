@@ -15,8 +15,7 @@ const useAutocompleteOptions = (
     const [options, setOptions] = useState<AutocompleteOption[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const [entityCollectionState, isLoadingEntityState] =
-        useCollectionMetadataState();
+    const [cacheState, isLoadingCacheState] = useCollectionMetadataState(field);
 
     useEffect(() => {
         let cancelled = false;
@@ -28,16 +27,16 @@ const useAutocompleteOptions = (
         }
 
         async function fetchFilterOptions() {
-            if (isLoadingEntityState) {
+            if (isLoadingCacheState) {
                 return;
             }
-
-            const shouldFetchFieldDocs = entityCollectionState[field];
-            const fieldDocGetter = shouldFetchFieldDocs
-                ? getDocsFromServer(collection(db, field))
-                : getDocsFromCache(collection(db, field)).catch(() =>
+            const cacheValid = cacheState === "valid";
+            console.log(cacheValid);
+            const fieldDocGetter = cacheValid
+                ? getDocsFromCache(collection(db, field)).catch(() =>
                       getDocsFromServer(collection(db, field)),
-                  );
+                  )
+                : getDocsFromServer(collection(db, field));
             const fieldDocs = await fieldDocGetter;
             const optionValues = fieldDocs.docs.map((d) => ({
                 id: d.id,
@@ -55,7 +54,7 @@ const useAutocompleteOptions = (
             // Cleanup: Discard the result
             cancelled = true;
         };
-    }, [entityCollectionState, field, isLoadingEntityState]);
+    }, [field, cacheState, isLoadingCacheState]);
 
     return [options, loading];
 };

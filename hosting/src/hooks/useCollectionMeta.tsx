@@ -1,40 +1,41 @@
 import { useEffect, useState } from "react";
-import { ENTITIES, Entity, EntityMetadata } from "../types";
-import { doc, getDocFromCache, getDocFromServer } from "firebase/firestore";
+import { CacheValidState, Entity, EntityMetadata } from "../types";
+import {
+    collection,
+    doc,
+    getDocFromCache,
+    getDocFromServer,
+} from "firebase/firestore";
 import { db } from "../firebase";
 
-const useCollectionMetadataState = () => {
-    const [data, setData] = useState<Record<Entity, boolean>>();
+const useCollectionMetadataState = (entity: Entity) => {
+    const [cacheState, setCacheState] = useState<CacheValidState>();
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         let cancelled = false;
-        const metaDocRef = doc(db, "meta", "lastUpdatedAt");
+        const metaDocRef = doc(collection(db, "meta"), entity);
         async function fetchMetadataCollection() {
             const cachedMetadata = await getDocFromCache(metaDocRef)
-                .then((d) =>
-                    d.exists() ? (d.data() as Partial<EntityMetadata>) : {},
+                .then(
+                    (d) =>
+                        (d.exists() ? d.data() : {}) as Partial<EntityMetadata>,
                 )
-                .catch(() => ({}));
+                .catch(() => ({}) as Partial<EntityMetadata>);
 
             const remoteMetadata = await getDocFromServer(metaDocRef)
-                .then((d) =>
-                    d.exists() ? (d.data() as Partial<EntityMetadata>) : {},
+                .then(
+                    (d) =>
+                        (d.exists() ? d.data() : {}) as Partial<EntityMetadata>,
                 )
-                .catch(() => ({}));
+                .catch(() => ({}) as Partial<EntityMetadata>);
 
             if (!cancelled) {
-                setData(
-                    Object.fromEntries(
-                        ENTITIES.map((e) => [
-                            e,
-                            // Remote value preset
-                            remoteMetadata?.[e] === undefined ||
-                                // Value in remote equals value in cache
-                                remoteMetadata[e]?.toMillis() !==
-                                    cachedMetadata?.[e]?.toMillis(),
-                        ]),
-                    ) as Record<Entity, boolean>,
+                setCacheState(
+                    remoteMetadata.lastUpdated?.toMillis() ===
+                        cachedMetadata?.lastUpdated?.toMillis()
+                        ? "valid"
+                        : "invalid",
                 );
                 setLoading(false);
             }
@@ -44,9 +45,9 @@ const useCollectionMetadataState = () => {
         return () => {
             cancelled = true;
         };
-    }, []);
+    }, [entity]);
 
-    return [data, loading] as const;
+    return [cacheState, loading] as const;
 };
 
 export { useCollectionMetadataState };

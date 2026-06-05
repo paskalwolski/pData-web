@@ -82,7 +82,10 @@ interface SectionData {
     end: number;
 }
 
-export type Entity = "drivers" | "cars" | "tracks";
-export const ENTITIES: Entity[] = ["drivers", "cars", "tracks"] as const;
+export const ENTITIES = ["drivers", "cars", "tracks"] as const;
+export type Entity = (typeof ENTITIES)[number];
+export type EntityMetadata = {
+    lastUpdated: Timestamp;
+};
 
-export type EntityMetadata = Record<Entity, Timestamp>;
+export type CacheValidState = "valid" | "invalid";
