@@ -73,60 +73,6 @@ export const handleTrackData = onRequest(async (request, response) => {
   response.send();
 });
 
-// TODO: Drop
-export const handleSessionSubmit = onRequest(async (request, response) => {
-  // Handle the auth beforehand
-  const body = await request.body;
-
-  console.log('Track:', body.track);
-  const trackDoc = firestore.collection('tracks').doc(body.track);
-  await trackDoc.set({name: body.track}, {merge: true});
-  console.log('Track ID', trackDoc.id);
-
-  console.log('Car:', body.car);
-  const carDoc = firestore.collection('cars').doc(body.car);
-  await carDoc.set({name: body.car}, {merge: true});
-  console.log('Car ID', carDoc.id);
-
-  console.log('Driver:', body.driver);
-  const driverDoc = firestore.collection('drivers').doc(body.driver);
-  await driverDoc.set({name: body.driver}, {merge: true});
-  console.log('Driver ID', driverDoc.id);
-
-  const sessionResult = await firestore.collection('sessions').add({
-    sessionType: body.sessionType,
-    sessionTime: new Date(body.sessionTime),
-    lapCount: body.lapCount,
-    fastestLap: body.fastestLap,
-    fastestLapTime: body.fastestLapTime,
-    driver: driverDoc.id,
-    car: carDoc.id,
-    track: trackDoc.id,
-  });
-
-  console.log(`Sent Lap Data (${body.laps.length})`);
-
-  const lapCollection = firestore.collection('laps');
-  const lapBatch = firestore.batch();
-
-  body.laps.map((lapData: object) => {
-    const currentLapRef = lapCollection.doc();
-    lapBatch.set(currentLapRef, {
-      session: sessionResult.id,
-      ...lapData,
-    });
-  });
-
-  await lapBatch.commit();
-
-  response.send({
-    track: body.track,
-    car: body.car,
-    sessionId: sessionResult.id,
-  });
-  console.log('All Done!');
-});
-
 export const handleLap = onRequest(async (request, response) => {
   // Handle empty payload, to manage session opening request
   const payload = await request.body;
