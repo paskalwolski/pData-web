@@ -5,7 +5,7 @@ import { AppControlBar } from "./components/AppControls/AppControlBar";
 import { useToggle } from "./hooks/useToggle";
 import { CustomDrawer } from "./components/AppControls/CustomDrawer";
 import { Homepage } from "./views/HomePage";
-import { NewLapData } from "./views/NewLapData";
+import { LapDataPage } from "./views/LapData";
 import { LapSelectorPage } from "./views/LapSelectorPage";
 
 export default function App() {
@@ -31,7 +31,7 @@ export default function App() {
                                 lapId: string;
                                 secondaryId: string;
                             }) => (
-                                <NewLapData
+                                <LapDataPage
                                     lapId={lapId}
                                     secondaryLapId={secondaryId}
                                 />
@@ -39,7 +39,7 @@ export default function App() {
                         </Route>
                         <Route path="/laps/:lapId">
                             {({ lapId }: { lapId: string }) => (
-                                <NewLapData lapId={lapId} />
+                                <LapDataPage lapId={lapId} />
                             )}
                         </Route>
                         <Route path="/laps" component={LapSelectorPage} />
