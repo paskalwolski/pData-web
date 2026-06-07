@@ -4,9 +4,9 @@ import theme from "./theme";
 import { AppControlBar } from "./components/AppControls/AppControlBar";
 import { useToggle } from "./hooks/useToggle";
 import { CustomDrawer } from "./components/AppControls/CustomDrawer";
-import { Homepage } from "./views/HomePage";
-import { LapDataPage } from "./views/LapData";
-import { LapSelectorPage } from "./views/LapSelectorPage";
+import { Homepage } from "./pages/HomePage";
+import { LapDataPage } from "./pages/LapDataPage";
+import { LapSelectorPage } from "./pages/LapSelectorPage";
 
 export default function App() {
     const [isDrawerOpen, toggleDrawerOpen] = useToggle(false);

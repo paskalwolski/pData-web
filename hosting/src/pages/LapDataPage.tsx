@@ -9,19 +9,19 @@ import {
     Typography,
     useTheme,
 } from "@mui/material";
-import { useLap } from "../../hooks/useLaps";
-import { SessionInfo } from "../../components/SessionInfo.component";
-import { LapTelemetry } from "../LapTelemetry";
+import { useLap } from "../hooks/useLaps";
+import { SessionInfo } from "../components/SessionInfo.component";
+import { LapTelemetry } from "../views/LapTelemetry";
 import { useRoute } from "wouter";
 import { TbAB, TbABOff, TbRoad } from "react-icons/tb";
 import { useCallback, useMemo } from "react";
 import { navigate } from "wouter/use-browser-location";
-import { LapInfo } from "../../components/LapInfo.component";
-import { InfoCardValue } from "../../components/InfoCardValue.component";
-import { useOpeneable } from "../../hooks/useOpenable";
-import { LapTable } from "../../components/LapTable.component";
+import { LapInfo } from "../components/LapInfo.component";
+import { InfoCardValue } from "../components/InfoCardValue.component";
+import { useOpeneable } from "../hooks/useOpenable";
+import { LapTable } from "../components/LapTable.component";
 import { GridFilterItem } from "@mui/x-data-grid";
-import { DOCUMENT_REF } from "../../helpers/datagridConvertors";
+import { DOCUMENT_REF } from "../helpers/datagridConvertors";
 
 interface Props {
     lapId: string;
