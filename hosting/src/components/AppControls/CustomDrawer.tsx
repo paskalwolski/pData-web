@@ -3,29 +3,31 @@ import {
     Drawer,
     List,
     MenuItem,
+    MenuItemProps,
     Stack,
     Typography,
 } from "@mui/material";
+import React from "react";
 import { Link } from "wouter";
 interface CustomerDrawerProps {
     isDrawerOpen: boolean;
     toggleDrawerOpen: () => void;
 }
 
+interface DrawerMenuItemProps extends Exclude<MenuItemProps, "onclick"> {
+    children: React.ReactNode;
+}
+
 const CustomDrawer = ({
     isDrawerOpen,
     toggleDrawerOpen,
 }: CustomerDrawerProps) => {
-    const DrawerMenuItem = ({ children, ...props }) => (
-        <MenuItem
-            {...props}
-            onClick={(e) => {
-                toggleDrawerOpen();
-                props.onClick?.(e);
-            }}
-        >
-            {children}
-        </MenuItem>
+    const DrawerMenuItem = React.memo<DrawerMenuItemProps>(
+        ({ children, ...props }) => (
+            <MenuItem {...props} onClick={toggleDrawerOpen}>
+                {children}
+            </MenuItem>
+        ),
     );
 
     return (
