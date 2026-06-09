@@ -15,7 +15,7 @@ export default function App() {
                 isDrawerOpen={isDrawerOpen}
                 toggleDrawerOpen={toggleDrawerOpen}
             />
-            <Container maxWidth={false} sx={{ margin: 2 }}>
+            <Container maxWidth={false} sx={{ padding: 2 }}>
                 <Switch>
                     <Route path="/laps/:lapId/compare/:secondaryId">
                         {({
