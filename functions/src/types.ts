@@ -49,7 +49,7 @@ export interface CloseSessionPayload {
   lapCount: number;
 }
 
-interface SectionData {
+interface SectionSegment {
   name: string;
   start: number;
   end: number;
@@ -57,7 +57,7 @@ interface SectionData {
 
 export interface TrackBundle {
   trackData: TrackData;
-  sectionData: Array<SectionData>;
+  sectionData: Array<SectionSegment>;
   mapData: MapData;
 }
 
