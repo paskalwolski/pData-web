@@ -33,8 +33,7 @@ export const checkTrackData = onRequest(async (request, response) => {
     response.status(400).send();
     return;
   }
-  const trackDoc = firestore.collection('tracks').doc(trackId);
-  const trackSnapshot = await trackDoc.get();
+  const trackSnapshot = await firestore.collection('tracks').doc(trackId).get();
   // If the doc has no data, it does not exist
   if (!trackSnapshot.exists) {
     console.log('No Track Data Found');
@@ -42,25 +41,8 @@ export const checkTrackData = onRequest(async (request, response) => {
     return;
   }
 
-  const trackInfo = trackSnapshot.data();
-
-  const trackDataCollection = trackDoc.collection('data');
-  const sectionDataCheck = trackDataCollection
-    .doc('sectionData')
-    .get()
-    .then(d => d.exists);
-
-  const mapDataCheck = trackDataCollection
-    .doc('mapData')
-    .get()
-    .then(d => d.exists);
-
-  const [hasSectionData, hasMapData] = await Promise.all([
-    sectionDataCheck,
-    mapDataCheck,
-  ]);
-
-  response.send({exists: true, trackInfo, hasSectionData, hasMapData});
+  const trackData = trackSnapshot.data();
+  response.send({exists: true, trackData});
 });
 
 export const handleTrackData = onRequest(async (request, response) => {
@@ -79,31 +61,15 @@ export const handleTrackData = onRequest(async (request, response) => {
   const file = bucket.file(`tracks/${trackId}.png`);
   await file.save(imageBuffer, {metadata: {contentType: 'image/png'}});
   // await file.makePublic();
-  const trackUpdateOperations = [
-    trackDoc.set({
-      name: trackData.trackName,
-      ...trackData,
-    }),
-  ];
-  const trackDataCollection = trackDoc.collection('data');
 
-  if (mapData) {
-    trackUpdateOperations.push(
-      trackDataCollection
-        .doc('mapData')
-        .set({...mapData, url: file.publicUrl()}, {merge: true}),
-    );
-  }
-  if (sectionData) {
-    trackUpdateOperations.push(
-      trackDataCollection
-        .doc('sectionData')
-        .set({sections: sectionData}, {merge: true}),
-    );
-  }
+  const trackDocUpdate = trackDoc.set({
+    name: trackData.trackName,
+    ...trackData,
+    mapData: {...mapData, url: file.publicUrl()},
+    sectionData,
+  });
   const metaUpdate = updateCollectionMeta(firestore, ['tracks']);
-
-  await Promise.all([...trackUpdateOperations, metaUpdate]);
+  await Promise.all([trackDocUpdate, metaUpdate]);
   response.send();
 });
 
