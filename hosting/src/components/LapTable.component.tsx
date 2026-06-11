@@ -17,6 +17,7 @@ import { Box, Tooltip, useTheme } from "@mui/material";
 import { GridSortModel } from "@mui/x-data-grid";
 import { TableHeaderFilter } from "./TableHeaderFilter";
 import { FilteringProvider, useFiltering } from "../context/useFiltering";
+import { useMetaName } from "../hooks/useCollectionMeta";
 
 const getRowId = (row: LapData) => row.lapId;
 
@@ -39,6 +40,8 @@ const LapTableDataGrid = ({
     strictFilterItems,
 }: Props) => {
     const { palette } = useTheme();
+
+    const getTrackName = useMetaName("tracks");
 
     const [pagination, setPagination] = useState<GridPaginationModel>({
         pageSize: 10,
@@ -110,7 +113,7 @@ const LapTableDataGrid = ({
                 field: "trackName",
                 headerName: "Track",
                 sortable: false,
-                valueGetter: (_, row) => row.sessionData.track,
+                valueGetter: (_, row) => getTrackName(row?.sessionData.track),
                 minWidth: 200,
                 ...CUSTOM_HEADER,
             },
@@ -180,7 +183,7 @@ const LapTableDataGrid = ({
                 ...CUSTOM_HEADER,
             },
         ],
-        [palette],
+        [getTrackName, palette.warning.main],
     );
 
     return (
