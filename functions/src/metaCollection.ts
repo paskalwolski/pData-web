@@ -16,4 +16,20 @@ const updateCollectionMeta = async (
   await batch.commit();
 };
 
-export {updateCollectionMeta};
+const upsertMetaNameMap = async (
+  firestore: FirebaseFirestore.Firestore,
+  collection: string,
+  id: string,
+  value: string,
+) => {
+  const collectionRef = firestore.collection('meta').doc(collection);
+  const currentNameMap = await collectionRef
+    .get()
+    .then(d => (d.exists ? d.data()?.['nameMap'] : {}));
+  return collectionRef.set(
+    {nameMap: {...currentNameMap, [id]: value}},
+    {merge: true},
+  );
+};
+
+export {updateCollectionMeta, upsertMetaNameMap};

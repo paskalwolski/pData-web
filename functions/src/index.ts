@@ -12,7 +12,7 @@ import {
   TelemetryDataSet,
   TrackPayload,
 } from './types';
-import {updateCollectionMeta} from './metaCollection';
+import {updateCollectionMeta, upsertMetaNameMap} from './metaCollection';
 
 const EXPIRY_HOURS = 24;
 
@@ -60,16 +60,18 @@ export const handleTrackData = onRequest(async (request, response) => {
 
   const file = bucket.file(`tracks/${trackId}.png`);
   await file.save(imageBuffer, {metadata: {contentType: 'image/png'}});
-  // await file.makePublic();
+  const processedMapData = {...mapData, url: file.publicUrl()};
 
   const trackDocUpdate = trackDoc.set({
-    name: trackData.trackName,
-    ...trackData,
-    mapData: {...mapData, url: file.publicUrl()},
+    trackData,
+    mapData: processedMapData,
     sectionData,
   });
-  const metaUpdate = updateCollectionMeta(firestore, ['tracks']);
-  await Promise.all([trackDocUpdate, metaUpdate]);
+  const metaUpdates = [
+    updateCollectionMeta(firestore, ['tracks']),
+    upsertMetaNameMap(firestore, 'tracks', trackId, trackData.trackName),
+  ];
+  await Promise.all([trackDocUpdate, [...metaUpdates]]);
   response.send();
 });
 

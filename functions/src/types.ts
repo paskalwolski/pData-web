@@ -55,7 +55,7 @@ interface SectionData {
   end: number;
 }
 
-export interface TrackBundle {
+export interface TrackPayloadData {
   trackData: TrackData;
   sectionData: Array<SectionData>;
   mapData: MapData;
@@ -76,5 +76,5 @@ interface TrackData {
 }
 export interface TrackPayload {
   trackId: string;
-  trackData: TrackBundle;
+  trackData: TrackPayloadData;
 }
