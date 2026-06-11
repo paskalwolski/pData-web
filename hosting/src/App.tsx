@@ -1,16 +1,20 @@
 import { Switch, Route } from "wouter";
-import { Container, ThemeProvider } from "@mui/material";
-import theme from "./theme";
+import { Container, Typography } from "@mui/material";
 import { AppControlBar } from "./components/AppControls/AppControlBar";
 import { useToggle } from "./hooks/useToggle";
 import { Homepage } from "./pages/HomePage";
 import { LapDataPage } from "./pages/LapDataPage";
 import { LapSelectorPage } from "./pages/LapSelectorPage";
+import { useCTDContext } from "./context/CTDContext/useCTDContext";
 
 export default function App() {
+    const { loading } = useCTDContext();
     const [isDrawerOpen, toggleDrawerOpen] = useToggle(false);
-    return (
-        <ThemeProvider theme={theme}>
+
+    return loading ? (
+        <Typography>Loading...</Typography>
+    ) : (
+        <>
             <AppControlBar
                 isDrawerOpen={isDrawerOpen}
                 toggleDrawerOpen={toggleDrawerOpen}
@@ -40,6 +44,6 @@ export default function App() {
                     <Route path="/" component={Homepage} />
                 </Switch>
             </Container>
-        </ThemeProvider>
+        </>
     );
 }
