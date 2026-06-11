@@ -56,13 +56,13 @@ export interface TelemetryData {
 }
 
 export interface TrackData {
+    id: string;
     trackData?: TrackInfo;
     mapData?: MapData;
     sectionData?: SectionData[];
-    name: string;
 }
 
-interface TrackInfo {
+export interface TrackInfo {
     trackName: string;
     trackLength: number;
 }
@@ -86,6 +86,7 @@ export const ENTITIES = ["drivers", "cars", "tracks"] as const;
 export type Entity = (typeof ENTITIES)[number];
 export type EntityMetadata = {
     lastUpdated: Timestamp;
+    nameMap: Record<string, string>;
 };
 
 export type CacheValidState = "valid" | "invalid";

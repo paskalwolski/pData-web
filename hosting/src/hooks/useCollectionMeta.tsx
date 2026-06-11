@@ -1,12 +1,15 @@
-import { useEffect, useState } from "react";
-import { CacheValidState, Entity, EntityMetadata } from "../types";
+import { useCallback, useEffect, useState } from "react";
+import { CacheValidState, ENTITIES, Entity, EntityMetadata } from "../types";
 import {
     collection,
+    CollectionReference,
     doc,
     getDocFromCache,
     getDocFromServer,
+    getDocs,
 } from "firebase/firestore";
 import { db } from "../firebase";
+import { useCTDContext } from "../context/CTDContext/useCTDContext";
 
 const useCollectionMetadataState = (entity: Entity) => {
     const [cacheState, setCacheState] = useState<CacheValidState>();
@@ -50,4 +53,50 @@ const useCollectionMetadataState = (entity: Entity) => {
     return [cacheState, loading] as const;
 };
 
-export { useCollectionMetadataState };
+const useEntityMeta = (): [
+    Record<Entity, EntityMetadata | undefined>,
+    boolean,
+] => {
+    const [meta, setMeta] =
+        useState<Record<Entity, EntityMetadata | undefined>>();
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        let cancelled = false;
+        const metaCollection = collection(
+            db,
+            "meta",
+        ) as CollectionReference<EntityMetadata>;
+        async function getMeta() {
+            const metaDocs = await getDocs(metaCollection).then((d) => d.docs);
+            if (!cancelled) {
+                const metaDocMap = Object.fromEntries(
+                    metaDocs.map((d) => [d.id, d.data()]),
+                );
+                const entityMetaMap = Object.fromEntries(
+                    ENTITIES.map((e) => [e, metaDocMap?.[e]]),
+                ) as Record<Entity, EntityMetadata | undefined>;
+                setMeta(entityMetaMap);
+                setLoading(false);
+            }
+        }
+        getMeta();
+
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    return [meta, loading] as const;
+};
+
+const useMetaName = (entity: Entity) => {
+    const CTDContext = useCTDContext();
+
+    return useCallback(
+        (trackId: string) => CTDContext[entity]?.nameMap?.[trackId] ?? trackId,
+        [CTDContext, entity],
+    );
+};
+
+export { useCollectionMetadataState, useEntityMeta, useMetaName };
