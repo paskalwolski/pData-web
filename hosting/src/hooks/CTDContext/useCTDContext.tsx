@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo } from "react";
 import { EntityMetadata } from "../../types";
-import { useEntityMeta } from "../../hooks/useCollectionMeta";
+import { useEntityMeta } from "./useCollectionMeta";
 
 interface CTDContext {
     tracks: EntityMetadata | undefined;

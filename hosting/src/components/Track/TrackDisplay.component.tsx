@@ -4,7 +4,7 @@ import { useContainerSize } from "../../hooks/useContainerSize";
 import { TelemetryData, TrackData, TrackDisplayMode } from "../../types";
 import { useMemo, useState } from "react";
 import { TrackPath } from "./TrackPath.component";
-import { useTelemetryPointContext } from "../../context/useTelemetryPoint";
+import { useTelemetryPointContext } from "../../hooks/TelemetryPointContext/useTelemetryPoint";
 import { TrackCrosshair } from "./TrackCrosshair.component";
 import { useTrackSegments } from "../../hooks/useTrackSegments";
 import { TrackDisplayMenu } from "./TrackDisplayMenu.component";

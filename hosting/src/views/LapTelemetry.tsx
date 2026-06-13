@@ -3,7 +3,7 @@ import { useLapTelemetry } from "../hooks/useLaps";
 import TelemetryChart from "../components/TelemetryChart";
 import { useTrackData } from "../hooks/useTracks";
 import { TrackDisplay } from "../components/Track/TrackDisplay.component";
-import { TelemetryPointProvider } from "../context/useTelemetryPoint";
+import { TelemetryPointProvider } from "../hooks/TelemetryPointContext/useTelemetryPoint";
 import {
     ersFormatter,
     pedalFormatter,

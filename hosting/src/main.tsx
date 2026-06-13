@@ -9,7 +9,7 @@ import "@fontsource/inter/700.css";
 import { ThemeProvider } from "@mui/material";
 import theme from "./theme.ts";
 import App from "./App.tsx";
-import { CTDProvider } from "./context/CTDContext/useCTDContext.tsx";
+import { CTDProvider } from "./hooks/CTDContext/useCTDContext.tsx";
 
 createRoot(document.getElementById("root")!).render(
     <StrictMode>

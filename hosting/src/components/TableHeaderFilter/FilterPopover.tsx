@@ -1,7 +1,7 @@
 import { Box, Popover } from "@mui/material";
 import { GridFilterItem } from "@mui/x-data-grid";
 import { FilterControl } from "./FilterControl";
-import { useFiltering } from "../../context/useFiltering";
+import { useFiltering } from "../../hooks/FilterContext/useFiltering";
 import { useCallback, useMemo } from "react";
 import { GridStateColDef } from "@mui/x-data-grid/internals";
 

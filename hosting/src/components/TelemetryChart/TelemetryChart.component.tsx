@@ -3,7 +3,7 @@ import { TelemetryLine } from "./TelemetryLine.component";
 import * as d3 from "d3";
 import { useContainerSize } from "../../hooks/useContainerSize";
 import { Box, Paper, Stack, Typography, useTheme } from "@mui/material";
-import { useTelemetryPointContext } from "../../context/useTelemetryPoint";
+import { useTelemetryPointContext } from "../../hooks/TelemetryPointContext/useTelemetryPoint";
 import { TelemetryCrosshair } from "./TelemetryCrosshair";
 import { TelemetryChartProps, TelemetryValueDisplayProps } from "./types";
 import { TelemetryValueRender } from "./TelemetryValueRender";

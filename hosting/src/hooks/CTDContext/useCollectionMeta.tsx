@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import { ENTITIES, Entity, EntityMetadata } from "../types";
+import { ENTITIES, Entity, EntityMetadata } from "../../types";
 import { collection, CollectionReference, getDocs } from "firebase/firestore";
-import { db } from "../firebase";
-import { useCTDContext } from "../context/CTDContext/useCTDContext";
+import { db } from "../../firebase";
+import { useCTDContext } from "./useCTDContext";
 
 const useEntityMeta = (): [
     Record<Entity, EntityMetadata | undefined>,

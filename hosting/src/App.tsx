@@ -5,7 +5,7 @@ import { useToggle } from "./hooks/useToggle";
 import { Homepage } from "./pages/HomePage";
 import { LapDataPage } from "./pages/LapDataPage";
 import { LapSelectorPage } from "./pages/LapSelectorPage";
-import { useCTDContext } from "./context/CTDContext/useCTDContext";
+import { useCTDContext } from "./hooks/CTDContext/useCTDContext";
 
 export default function App() {
     const { loading } = useCTDContext();

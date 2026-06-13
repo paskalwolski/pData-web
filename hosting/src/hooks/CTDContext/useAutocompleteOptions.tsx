@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { AutocompleteOption } from "../components/TableHeaderFilter";
+import { AutocompleteOption } from "../../components/TableHeaderFilter";
 
-import { Entity } from "../types";
-import { useCTDContext } from "../context/CTDContext/useCTDContext";
+import { Entity } from "../../types";
+import { useCTDContext } from "./useCTDContext";
 
 const useAutocompleteOptions = (
     field: Entity,
