@@ -1,57 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import { CacheValidState, ENTITIES, Entity, EntityMetadata } from "../types";
-import {
-    collection,
-    CollectionReference,
-    doc,
-    getDocFromCache,
-    getDocFromServer,
-    getDocs,
-} from "firebase/firestore";
+import { ENTITIES, Entity, EntityMetadata } from "../types";
+import { collection, CollectionReference, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import { useCTDContext } from "../context/CTDContext/useCTDContext";
-
-const useCollectionMetadataState = (entity: Entity) => {
-    const [cacheState, setCacheState] = useState<CacheValidState>();
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        let cancelled = false;
-        const metaDocRef = doc(collection(db, "meta"), entity);
-        async function fetchMetadataCollection() {
-            const cachedMetadata = await getDocFromCache(metaDocRef)
-                .then(
-                    (d) =>
-                        (d.exists() ? d.data() : {}) as Partial<EntityMetadata>,
-                )
-                .catch(() => ({}) as Partial<EntityMetadata>);
-
-            const remoteMetadata = await getDocFromServer(metaDocRef)
-                .then(
-                    (d) =>
-                        (d.exists() ? d.data() : {}) as Partial<EntityMetadata>,
-                )
-                .catch(() => ({}) as Partial<EntityMetadata>);
-
-            if (!cancelled) {
-                setCacheState(
-                    remoteMetadata.lastUpdated?.toMillis() ===
-                        cachedMetadata?.lastUpdated?.toMillis()
-                        ? "valid"
-                        : "invalid",
-                );
-                setLoading(false);
-            }
-        }
-        fetchMetadataCollection();
-
-        return () => {
-            cancelled = true;
-        };
-    }, [entity]);
-
-    return [cacheState, loading] as const;
-};
 
 const useEntityMeta = (): [
     Record<Entity, EntityMetadata | undefined>,
@@ -99,4 +50,4 @@ const useMetaName = (entity: Entity) => {
     );
 };
 
-export { useCollectionMetadataState, useEntityMeta, useMetaName };
+export { useEntityMeta, useMetaName };

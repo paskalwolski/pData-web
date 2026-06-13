@@ -85,8 +85,5 @@ interface SectionData {
 export const ENTITIES = ["drivers", "cars", "tracks"] as const;
 export type Entity = (typeof ENTITIES)[number];
 export type EntityMetadata = {
-    lastUpdated: Timestamp;
     nameMap: Record<string, string>;
 };
-
-export type CacheValidState = "valid" | "invalid";

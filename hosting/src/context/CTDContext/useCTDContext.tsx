@@ -21,8 +21,6 @@ const CTDContext = createContext<CTDContext>(DEFAULT_CTD_CONTEXT);
 const CTDProvider = ({ children }: { children: React.ReactNode }) => {
     const [entityMetaMap, loading] = useEntityMeta();
 
-    console.log(loading);
-
     const effectiveValue = useMemo(
         () => (loading ? DEFAULT_CTD_CONTEXT : { ...entityMetaMap, loading }),
         [entityMetaMap, loading],
