@@ -31,13 +31,7 @@ const upsertMetaNameMap = async (
   const collectionRef = firestore
     .collection('meta')
     .doc(collection) as DocumentReference<MetaCollection>;
-  const currentNameMap = await collectionRef
-    .get()
-    .then(d => (d.exists ? d.data()?.nameMap : {}));
-  return collectionRef.set(
-    {nameMap: {...currentNameMap, [id]: value}},
-    {merge: true},
-  );
+  return collectionRef.set({nameMap: {[id]: value}}, {merge: true});
 };
 
 export {isNamedMetaCollection, resolveMetaName, upsertMetaNameMap};
