@@ -12,6 +12,12 @@ import {
   TelemetryDataSet,
   TrackPayload,
 } from './types';
+import {onDocumentWritten} from 'firebase-functions/firestore';
+import {
+  isNamedMetaCollection,
+  resolveMetaName,
+  upsertMetaNameMap,
+} from './metaCollection';
 
 const EXPIRY_HOURS = 24;
 
@@ -290,3 +296,22 @@ export const deleteExpiredTestLaps = onSchedule('every 6 hours', async () => {
     console.log(`Deleted ${lapBatches.length} expired test_laps and telemetry`);
   }
 });
+
+export const syncMetaName = onDocumentWritten(
+  '{collection}/{id}',
+  async event => {
+    const {collection, id} = event.params;
+    if (!isNamedMetaCollection(collection)) {
+      return;
+    }
+
+    const data = event.data?.after.data();
+    if (!data) {
+      // TODO: Handle doc delete
+      return;
+    }
+
+    const metaName = resolveMetaName(collection, data);
+    await upsertMetaNameMap(firestore, collection, id, metaName ?? id);
+  },
+);

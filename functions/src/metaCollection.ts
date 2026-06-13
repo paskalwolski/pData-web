@@ -1,19 +1,25 @@
-import {Timestamp} from 'firebase-admin/firestore';
+import {DocumentReference} from 'firebase-admin/firestore';
 
-const updateCollectionMeta = async (
-  firestore: FirebaseFirestore.Firestore,
-  collectionNames: string[],
-) => {
-  if (collectionNames.length === 0) {
-    return;
+export const NAMED_META_COLLECTIONS = ['tracks', 'drivers', 'cars'] as const;
+export type NamedMetaCollection = (typeof NAMED_META_COLLECTIONS)[number];
+interface MetaCollection {
+  nameMap: Record<string, string>;
+}
+
+const isNamedMetaCollection = (v: string): v is NamedMetaCollection =>
+  NAMED_META_COLLECTIONS.includes(v as NamedMetaCollection);
+
+const resolveMetaName = (
+  collectionName: NamedMetaCollection,
+  data: FirebaseFirestore.DocumentData,
+): string | undefined => {
+  switch (collectionName) {
+    case 'tracks':
+      return data?.trackData?.trackName;
+
+    default:
+      return undefined;
   }
-  const timestamp = Timestamp.now();
-  const batch = firestore.batch();
-  collectionNames.forEach(cName => {
-    const colRef = firestore.collection('meta').doc(cName);
-    batch.set(colRef, {lastUpdated: timestamp}, {merge: true});
-  });
-  await batch.commit();
 };
 
 const upsertMetaNameMap = async (
@@ -22,14 +28,16 @@ const upsertMetaNameMap = async (
   id: string,
   value: string,
 ) => {
-  const collectionRef = firestore.collection('meta').doc(collection);
+  const collectionRef = firestore
+    .collection('meta')
+    .doc(collection) as DocumentReference<MetaCollection>;
   const currentNameMap = await collectionRef
     .get()
-    .then(d => (d.exists ? d.data()?.['nameMap'] : {}));
+    .then(d => (d.exists ? d.data()?.nameMap : {}));
   return collectionRef.set(
     {nameMap: {...currentNameMap, [id]: value}},
     {merge: true},
   );
 };
 
-export {updateCollectionMeta, upsertMetaNameMap};
+export {isNamedMetaCollection, resolveMetaName, upsertMetaNameMap};
