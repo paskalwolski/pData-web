@@ -12,7 +12,6 @@ import {
   TelemetryDataSet,
   TrackPayload,
 } from './types';
-import {updateCollectionMeta, upsertMetaNameMap} from './metaCollection';
 
 const EXPIRY_HOURS = 24;
 
@@ -67,11 +66,8 @@ export const handleTrackData = onRequest(async (request, response) => {
     mapData: processedMapData,
     sectionData,
   });
-  const metaUpdates = [
-    updateCollectionMeta(firestore, ['tracks']),
-    upsertMetaNameMap(firestore, 'tracks', trackId, trackData.trackName),
-  ];
-  await Promise.all([trackDocUpdate, [...metaUpdates]]);
+
+  await trackDocUpdate;
   response.send();
 });
 
@@ -112,14 +108,12 @@ export const handleLap = onRequest(async (request, response) => {
 
   const trackUpdate = trackRef.get().then(async trackSnap => {
     if (!trackSnap.exists) {
-      updatedCollections.push('tracks');
       return trackRef.set({name: track});
     }
   });
   const carRef = firestore.collection('cars').doc(car);
   const carUpdate = carRef.get().then(carSnap => {
     if (!carSnap.exists) {
-      updatedCollections.push('cars');
       return carRef.set({name: car});
     }
   });
@@ -214,8 +208,6 @@ export const handleLap = onRequest(async (request, response) => {
 
   await detailUpdates.catch(() => {});
 
-  await updateCollectionMeta(firestore, updatedCollections);
-
   response.send({lapId: lapRef.id, sessionId: sessionRef.id});
   return;
 });
@@ -243,7 +235,6 @@ export const closeSession = onRequest(async (request, response) => {
 // TODO: Allow specifying a specific user, and triggering with a request
 // TODO: Rename for clarity
 export const deleteExpiredTestLaps = onSchedule('every 6 hours', async () => {
-  const updatedCollections = [];
   const now = new Date();
   // Delete expired Sessions
   const expiredSessionSnapshot = await firestore
@@ -256,7 +247,6 @@ export const deleteExpiredTestLaps = onSchedule('every 6 hours', async () => {
     console.log('No expired test_sessions to delete');
   } else {
     console.log(`Found ${expiredSessionSnapshot.docs.length} expired sessions`);
-    updatedCollections.push(SESSIONS);
 
     const sessionBatches = expiredSessionSnapshot.docs
       .slice(0, 100)
@@ -287,7 +277,6 @@ export const deleteExpiredTestLaps = onSchedule('every 6 hours', async () => {
     console.log('No expired test_laps to delete.');
   } else {
     console.log(`Found ${expiredLapSnapshot.docs.length} expired laps.`);
-    updatedCollections.push(LAPS);
     const lapBatches = expiredLapSnapshot.docs.slice(0, 100).map(async lap => {
       const lapBatch = firestore.batch();
       const linkedTelemetryDocs = await lap.ref
@@ -300,5 +289,4 @@ export const deleteExpiredTestLaps = onSchedule('every 6 hours', async () => {
     await Promise.all(lapBatches);
     console.log(`Deleted ${lapBatches.length} expired test_laps and telemetry`);
   }
-  await updateCollectionMeta(firestore, updatedCollections);
 });
