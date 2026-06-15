@@ -6,6 +6,13 @@ interface BrakeEvent {
     dPeak: number;
     peak: number;
     values: number[];
+    pValues: PositionValue[];
+}
+
+interface PositionValue {
+    posX: number;
+    posZ: number;
+    heading: number;
 }
 
 export const calculateLapSegments = (lapTelemetry: TelemetryData) => {
@@ -21,6 +28,9 @@ export const calculateLapSegments = (lapTelemetry: TelemetryData) => {
 
     let isActiveBraking = false;
 
+    const positionData = calculatePositionData(lapTelemetry);
+
+    // TODO: Encapsulate for a specific Event type
     lapTelemetry.brake.forEach((b, i) => {
         if (b === undefined || b === null) {
             return;
@@ -31,10 +41,20 @@ export const calculateLapSegments = (lapTelemetry: TelemetryData) => {
                 // End the active brake event
                 dEnd = i;
                 isActiveBraking = false;
-                brakeEvents.push({ dStart, dEnd, dPeak, peak, values });
+                const pValues = positionData.slice(dStart, dEnd);
+
+                brakeEvents.push({
+                    dStart,
+                    dEnd,
+                    dPeak,
+                    peak,
+                    values,
+                    pValues,
+                });
                 values = [];
             } else {
                 values.push(b);
+
                 if (b > peak) {
                     peak = b;
                     dPeak = i;
@@ -52,8 +72,32 @@ export const calculateLapSegments = (lapTelemetry: TelemetryData) => {
     if (isActiveBraking) {
         // Close the activeBraking event
         dEnd = lapTelemetry.brake.length;
-        brakeEvents.push({ dStart, dEnd, dPeak, peak, values });
+        const pValues = positionData.slice(dStart, dEnd);
+        brakeEvents.push({ dStart, dEnd, dPeak, peak, values, pValues });
     }
 
     brakeEvents.forEach((b) => console.log(b));
+};
+
+const calculatePositionData = (
+    lapTelemetry: TelemetryData,
+): PositionValue[] => {
+    const xs = lapTelemetry.posX ?? [];
+    const zs = lapTelemetry.posZ ?? [];
+    const result: PositionValue[] = [];
+    let lastHeading = 0;
+
+    for (let i = 0; i < xs.length; i++) {
+        const x0 = (xs[i] ?? 0) as number;
+        const z0 = (zs[i] ?? 0) as number;
+        const x1 = (xs[i + 1] ?? x0) as number;
+        const z1 = (zs[i + 1] ?? z0) as number;
+        const dx = x1 - x0;
+        const dz = z1 - z0;
+        const heading = dx !== 0 || dz !== 0 ? Math.atan2(dx, dz) : lastHeading;
+        lastHeading = heading;
+        result.push({ posX: x0, posZ: z0, heading });
+    }
+
+    return result;
 };
