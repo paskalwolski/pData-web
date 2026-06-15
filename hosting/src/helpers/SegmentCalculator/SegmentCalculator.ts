@@ -1,6 +1,6 @@
-import { TelemetryData } from "../../types";
+import { TelemetryData, TelemetryDataSet } from "../../types";
 
-interface BrakeEvent {
+interface Event {
     dStart: number;
     dEnd: number;
     dPeak: number;
@@ -16,9 +16,25 @@ interface PositionValue {
 }
 
 export const calculateLapSegments = (lapTelemetry: TelemetryData) => {
-    // Brake Event Calculation
-    const BRAKE_THRESHOLD = 0.05;
-    const brakeEvents: BrakeEvent[] = [];
+    const positionData = calculatePositionData(lapTelemetry);
+
+    const brakeEvents = calculateEventSegments(
+        lapTelemetry.brake,
+        (i, lapTelemetry) => lapTelemetry[i] > 0.05,
+        positionData,
+    );
+};
+
+const calculateEventSegments = (
+    lapTelemetry: TelemetryDataSet,
+    thresholdFunction: (i: number, telemetry: TelemetryDataSet) => boolean,
+    positionData: PositionValue[],
+): Event[] => {
+    /** 
+    @param lapTelemetry: 
+    @param thresholdFunction: Callback which resolves the event status. This should return True when an event should start, and False when an event should end
+    **/
+    const events: Event[] = [];
 
     let dStart = 0;
     let dEnd = 0;
@@ -26,24 +42,22 @@ export const calculateLapSegments = (lapTelemetry: TelemetryData) => {
     let peak = 0;
     let values = [];
 
-    let isActiveBraking = false;
-
-    const positionData = calculatePositionData(lapTelemetry);
+    let isActiveEvent = false;
 
     // TODO: Encapsulate for a specific Event type
-    lapTelemetry.brake.forEach((b, i) => {
-        if (b === undefined || b === null) {
+    lapTelemetry.forEach((v, i) => {
+        if (v === undefined || v === null) {
             return;
         }
-        if (isActiveBraking) {
+        if (isActiveEvent) {
             // Check below threshold
-            if (b < BRAKE_THRESHOLD) {
+            if (!thresholdFunction(i, lapTelemetry)) {
                 // End the active brake event
                 dEnd = i;
-                isActiveBraking = false;
+                isActiveEvent = false;
                 const pValues = positionData.slice(dStart, dEnd);
 
-                brakeEvents.push({
+                events.push({
                     dStart,
                     dEnd,
                     dPeak,
@@ -53,30 +67,30 @@ export const calculateLapSegments = (lapTelemetry: TelemetryData) => {
                 });
                 values = [];
             } else {
-                values.push(b);
+                values.push(v);
 
-                if (b > peak) {
-                    peak = b;
+                if (v > peak) {
+                    peak = v;
                     dPeak = i;
                 }
             }
         } else {
             // Check above threshold
-            if (b > BRAKE_THRESHOLD) {
-                isActiveBraking = true;
+            if (thresholdFunction(i, lapTelemetry)) {
+                isActiveEvent = true;
                 dStart = i;
-                values.push(b);
+                values.push(v);
             }
         }
     });
-    if (isActiveBraking) {
+    if (isActiveEvent) {
         // Close the activeBraking event
-        dEnd = lapTelemetry.brake.length;
+        dEnd = lapTelemetry.length;
         const pValues = positionData.slice(dStart, dEnd);
-        brakeEvents.push({ dStart, dEnd, dPeak, peak, values, pValues });
+        events.push({ dStart, dEnd, dPeak, peak, values, pValues });
     }
 
-    brakeEvents.forEach((b) => console.log(b));
+    return events;
 };
 
 const calculatePositionData = (
