@@ -41,13 +41,20 @@ const useEntityMeta = (): [
     return [meta, loading] as const;
 };
 
-const useMetaName = (entity: Entity) => {
-    const CTDContext = useCTDContext();
+const useMetaName = () => {
+    const ctdContext = useCTDContext();
 
-    return useCallback(
-        (trackId: string) => CTDContext[entity]?.nameMap?.[trackId] ?? trackId,
-        [CTDContext, entity],
-    );
+    const useEntityName = (entity: Entity) =>
+        useCallback(
+            (id: string) => ctdContext[entity]?.nameMap?.[id] ?? id,
+            [entity],
+        );
+
+    const getCarName = useEntityName("cars");
+    const getDriverName = useEntityName("drivers");
+    const getTrackName = useEntityName("tracks");
+
+    return { useEntityName, getCarName, getDriverName, getTrackName };
 };
 
 export { useEntityMeta, useMetaName };

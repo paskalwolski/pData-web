@@ -8,6 +8,8 @@ import {
     TbRoad,
 } from "react-icons/tb";
 import { InfoCardValue } from "./InfoCardValue.component";
+import { useMetaName } from "../hooks/CTDContext/useCollectionMeta";
+import { useMemo } from "react";
 
 type Variant = "wide" | "small" | "normal";
 const VARIANT_COLUMN_MAPPING: Record<Variant, number> = {
@@ -30,11 +32,26 @@ const SessionInfo = ({
     const formattedDate = new Date(
         sessionData.sessionTime,
     ).toLocaleDateString();
+
+    const { getCarName, getDriverName, getTrackName } = useMetaName();
+
+    const driverName = useMemo(
+        () => getDriverName(sessionData.driver),
+        [getDriverName, sessionData.driver],
+    );
+    const carName = useMemo(
+        () => getCarName(sessionData.car),
+        [getCarName, sessionData.car],
+    );
+    const trackName = useMemo(
+        () => getTrackName(sessionData.track),
+        [getTrackName, sessionData.track],
+    );
     return (
         <Box m={1}>
             <Grid container columns={VARIANT_COLUMN_MAPPING[variant]}>
                 <Grid size={1}>
-                    <InfoCardValue Icon={TbRoad} value={sessionData.track} />
+                    <InfoCardValue Icon={TbRoad} value={trackName} />
                 </Grid>
                 {!isComparison && (
                     <>
@@ -45,16 +62,10 @@ const SessionInfo = ({
                             />
                         </Grid>
                         <Grid size={1}>
-                            <InfoCardValue
-                                Icon={TbHelmet}
-                                value={sessionData.driver}
-                            />
+                            <InfoCardValue Icon={TbHelmet} value={driverName} />
                         </Grid>
                         <Grid size={1}>
-                            <InfoCardValue
-                                Icon={TbCar}
-                                value={sessionData.car}
-                            />
+                            <InfoCardValue Icon={TbCar} value={carName} />
                         </Grid>
                         <Grid size={1}>
                             <InfoCardValue

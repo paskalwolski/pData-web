@@ -10,6 +10,7 @@ import {
 } from "react-icons/tb";
 import { BiStopwatch } from "react-icons/bi";
 import { formatDuration } from "../helpers/formatDuration";
+import { useMetaName } from "../hooks/CTDContext/useCollectionMeta";
 
 interface Props {
     lapData: LapData;
@@ -22,6 +23,8 @@ const LapInfo = ({
     isShowingSessionData = false,
     isComparison = false,
 }: Props) => {
+    const { getDriverName, getTrackName, getCarName } = useMetaName();
+
     return (
         <Stack flex={1} p={1}>
             <Stack
@@ -39,15 +42,21 @@ const LapInfo = ({
                     </Box>
                 )}
             </Stack>
-            <InfoCardValue Icon={TbHelmet} value={lapData.sessionData.driver} />
+            <InfoCardValue
+                Icon={TbHelmet}
+                value={getDriverName(lapData.sessionData.driver)}
+            />
             {isShowingSessionData && (
                 <InfoCardValue
                     Icon={TbRoad}
-                    value={lapData.sessionData.track}
+                    value={getTrackName(lapData.sessionData.track)}
                 />
             )}
             {(isComparison || isShowingSessionData) && (
-                <InfoCardValue Icon={TbCar} value={lapData.sessionData.car} />
+                <InfoCardValue
+                    Icon={TbCar}
+                    value={getCarName(lapData.sessionData.car)}
+                />
             )}
             {lapData.sessionId && isShowingSessionData && !isComparison && (
                 <InfoCardValue

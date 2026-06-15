@@ -22,6 +22,7 @@ import { useOpeneable } from "../hooks/useOpenable";
 import { LapTable } from "../components/LapTable.component";
 import { GridFilterItem } from "@mui/x-data-grid";
 import { DOCUMENT_REF } from "../helpers/datagridConvertors";
+import { useMetaName } from "../hooks/CTDContext/useCollectionMeta";
 
 interface Props {
     lapId: string;
@@ -36,6 +37,8 @@ export const LapDataPage = ({ lapId, secondaryLapId }: Props) => {
     const { isOpen, handleOpen, handleClose } = useOpeneable();
 
     const [hasComparisonLap] = useRoute("/laps/:lapId/compare/:secondaryId");
+
+    const { getTrackName } = useMetaName();
 
     const handleComparisonLapSelect = useCallback(
         (comparisonLapId: string) => {
@@ -102,7 +105,9 @@ export const LapDataPage = ({ lapId, secondaryLapId }: Props) => {
                             <Stack p={1} spacing={1} flex={1}>
                                 <InfoCardValue
                                     Icon={TbRoad}
-                                    value={lapData.sessionData.track}
+                                    value={getTrackName(
+                                        lapData.sessionData.track,
+                                    )}
                                 />
                                 <Stack
                                     direction="row"

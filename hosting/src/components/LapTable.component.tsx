@@ -16,7 +16,10 @@ import { TbClockX } from "react-icons/tb";
 import { Box, Tooltip, useTheme } from "@mui/material";
 import { GridSortModel } from "@mui/x-data-grid";
 import { TableHeaderFilter } from "./TableHeaderFilter";
-import { FilteringProvider, useFiltering } from "../hooks/FilterContext/useFiltering";
+import {
+    FilteringProvider,
+    useFiltering,
+} from "../hooks/FilterContext/useFiltering";
 import { useMetaName } from "../hooks/CTDContext/useCollectionMeta";
 
 const getRowId = (row: LapData) => row.lapId;
@@ -41,7 +44,7 @@ const LapTableDataGrid = ({
 }: Props) => {
     const { palette } = useTheme();
 
-    const getTrackName = useMetaName("tracks");
+    const { getTrackName } = useMetaName();
 
     const [pagination, setPagination] = useState<GridPaginationModel>({
         pageSize: 10,
