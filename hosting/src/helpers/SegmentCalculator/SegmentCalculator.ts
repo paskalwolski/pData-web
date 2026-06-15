@@ -6,7 +6,6 @@ interface Event {
     dPeak: number;
     peak: number;
     values: number[];
-    pValues: PositionValue[];
 }
 
 interface PositionValue {
@@ -21,18 +20,18 @@ export const calculateLapSegments = (lapTelemetry: TelemetryData) => {
     const brakeEvents = calculateEventSegments(
         lapTelemetry.brake,
         (i, lapTelemetry) => lapTelemetry[i] > 0.05,
-        positionData,
     );
 };
 
 const calculateEventSegments = (
     lapTelemetry: TelemetryDataSet,
-    thresholdFunction: (i: number, telemetry: TelemetryDataSet) => boolean,
-    positionData: PositionValue[],
+    triggerFunction: (i: number, telemetry: TelemetryDataSet) => boolean,
+    distanceThreshold: number = 5,
 ): Event[] => {
     /** 
     @param lapTelemetry: 
-    @param thresholdFunction: Callback which resolves the event status. This should return True when an event should start, and False when an event should end
+    @param triggerFunction: Callback which resolves the event status. This should return True when an event should start, and False when an event should end
+    @param distanceThreshold: Minimum distance during which an event is considered to be valid
     **/
     const events: Event[] = [];
 
@@ -51,11 +50,10 @@ const calculateEventSegments = (
         }
         if (isActiveEvent) {
             // Check below threshold
-            if (!thresholdFunction(i, lapTelemetry)) {
+            if (!triggerFunction(i, lapTelemetry)) {
                 // End the active brake event
                 dEnd = i;
                 isActiveEvent = false;
-                const pValues = positionData.slice(dStart, dEnd);
 
                 events.push({
                     dStart,
@@ -63,7 +61,6 @@ const calculateEventSegments = (
                     dPeak,
                     peak,
                     values,
-                    pValues,
                 });
                 values = [];
             } else {
@@ -76,7 +73,7 @@ const calculateEventSegments = (
             }
         } else {
             // Check above threshold
-            if (thresholdFunction(i, lapTelemetry)) {
+            if (triggerFunction(i, lapTelemetry)) {
                 isActiveEvent = true;
                 dStart = i;
                 values.push(v);
@@ -86,11 +83,10 @@ const calculateEventSegments = (
     if (isActiveEvent) {
         // Close the activeBraking event
         dEnd = lapTelemetry.length;
-        const pValues = positionData.slice(dStart, dEnd);
-        events.push({ dStart, dEnd, dPeak, peak, values, pValues });
+        events.push({ dStart, dEnd, dPeak, peak, values });
     }
 
-    return events;
+    return events.filter((e) => e.dEnd - e.dStart > distanceThreshold);
 };
 
 const calculatePositionData = (
