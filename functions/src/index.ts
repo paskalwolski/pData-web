@@ -142,6 +142,7 @@ export const handleLap = onRequest(async (request, response) => {
       ...lapDetails,
       sessionData,
       sessionId: sessionRef.id,
+      expiresAt: null,
     });
     (Object.entries(lapData) as [string, TelemetryDataSet][]).map(
       ([telemetryKey, telemetryData]) =>
@@ -206,7 +207,7 @@ export const handleLap = onRequest(async (request, response) => {
         track,
         sessionTime,
         sessionType,
-        expiresAt: trackSession ? undefined : expiresAt,
+        expiresAt: trackSession ? null : expiresAt,
         // TODO: Improve data in Session eg. fastest lap
       });
     }
