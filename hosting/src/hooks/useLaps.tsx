@@ -21,7 +21,10 @@ import {
 import { LapData, TelemetryData } from "../types";
 import { GridFilterModel, GridPaginationModel } from "@mui/x-data-grid";
 import { GridSortModel } from "@mui/x-data-grid";
-import { lapFilterConvertor, lapSortConvertor } from "../helpers/datagridConvertors";
+import {
+    lapFilterConvertor,
+    lapSortConvertor,
+} from "../helpers/datagridConvertors";
 
 const useLap = (lapId: string): [LapData | undefined, boolean] => {
     const [lapData, setLapData] = useState<LapData | undefined>();
@@ -117,11 +120,14 @@ interface LatestLapsOpts {
     trackId?: string;
     fetchLimit?: number;
     exclude?: string;
+    fastLapsOnly?: boolean;
 }
-const useLatestLaps = ({ trackId, fetchLimit, exclude }: LatestLapsOpts = {}): [
-    Array<LapData> | undefined,
-    boolean,
-] => {
+const useLatestLaps = ({
+    trackId,
+    fetchLimit,
+    exclude,
+    fastLapsOnly,
+}: LatestLapsOpts = {}): [Array<LapData> | undefined, boolean] => {
     const [latestLaps, setLatestLaps] = useState<Array<LapData> | undefined>();
     const [loading, setLoading] = useState(true);
     useEffect(() => {
@@ -131,6 +137,9 @@ const useLatestLaps = ({ trackId, fetchLimit, exclude }: LatestLapsOpts = {}): [
                 orderBy("lapTimestamp", "desc"),
                 limit(fetchLimit ?? 5),
             ];
+            if (fastLapsOnly) {
+                queryConstraints.push(where("expiresAt", "==", null));
+            }
             if (trackId) {
                 queryConstraints.push(
                     where("sessionData.track", "==", trackId),
@@ -154,7 +163,7 @@ const useLatestLaps = ({ trackId, fetchLimit, exclude }: LatestLapsOpts = {}): [
         return () => {
             cancelled = true;
         };
-    }, [exclude, fetchLimit, trackId]);
+    }, [exclude, fetchLimit, trackId, fastLapsOnly]);
 
     return [latestLaps, loading];
 };

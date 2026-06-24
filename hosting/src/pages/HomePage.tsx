@@ -12,7 +12,10 @@ import { useLocation } from "wouter";
 import { LapInfo } from "../components/LapInfo.component";
 
 const Homepage = () => {
-    const [latestLaps, isLoadingLatestLaps] = useLatestLaps({ fetchLimit: 10 });
+    const [latestLaps, isLoadingLatestLaps] = useLatestLaps({
+        fetchLimit: 10,
+        fastLapsOnly: true,
+    });
     const [, navigate] = useLocation();
     const handleSelectLap = (lapId: string) => {
         navigate(`/laps/${lapId}`);
