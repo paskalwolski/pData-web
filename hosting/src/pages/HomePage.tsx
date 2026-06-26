@@ -35,24 +35,23 @@ const Homepage = () => {
                         {latestLaps.map((lap) => (
                             <Box
                                 display="flex"
-                                flexGrow={1}
-                                py={1}
+                                flex={1}
+                                minWidth={"0.2"}
+                                maxWidth={"200px"}
                                 key={`lap-${lap.sessionData.driver}-${lap.sessionData.sessionTime}-${lap.lapNumber}`}
                             >
-                                <Card>
+                                <Card elevation={3} sx={{ flex: 1, my: 1 }}>
                                     <CardActionArea
                                         onClick={() =>
                                             handleSelectLap(lap.lapId)
                                         }
                                     >
-                                        <Paper elevation={3}>
-                                            <Box padding={1}>
-                                                <LapInfo
-                                                    lapData={lap}
-                                                    isShowingSessionData
-                                                />
-                                            </Box>
-                                        </Paper>
+                                        <Box>
+                                            <LapInfo
+                                                lapData={lap}
+                                                isShowingSessionData
+                                            />
+                                        </Box>
                                     </CardActionArea>
                                 </Card>
                             </Box>
