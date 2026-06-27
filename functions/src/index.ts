@@ -7,7 +7,6 @@ import {FieldValue, getFirestore} from 'firebase-admin/firestore';
 import {getStorage} from 'firebase-admin/storage';
 import {
   CloseSessionPayload,
-  FastestLapRef,
   LapPayload,
   TelemetryDataSet,
   TrackPayload,
@@ -18,8 +17,7 @@ import {
   resolveMetaName,
   upsertMetaNameMap,
 } from './metaCollection';
-
-const EXPIRY_HOURS = 24;
+import {handleFastestLap} from './bestAttempts';
 
 // Collection Definition
 const LAPS = 'test_laps';
@@ -87,6 +85,7 @@ export const handleLap = onRequest(async (request, response) => {
   }
   const lapPayload: LapPayload = payload as LapPayload;
   const {sessionData, ...lapFields} = lapPayload;
+  // TODO: Use 'trackSession' flag correctly
   const {driver, car, track, sessionTime, sessionType, trackSession} =
     sessionData;
 
@@ -108,7 +107,6 @@ export const handleLap = onRequest(async (request, response) => {
   const lapRef = firestore.collection(LAPS).doc();
 
   const driverRef = firestore.collection('drivers').doc(driver);
-  const bestLapsRef = driverRef.collection(track).doc(car);
 
   const trackRef = firestore.collection('tracks').doc(track);
 
@@ -129,21 +127,18 @@ export const handleLap = onRequest(async (request, response) => {
   const now = Date.now();
 
   const lapTimestamp = new Date(now);
-  const expiresAt = new Date(now + EXPIRY_HOURS * 60 * 60 * 1000);
+  const lapDocumentData = {
+    lapTimestamp,
+    ...lapDetails,
+    sessionData,
+    sessionId: sessionRef.id,
+    expiresAt: null,
+  };
 
   // Prepare for lap write and Fastest Lap Update
   await firestore.runTransaction(async transaction => {
-    // Get the Lap Snapshot + Data
-    const bestLapSnapshot = await transaction.get(bestLapsRef);
-
     // Always store lap data + telemetry
-    transaction.set(lapRef, {
-      lapTimestamp,
-      ...lapDetails,
-      sessionData,
-      sessionId: sessionRef.id,
-      expiresAt: null,
-    });
+    transaction.set(lapRef, lapDocumentData);
     (Object.entries(lapData) as [string, TelemetryDataSet][]).map(
       ([telemetryKey, telemetryData]) =>
         transaction.set(lapRef.collection('telemetry').doc(telemetryKey), {
@@ -151,52 +146,8 @@ export const handleLap = onRequest(async (request, response) => {
         }),
     );
 
-    const laps: FastestLapRef[] = bestLapSnapshot.exists
-      ? (bestLapSnapshot.data()?.laps ?? [])
-      : [];
-
     // Ensure we have a driverRef
     transaction.set(driverRef, {name: driver}, {merge: true});
-    if (canBeFastestLap) {
-      // Not at 3 laps yet
-      if (laps.length < 3) {
-        const updatedLaps = [
-          ...laps,
-          {
-            lapId: lapRef.id,
-            lapTime: lapPayload.lapTime,
-          },
-        ].sort((a, b) => parseFloat(a.lapTime) - parseFloat(b.lapTime));
-        // Store best lap with unset expiresAt
-        transaction.set(bestLapsRef, {laps: updatedLaps});
-        updatedCollections.push('drivers');
-      } else {
-        // Check to replace slowest best-3 lap
-        const slowest = laps.reduce((prev, curr) =>
-          parseFloat(curr.lapTime) > parseFloat(prev.lapTime) ? curr : prev,
-        );
-
-        if (parseFloat(lapPayload.lapTime) < parseFloat(slowest.lapTime)) {
-          const updatedLaps = laps
-            .filter(l => l.lapId !== slowest.lapId)
-            .concat({lapId: lapRef.id, lapTime: lapPayload.lapTime})
-            .sort((a, b) => parseFloat(a.lapTime) - parseFloat(b.lapTime));
-
-          const knockedOutRef = firestore.collection(LAPS).doc(slowest.lapId);
-          transaction.update(knockedOutRef, {
-            expiresAt,
-          });
-          transaction.set(bestLapsRef, {laps: updatedLaps});
-          updatedCollections.push('drivers');
-        } else {
-          // New lap doesn't make it - set it to expire
-          transaction.set(lapRef, {expiresAt}, {merge: true});
-        }
-      }
-    } else {
-      // Expire an unsuitable lap
-      transaction.set(lapRef, {expiresAt}, {merge: true});
-    }
 
     // Handle session Update
     if (!receivedSessionId) {
@@ -207,13 +158,22 @@ export const handleLap = onRequest(async (request, response) => {
         track,
         sessionTime,
         sessionType,
-        expiresAt: trackSession ? null : expiresAt,
+        expiresAt: null,
         // TODO: Improve data in Session eg. fastest lap
       });
     }
   });
 
   await detailUpdates.catch(() => {});
+  if (canBeFastestLap) {
+    const fastestLapsRef = driverRef.collection(track).doc(car);
+    await handleFastestLap(
+      firestore,
+      fastestLapsRef,
+      lapRef,
+      lapDetails.lapTime,
+    );
+  }
 
   response.send({lapId: lapRef.id, sessionId: sessionRef.id});
   return;
