@@ -86,8 +86,7 @@ export const handleLap = onRequest(async (request, response) => {
   const lapPayload: LapPayload = payload as LapPayload;
   const {sessionData, ...lapFields} = lapPayload;
 
-  const {driver, car, track, sessionTime, sessionType, trackSession} =
-    sessionData;
+  const {driver, car, track, sessionType, trackSession} = sessionData;
   const canBeBestSession = trackSession || sessionType === 'RACE';
   const {lapData, ...lapDetails} = lapFields;
 
@@ -154,16 +153,10 @@ export const handleLap = onRequest(async (request, response) => {
       const now = Date.now();
       const expiresAt = new Date(now + 24 * 60 * 60 * 1000);
 
-      // First lap of a new session
+      // First lap of a new session - expires by default
       transaction.set(sessionRef, {
-        driver,
-        car,
-        track,
-        sessionTime,
-        sessionType,
-        // TODO: Drop this on session close
-        expiresAt: canBeBestSession ? null : expiresAt,
-        // TODO: Improve data in Session eg. fastest lap
+        ...sessionData,
+        expiresAt,
       });
     }
   });
@@ -185,22 +178,17 @@ export const handleLap = onRequest(async (request, response) => {
 });
 
 export const closeSession = onRequest(async (request, response) => {
-  const closeSessionRequest = (await request.body) as CloseSessionPayload;
-  if (!closeSessionRequest.sessionId) {
+  const closeSessionBody = (await request.body) as CloseSessionPayload;
+  if (!closeSessionBody.sessionId) {
     response.status(400).send('No session ID provided');
     return;
   }
   const sessionRef = firestore
     .collection(SESSIONS)
-    .doc(closeSessionRequest.sessionId);
-  try {
-    await sessionRef.update({lapCount: closeSessionRequest.lapCount});
-  } catch {
-    response
-      .status(404)
-      .send(`No session found for ${closeSessionRequest.sessionId}`);
-    return;
-  }
+    .doc(closeSessionBody.sessionId);
+  const batch = firestore.batch();
+  batch.update(sessionRef, {...closeSessionBody});
+  await batch.commit();
   response.send({sessionId: sessionRef.id});
 });
 

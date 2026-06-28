@@ -44,9 +44,17 @@ export interface SessionReturn {
   lapId: string;
 }
 
+interface SessionLapDetail {
+  id: string;
+  isPit: boolean;
+  isValid: boolean;
+  lapTime?: string;
+}
 export interface CloseSessionPayload {
   sessionId: string;
-  lapCount: number;
+  lapData: SessionLapDetail[];
+  bestTime: string;
+  trackSession: boolean;
 }
 
 interface SectionData {
