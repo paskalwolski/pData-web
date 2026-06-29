@@ -57,6 +57,10 @@ export interface CloseSessionPayload {
   trackSession: boolean;
 }
 
+export interface SaveSessionPayload {
+  id: string;
+}
+
 interface SectionData {
   name: string;
   start: number;

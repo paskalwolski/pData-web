@@ -8,6 +8,7 @@ import {getStorage} from 'firebase-admin/storage';
 import {
   CloseSessionPayload,
   LapPayload,
+  SaveSessionPayload,
   TelemetryDataSet,
   TrackPayload,
 } from './types';
@@ -190,6 +191,25 @@ export const closeSession = onRequest(async (request, response) => {
   batch.update(sessionRef, {...closeSessionBody});
   await batch.commit();
   response.send({sessionId: sessionRef.id});
+});
+
+export const saveSession = onRequest(async (request, response) => {
+  const saveSessionBody = (await request.body) as SaveSessionPayload;
+  if (!saveSessionBody.id) {
+    response.status(400).send('No session ID provided');
+    return;
+  }
+  const batch = firestore.batch();
+  const sessionRef = firestore.collection(SESSIONS).doc(saveSessionBody.id);
+  batch.update(sessionRef, {expiresAt: null});
+  const lapDocs = await firestore
+    .collection(LAPS)
+    .where('sessionId', '==', saveSessionBody.id)
+    .get();
+
+  lapDocs.docs.forEach(l => batch.update(l.ref, {expiresAt: null}));
+
+  await batch.commit();
 });
 
 // TODO: Allow specifying a specific user, and triggering with a request
