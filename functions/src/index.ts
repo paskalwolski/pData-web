@@ -103,11 +103,7 @@ export const handleLap = onRequest(async (request, response) => {
 
   updatedCollections.push('sessions');
 
-  // Prepare refs for read/write
   const lapRef = firestore.collection(LAPS).doc();
-
-  const driverRef = firestore.collection('drivers').doc(driver);
-
   const trackRef = firestore.collection('tracks').doc(track);
 
   const trackUpdate = trackRef.get().then(async trackSnap => {
@@ -122,7 +118,14 @@ export const handleLap = onRequest(async (request, response) => {
     }
   });
 
-  const detailUpdates = Promise.all([trackUpdate, carUpdate]);
+  const driverRef = firestore.collection('drivers').doc(driver);
+  const driverUpdate = driverRef.get().then(dSnap => {
+    if (!dSnap.exists) {
+      return driverRef.set({name: driver});
+    }
+  });
+
+  const detailUpdates = Promise.all([trackUpdate, carUpdate, driverUpdate]);
 
   const now = Date.now();
 
@@ -145,9 +148,6 @@ export const handleLap = onRequest(async (request, response) => {
           data: telemetryData,
         }),
     );
-
-    // Ensure we have a driverRef
-    transaction.set(driverRef, {name: driver}, {merge: true});
 
     // Handle session Update
     if (!receivedSessionId) {
