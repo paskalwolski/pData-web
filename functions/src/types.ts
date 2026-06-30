@@ -53,9 +53,7 @@ interface SessionLapDetail {
 
 export interface CloseSessionPayload {
   sessionId: string;
-  lapData: SessionLapDetail[];
-  bestTime: string;
-  trackSession: boolean;
+  lapCount: number;
 }
 
 export interface SaveSessionPayload {

@@ -175,6 +175,7 @@ export const createSession = onRequest(async (request, response) => {
 
   const sessionRef = firestore.collection(SESSIONS).doc();
   detailBatch.set(sessionRef, {
+    sessionId: sessionRef.id,
     expiresAt: earlyExpiresAt,
     ...createSessionBody,
   });
