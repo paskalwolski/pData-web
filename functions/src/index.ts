@@ -89,6 +89,7 @@ export const handleLap = onRequest(async (request, response) => {
 
   const {driver, car, track, sessionType, trackSession} = sessionData;
   const canBeBestSession = trackSession || sessionType === 'RACE';
+
   const {lapData, ...lapDetails} = lapFields;
 
   const canBeFastestLap = lapDetails.isValid && !lapDetails.isPit;
@@ -126,8 +127,8 @@ export const handleLap = onRequest(async (request, response) => {
         }),
     );
 
-    // Handle session Update
-    if (sessionRef) {
+    // Handle session Update - leave HOTLAP as quick-expiring
+    if (sessionRef && sessionType !== 'HOTLAP') {
       const now = Date.now();
       const expiresAt = new Date(now + 24 * 60 * 60 * 1000);
 
