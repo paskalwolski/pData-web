@@ -9,6 +9,7 @@ import {
   CloseSessionPayload,
   LapPayload,
   SaveSessionPayload,
+  SessionData,
   TelemetryDataSet,
   TrackPayload,
 } from './types';
@@ -79,7 +80,6 @@ export const handleTrackData = onRequest(async (request, response) => {
 export const handleLap = onRequest(async (request, response) => {
   // Handle empty payload, to manage session opening request
   const payload = await request.body;
-  const updatedCollections = [];
   if (!payload?.sessionData) {
     response.status(202).send();
     return;
@@ -99,33 +99,10 @@ export const handleLap = onRequest(async (request, response) => {
   // Get the sessionRef if it exists or not
   const sessionRef = receivedSessionId
     ? firestore.collection(SESSIONS).doc(receivedSessionId)
-    : firestore.collection(SESSIONS).doc();
-
-  updatedCollections.push('sessions');
+    : undefined;
 
   const lapRef = firestore.collection(LAPS).doc();
-  const trackRef = firestore.collection('tracks').doc(track);
-
-  const trackUpdate = trackRef.get().then(async trackSnap => {
-    if (!trackSnap.exists) {
-      return trackRef.set({name: track});
-    }
-  });
-  const carRef = firestore.collection('cars').doc(car);
-  const carUpdate = carRef.get().then(carSnap => {
-    if (!carSnap.exists) {
-      return carRef.set({name: car});
-    }
-  });
-
   const driverRef = firestore.collection('drivers').doc(driver);
-  const driverUpdate = driverRef.get().then(dSnap => {
-    if (!dSnap.exists) {
-      return driverRef.set({name: driver});
-    }
-  });
-
-  const detailUpdates = Promise.all([trackUpdate, carUpdate, driverUpdate]);
 
   const now = Date.now();
 
@@ -134,7 +111,7 @@ export const handleLap = onRequest(async (request, response) => {
     lapTimestamp,
     ...lapDetails,
     sessionData,
-    sessionId: sessionRef.id,
+    sessionId: sessionRef?.id,
     expiresAt: null,
   };
 
@@ -150,19 +127,16 @@ export const handleLap = onRequest(async (request, response) => {
     );
 
     // Handle session Update
-    if (!receivedSessionId) {
+    if (sessionRef) {
       const now = Date.now();
       const expiresAt = new Date(now + 24 * 60 * 60 * 1000);
 
       // First lap of a new session - expires by default
-      transaction.set(sessionRef, {
-        ...sessionData,
+      transaction.update(sessionRef, {
         expiresAt,
       });
     }
   });
-
-  await detailUpdates.catch(() => {});
 
   const bestAttemptsRef = driverRef.collection(track).doc(car);
   if (canBeFastestLap) {
@@ -174,8 +148,40 @@ export const handleLap = onRequest(async (request, response) => {
     );
   }
 
-  response.send({lapId: lapRef.id, sessionId: sessionRef.id});
+  response.send({lapId: lapRef.id, sessionId: sessionRef?.id});
   return;
+});
+
+export const createSession = onRequest(async (request, response) => {
+  const createSessionBody = (await request.body) as SessionData;
+
+  const detailBatch = firestore.batch();
+
+  const EARLY_EXPIRY_MINUTES = 15;
+  const earlyExpiresAt = new Date(
+    Date.now() + 1000 * 60 * EARLY_EXPIRY_MINUTES,
+  );
+
+  const trackRef = firestore.collection('tracks').doc(createSessionBody.track);
+  detailBatch.set(trackRef, {}, {merge: true});
+
+  const carRef = firestore.collection('cars').doc(createSessionBody.car);
+  detailBatch.set(carRef, {}, {merge: true});
+
+  const driverRef = firestore
+    .collection('drivers')
+    .doc(createSessionBody.driver);
+  detailBatch.set(driverRef, {}, {merge: true});
+
+  const sessionRef = firestore.collection(SESSIONS).doc();
+  detailBatch.set(sessionRef, {
+    expiresAt: earlyExpiresAt,
+    ...createSessionBody,
+  });
+
+  await detailBatch.commit();
+
+  response.send({sessionId: sessionRef.id});
 });
 
 export const closeSession = onRequest(async (request, response) => {

@@ -50,6 +50,7 @@ interface SessionLapDetail {
   isValid: boolean;
   lapTime?: string;
 }
+
 export interface CloseSessionPayload {
   sessionId: string;
   lapData: SessionLapDetail[];
