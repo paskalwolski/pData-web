@@ -4,11 +4,11 @@ const EXPIRY_HOURS = 24;
 
 const handleFastestLap = async (
   firestore: FirebaseFirestore.Firestore,
+  transaction: FirebaseFirestore.Transaction,
   fastestLapsRef: FirebaseFirestore.DocumentReference,
   lapRef: FirebaseFirestore.DocumentReference,
   lapTime: string,
 ) => {
-  const batch = firestore.batch();
   const now = Date.now();
   const expiresAt = new Date(now + EXPIRY_HOURS * 60 * 60 * 1000);
 
@@ -28,7 +28,7 @@ const handleFastestLap = async (
       },
     ].sort((a, b) => parseFloat(a.lapTime) - parseFloat(b.lapTime));
     // Store best lap with unset expiresAt
-    batch.update(fastestLapsRef, {laps: updatedLaps});
+    transaction.update(fastestLapsRef, {laps: updatedLaps});
   } else {
     // Check to replace slowest best-3 lap
     const slowest = laps.reduce((prev, curr) =>
@@ -44,16 +44,15 @@ const handleFastestLap = async (
       const knockedOutRef = firestore
         .collection('test_laps')
         .doc(slowest.lapId);
-      batch.update(knockedOutRef, {
+      transaction.update(knockedOutRef, {
         expiresAt,
       });
-      batch.update(fastestLapsRef, {laps: updatedLaps});
+      transaction.update(fastestLapsRef, {laps: updatedLaps});
     } else {
       // New lap doesn't make it - set it to expire
-      batch.update(lapRef, {expiresAt});
+      transaction.update(lapRef, {expiresAt});
     }
   }
-  await batch.commit();
 };
 
 export {handleFastestLap};

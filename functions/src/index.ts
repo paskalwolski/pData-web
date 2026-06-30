@@ -123,35 +123,9 @@ export const handleLap = onRequest(async (request, response) => {
     expiresAt: null,
   };
 
-  // Bundle lap writes in a single transaction
-  await firestore.runTransaction(async transaction => {
-    if (sessionRef) {
-      // Add the lap meta to the session
-      const sessionDoc = (await sessionRef.get()).data();
-      const currentSessionLaps = sessionDoc?.lapData ?? [];
-      const newLapDetail: SessionLapDetail = {
-        id: lapRef?.id,
-        isPit: lapDocumentData.isPit,
-        isValid: lapDocumentData.isValid,
-        lapTime: lapDocumentData.lapTime,
-        lapNumber: lapDocumentData.lapNumber,
-      };
-      transaction.update(sessionRef, {
-        lapData: [...currentSessionLaps, newLapDetail],
-      });
-
-      if (lapRef && sessionType !== 'HOTLAP') {
-        const now = Date.now();
-        const expiresAt = new Date(now + 24 * 60 * 60 * 1000);
-
-        transaction.update(sessionRef, {
-          expiresAt,
-        });
-      }
-    }
-
+  if (lapRef) {
     // Store lap data + telemetry for valid laps
-    if (lapRef) {
+    await firestore.runTransaction(async transaction => {
       transaction.set(lapRef, lapDocumentData);
       (Object.entries(lapData) as [string, TelemetryDataSet][]).map(
         ([telemetryKey, telemetryData]) =>
@@ -159,19 +133,45 @@ export const handleLap = onRequest(async (request, response) => {
             data: telemetryData,
           }),
       );
+
+      // Update the driver meta collection for best laps
+      const bestAttemptsRef = driverRef.collection(track).doc(car);
+
+      await handleFastestLap(
+        firestore,
+        transaction,
+        bestAttemptsRef,
+        lapRef,
+        lapDetails.lapTime,
+      );
+    });
+  }
+
+  if (sessionRef) {
+    // Add the lap meta to the session
+    const batch = firestore.batch();
+    const sessionDoc = (await sessionRef.get()).data();
+    const currentSessionLaps = sessionDoc?.lapData ?? [];
+    const newLapDetail: SessionLapDetail = {
+      id: lapRef?.id,
+      isPit: lapDocumentData.isPit,
+      isValid: lapDocumentData.isValid,
+      lapTime: lapDocumentData.lapTime,
+      lapNumber: lapDocumentData.lapNumber,
+    };
+    batch.update(sessionRef, {
+      lapData: [...currentSessionLaps, newLapDetail],
+    });
+
+    if (lapRef && sessionType !== 'HOTLAP') {
+      const now = Date.now();
+      const expiresAt = new Date(now + 24 * 60 * 60 * 1000);
+
+      batch.update(sessionRef, {
+        expiresAt,
+      });
     }
-  });
-
-  if (lapRef) {
-    // Update the driver meta collection for best laps
-    const bestAttemptsRef = driverRef.collection(track).doc(car);
-
-    await handleFastestLap(
-      firestore,
-      bestAttemptsRef,
-      lapRef,
-      lapDetails.lapTime,
-    );
+    await batch.commit();
   }
 
   response.send({lapId: lapRef?.id, sessionId: sessionRef?.id});
