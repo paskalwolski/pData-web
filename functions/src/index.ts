@@ -218,7 +218,6 @@ export const closeSession = onRequest(async (request, response) => {
     response.status(400).send('No session ID provided');
     return;
   }
-  const batch = firestore.batch();
 
   const sessionRef = firestore
     .collection(SESSIONS)
@@ -229,19 +228,20 @@ export const closeSession = onRequest(async (request, response) => {
     .where('sessionId', '==', sessionRef.id)
     .orderBy('lapTime')
     .get();
-  if (sessionLapRefs.docs.length === 0) {
+  const validLaps = sessionLapRefs.docs.length;
+  if (validLaps === 0) {
     // If we have no stored valid laps, drop the session immediately
-    batch.delete(sessionRef);
+    await sessionRef.delete();
   } else {
     const bestLap = sessionLapRefs.docs[0];
 
-    batch.update(sessionRef, {
+    await sessionRef.update(sessionRef, {
       ...closeSessionBody,
       bestLapTime: bestLap.data().lapTime,
+      validLaps,
     });
   }
 
-  await batch.commit();
   response.send({sessionId: sessionRef.id});
 });
 
