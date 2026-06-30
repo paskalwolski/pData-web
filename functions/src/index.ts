@@ -3,13 +3,19 @@ import {onSchedule} from 'firebase-functions/v2/scheduler';
 
 // The Firebase Admin SDK to access Firestore.
 import {initializeApp as initializeApp} from 'firebase-admin/app';
-import {FieldValue, getFirestore} from 'firebase-admin/firestore';
+import {
+  DocumentReference,
+  FieldValue,
+  getFirestore,
+} from 'firebase-admin/firestore';
 import {getStorage} from 'firebase-admin/storage';
 import {
   CloseSessionPayload,
   LapPayload,
   SaveSessionPayload,
   SessionData,
+  SessionDetail,
+  SessionLapDetail,
   TelemetryDataSet,
   TrackPayload,
 } from './types';
@@ -87,22 +93,23 @@ export const handleLap = onRequest(async (request, response) => {
   const lapPayload: LapPayload = payload as LapPayload;
   const {sessionData, ...lapFields} = lapPayload;
 
-  const {driver, car, track, sessionType, trackSession} = sessionData;
-  const canBeBestSession = trackSession || sessionType === 'RACE';
+  const {driver, car, track, sessionType} = sessionData;
 
   const {lapData, ...lapDetails} = lapFields;
 
-  const canBeFastestLap = lapDetails.isValid && !lapDetails.isPit;
+  const isValidLap = lapDetails.isValid && !lapDetails.isPit;
 
   // Handle session ID
   const receivedSessionId = lapPayload.sessionId;
   // TODO: Add flag to ignore session creation
   // Get the sessionRef if it exists or not
   const sessionRef = receivedSessionId
-    ? firestore.collection(SESSIONS).doc(receivedSessionId)
+    ? (firestore
+        .collection(SESSIONS)
+        .doc(receivedSessionId) as DocumentReference<SessionDetail>)
     : undefined;
 
-  const lapRef = firestore.collection(LAPS).doc();
+  const lapRef = isValidLap ? firestore.collection(LAPS).doc() : undefined;
   const driverRef = firestore.collection('drivers').doc(driver);
 
   const now = Date.now();
@@ -116,31 +123,49 @@ export const handleLap = onRequest(async (request, response) => {
     expiresAt: null,
   };
 
-  // Prepare for lap write and Fastest Lap Update
+  // Bundle lap writes in a single transaction
   await firestore.runTransaction(async transaction => {
-    // Always store lap data + telemetry
-    transaction.set(lapRef, lapDocumentData);
-    (Object.entries(lapData) as [string, TelemetryDataSet][]).map(
-      ([telemetryKey, telemetryData]) =>
-        transaction.set(lapRef.collection('telemetry').doc(telemetryKey), {
-          data: telemetryData,
-        }),
-    );
-
-    // Handle session Update - leave HOTLAP as quick-expiring
-    if (sessionRef && sessionType !== 'HOTLAP') {
-      const now = Date.now();
-      const expiresAt = new Date(now + 24 * 60 * 60 * 1000);
-
-      // First lap of a new session - expires by default
+    if (sessionRef) {
+      // Add the lap meta to the session
+      const sessionDoc = (await sessionRef.get()).data();
+      const currentSessionLaps = sessionDoc?.lapData ?? [];
+      const newLapDetail: SessionLapDetail = {
+        id: lapRef?.id,
+        isPit: lapDocumentData.isPit,
+        isValid: lapDocumentData.isValid,
+        lapTime: lapDocumentData.lapTime,
+        lapNumber: lapDocumentData.lapNumber,
+      };
       transaction.update(sessionRef, {
-        expiresAt,
+        lapData: [...currentSessionLaps, newLapDetail],
       });
+
+      if (lapRef && sessionType !== 'HOTLAP') {
+        const now = Date.now();
+        const expiresAt = new Date(now + 24 * 60 * 60 * 1000);
+
+        transaction.update(sessionRef, {
+          expiresAt,
+        });
+      }
+    }
+
+    // Store lap data + telemetry for valid laps
+    if (lapRef) {
+      transaction.set(lapRef, lapDocumentData);
+      (Object.entries(lapData) as [string, TelemetryDataSet][]).map(
+        ([telemetryKey, telemetryData]) =>
+          transaction.set(lapRef.collection('telemetry').doc(telemetryKey), {
+            data: telemetryData,
+          }),
+      );
     }
   });
 
-  const bestAttemptsRef = driverRef.collection(track).doc(car);
-  if (canBeFastestLap) {
+  if (lapRef) {
+    // Update the driver meta collection for best laps
+    const bestAttemptsRef = driverRef.collection(track).doc(car);
+
     await handleFastestLap(
       firestore,
       bestAttemptsRef,
@@ -149,7 +174,7 @@ export const handleLap = onRequest(async (request, response) => {
     );
   }
 
-  response.send({lapId: lapRef.id, sessionId: sessionRef?.id});
+  response.send({lapId: lapRef?.id, sessionId: sessionRef?.id});
   return;
 });
 
@@ -178,6 +203,7 @@ export const createSession = onRequest(async (request, response) => {
   detailBatch.set(sessionRef, {
     sessionId: sessionRef.id,
     expiresAt: earlyExpiresAt,
+    lapData: [],
     ...createSessionBody,
   });
 
@@ -192,11 +218,29 @@ export const closeSession = onRequest(async (request, response) => {
     response.status(400).send('No session ID provided');
     return;
   }
+  const batch = firestore.batch();
+
   const sessionRef = firestore
     .collection(SESSIONS)
     .doc(closeSessionBody.sessionId);
-  const batch = firestore.batch();
-  batch.update(sessionRef, {...closeSessionBody});
+
+  const sessionLapRefs = await firestore
+    .collection(LAPS)
+    .where('sessionId', '==', sessionRef.id)
+    .orderBy('lapTime')
+    .get();
+  if (sessionLapRefs.docs.length === 0) {
+    // If we have no stored valid laps, drop the session immediately
+    batch.delete(sessionRef);
+  } else {
+    const bestLap = sessionLapRefs.docs[0];
+
+    batch.update(sessionRef, {
+      ...closeSessionBody,
+      bestLapTime: bestLap.data().lapTime,
+    });
+  }
+
   await batch.commit();
   response.send({sessionId: sessionRef.id});
 });

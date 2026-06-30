@@ -14,6 +14,11 @@ export interface SessionData {
   trackSession: boolean;
 }
 
+export interface SessionDetail extends SessionData {
+  lapData: SessionLapDetail[];
+  bestLapTime: number;
+}
+
 export interface LapPayload {
   sessionId?: string;
   lapNumber: number;
@@ -44,10 +49,11 @@ export interface SessionReturn {
   lapId: string;
 }
 
-interface SessionLapDetail {
-  id: string;
+export interface SessionLapDetail {
+  id?: string;
   isPit: boolean;
   isValid: boolean;
+  lapNumber: number;
   lapTime?: string;
 }
 
