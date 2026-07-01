@@ -28,7 +28,7 @@ const handleFastestLap = async (
       },
     ].sort((a, b) => parseFloat(a.lapTime) - parseFloat(b.lapTime));
     // Store best lap with unset expiresAt
-    transaction.update(fastestLapsRef, {laps: updatedLaps});
+    transaction.set(fastestLapsRef, {laps: updatedLaps}, {merge: true});
   } else {
     // Check to replace slowest best-3 lap
     const slowest = laps.reduce((prev, curr) =>
