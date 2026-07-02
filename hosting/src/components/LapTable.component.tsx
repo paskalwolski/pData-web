@@ -12,8 +12,7 @@ import type { LapData } from "../types";
 import { formatDuration } from "../helpers/formatDuration";
 import { Timestamp } from "firebase/firestore";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { TbClockX } from "react-icons/tb";
-import { Box, Tooltip, useTheme } from "@mui/material";
+import { Box, Tooltip } from "@mui/material";
 import { GridSortModel } from "@mui/x-data-grid";
 import { TableHeaderFilter } from "./TableHeaderFilter";
 import {
@@ -21,6 +20,7 @@ import {
     useFiltering,
 } from "../hooks/FilterContext/useFiltering";
 import { useMetaName } from "../hooks/CTDContext/useCollectionMeta";
+import { ExpiresIcon } from "./ExpiresIcon.component";
 
 const getRowId = (row: LapData) => row.lapId;
 
@@ -42,8 +42,6 @@ const LapTableDataGrid = ({
     defaultSortBy = "date",
     strictFilterItems,
 }: Props) => {
-    const { palette } = useTheme();
-
     const { getTrackName } = useMetaName();
 
     const [pagination, setPagination] = useState<GridPaginationModel>({
@@ -176,17 +174,13 @@ const LapTableDataGrid = ({
                             alignItems="center"
                             height="stretch"
                         >
-                            <Tooltip
-                                title={`Automatically expires on ${row.expiresAt.toDate().toLocaleString("en-fr", { dateStyle: "short", timeStyle: "short" })}`}
-                            >
-                                <TbClockX color={palette.warning.main} />
-                            </Tooltip>
+                            <ExpiresIcon expiresAt={row.expiresAt} />
                         </Box>
                     ),
                 ...CUSTOM_HEADER,
             },
         ],
-        [getTrackName, palette.warning.main],
+        [getTrackName],
     );
 
     return (

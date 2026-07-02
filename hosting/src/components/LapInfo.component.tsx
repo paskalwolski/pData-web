@@ -1,16 +1,11 @@
-import { Box, Stack } from "@mui/material";
+import { Stack } from "@mui/material";
 import { LapData } from "../types";
 import { InfoCardValue } from "./InfoCardValue.component";
-import {
-    TbArrowCapsule,
-    TbCar,
-    TbClockX,
-    TbHelmet,
-    TbRoad,
-} from "react-icons/tb";
+import { TbArrowCapsule, TbCar, TbHelmet, TbRoad } from "react-icons/tb";
 import { BiStopwatch } from "react-icons/bi";
 import { formatDuration } from "../helpers/formatDuration";
 import { useMetaName } from "../hooks/CTDContext/useCollectionMeta";
+import { ExpiresIcon } from "./ExpiresIcon.component";
 
 interface Props {
     lapData: LapData;
@@ -37,9 +32,7 @@ const LapInfo = ({
                     value={formatDuration(lapData.lapTime)}
                 />
                 {lapData.expiresAt && (
-                    <Box pr={1}>
-                        <TbClockX />
-                    </Box>
+                    <ExpiresIcon expiresAt={lapData.expiresAt} />
                 )}
             </Stack>
             <InfoCardValue

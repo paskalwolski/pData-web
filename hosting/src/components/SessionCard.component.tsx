@@ -1,16 +1,10 @@
-import { Box, Card, CardActionArea, Stack } from "@mui/material";
+import { Card, CardActionArea, Stack } from "@mui/material";
 import { SessionData } from "../types";
 import { useCallback } from "react";
 import { InfoCardValue } from "./InfoCardValue.component";
-import {
-    TbArrowCapsule,
-    TbCar,
-    TbClockX,
-    TbHelmet,
-    TbRoad,
-    TbTag,
-} from "react-icons/tb";
+import { TbArrowCapsule, TbCar, TbHelmet, TbRoad, TbTag } from "react-icons/tb";
 import { useMetaName } from "../hooks/CTDContext/useCollectionMeta";
+import { ExpiresIcon } from "./ExpiresIcon.component";
 
 interface Props {
     sessionData: SessionData;
@@ -26,7 +20,7 @@ export const SessionCard = ({ sessionData, onClick }: Props) => {
     const { getDriverName, getTrackName, getCarName } = useMetaName();
 
     return (
-        <Card elevation={3} sx={{ m: 1, minWidth: "200px", maxWidth: 0.2 }}>
+        <Card elevation={3} sx={{ m: 1, minWidth: "300px" }}>
             <CardActionArea onClick={handleClick}>
                 <Stack flex={1} p={1}>
                     <Stack
@@ -39,9 +33,7 @@ export const SessionCard = ({ sessionData, onClick }: Props) => {
                             value={sessionData.sessionType}
                         />
                         {sessionData.expiresAt && (
-                            <Box pr={1}>
-                                <TbClockX />
-                            </Box>
+                            <ExpiresIcon expiresAt={sessionData.expiresAt} />
                         )}
                     </Stack>
                     <InfoCardValue
