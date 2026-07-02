@@ -10,12 +10,19 @@ import {
 import { useLatestLaps } from "../hooks/useLaps";
 import { useLocation } from "wouter";
 import { LapInfo } from "../components/LapInfo.component";
+import { useLatestSessions } from "../hooks/useSessions";
+import { SessionCard } from "../components/SessionCard.component";
 
 const Homepage = () => {
     const [latestLaps, isLoadingLatestLaps] = useLatestLaps({
         fetchLimit: 10,
         fastLapsOnly: true,
     });
+
+    const [latestSessions, isLoadingLatestSessions] = useLatestSessions({
+        fetchLimit: 10,
+    });
+
     const [, navigate] = useLocation();
     const handleSelectLap = (lapId: string) => {
         navigate(`/laps/${lapId}`);
@@ -66,7 +73,27 @@ const Homepage = () => {
                     <Typography variant="h5">Latest Sessions</Typography>
                 </Box>
                 <Divider />
-                <Typography variant="body2">No available sessions</Typography>
+                {isLoadingLatestSessions ? (
+                    <Typography>Loading Sessions...</Typography>
+                ) : latestSessions ? (
+                    <Stack direction="row" overflow="auto" spacing={1} px={1}>
+                        {latestSessions.map((s) => (
+                            <Box
+                                display="flex"
+                                flex={1}
+                                minWidth={"0.2"}
+                                maxWidth={"200px"}
+                                key={`lap-${s.sessionId}`}
+                            >
+                                <SessionCard sessionData={s} />
+                            </Box>
+                        ))}
+                    </Stack>
+                ) : (
+                    <Typography variant="body2">
+                        No available sessions
+                    </Typography>
+                )}
             </Paper>
         </Stack>
     );

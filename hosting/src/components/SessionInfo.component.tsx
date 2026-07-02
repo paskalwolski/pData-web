@@ -1,5 +1,5 @@
 import { Box, Grid } from "@mui/material";
-import { SessionData } from "../types";
+import { LapSessionData } from "../types";
 import {
     TbArrowCapsule,
     TbCalendar,
@@ -19,7 +19,7 @@ const VARIANT_COLUMN_MAPPING: Record<Variant, number> = {
 };
 
 interface SessionInfoCardProps {
-    sessionData: SessionData;
+    sessionData: LapSessionData;
     isComparison?: boolean;
     variant?: Variant;
 }

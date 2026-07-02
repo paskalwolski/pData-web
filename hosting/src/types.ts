@@ -2,13 +2,12 @@ import { Timestamp } from "firebase/firestore";
 
 export type SessionType = "RACE" | "PRACTICE" | "QUALIFYING" | "HOTLAP";
 
-export interface SessionData {
+export interface LapSessionData {
     driver: string;
     car: string;
     track: string;
     sessionTime: string;
     sessionType: SessionType;
-    trackSession: boolean;
 }
 
 export interface LapData {
@@ -20,7 +19,19 @@ export interface LapData {
     isValid: boolean;
     isPit: boolean;
     expiresAt?: Timestamp;
-    sessionData: SessionData;
+    sessionData: LapSessionData;
+}
+
+export interface SessionData {
+    sessionId: string;
+    driver: string;
+    car: string;
+    track: string;
+    sessionTime: string;
+    sessionType: SessionType;
+    expiresAt: Timestamp | null;
+    laps: number;
+    validLaps: number;
 }
 
 export type TelemetryDataSet = Array<number | undefined>;
