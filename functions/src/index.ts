@@ -235,7 +235,7 @@ export const closeSession = onRequest(async (request, response) => {
   } else {
     const bestLap = sessionLapRefs.docs[0];
 
-    await sessionRef.update(sessionRef, {
+    await sessionRef.update({
       ...closeSessionBody,
       bestLapTime: bestLap.data().lapTime,
       validLaps,
