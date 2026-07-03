@@ -3,6 +3,9 @@ import { SessionData } from "../types";
 import {
     collection,
     CollectionReference,
+    doc,
+    DocumentSnapshot,
+    getDoc,
     getDocs,
     limit,
     orderBy,
@@ -32,7 +35,7 @@ const useLatestSessions = ({
             limit(fetchLimit ?? 10),
         ];
 
-        async function getMeta() {
+        async function getLatestSessions() {
             const q = query(targetCollection, ...queryConstraints);
             const docs = await getDocs(q).then((d) => d.docs);
             if (!cancelled) {
@@ -44,7 +47,7 @@ const useLatestSessions = ({
                 setLoading(false);
             }
         }
-        getMeta();
+        getLatestSessions();
 
         return () => {
             cancelled = true;
@@ -54,4 +57,29 @@ const useLatestSessions = ({
     return [sessions, loading] as const;
 };
 
-export { useLatestSessions };
+const useSession = (sessionId: string) => {
+    const [session, setSession] = useState<SessionData>();
+    const [loading, setLoading] = useState(true);
+    useEffect(() => {
+        let cancelled = false;
+
+        async function getSession() {
+            const snapshot = (await getDoc(
+                doc(db, "test_sessions", sessionId),
+            )) as DocumentSnapshot<SessionData>;
+            if (!cancelled && snapshot.exists) {
+                setSession(snapshot.data());
+                setLoading(false);
+            }
+        }
+        getSession();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [sessionId]);
+
+    return [session, loading] as const;
+};
+
+export { useLatestSessions, useSession };

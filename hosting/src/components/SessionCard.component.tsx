@@ -10,7 +10,7 @@ import { BiStopwatch } from "react-icons/bi";
 
 interface Props {
     sessionData: SessionData;
-    onClick?: (sessionId: string) => undefined;
+    onClick?: (sessionId: string) => void;
 }
 
 export const SessionCard = ({ sessionData, onClick }: Props) => {

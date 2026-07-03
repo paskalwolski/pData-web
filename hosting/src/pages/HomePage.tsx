@@ -28,6 +28,9 @@ const Homepage = () => {
         navigate(`/laps/${lapId}`);
     };
 
+    const handleSelectSession = (sessionId: string) =>
+        navigate(`/sessions/${sessionId}`);
+
     return (
         <Stack gap={1} my={1}>
             <Paper>
@@ -83,7 +86,10 @@ const Homepage = () => {
                                 flex={1}
                                 key={`lap-${s.sessionId}`}
                             >
-                                <SessionCard sessionData={s} />
+                                <SessionCard
+                                    sessionData={s}
+                                    onClick={handleSelectSession}
+                                />
                             </Box>
                         ))}
                     </Stack>

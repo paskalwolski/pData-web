@@ -6,6 +6,7 @@ import { Homepage } from "./pages/HomePage";
 import { LapDataPage } from "./pages/LapDataPage";
 import { LapSelectorPage } from "./pages/LapSelectorPage";
 import { useCTDContext } from "./hooks/CTDContext/useCTDContext";
+import { SessionDataPage } from "./pages/SessionDataPage";
 
 export default function App() {
     const { loading } = useCTDContext();
@@ -41,6 +42,11 @@ export default function App() {
                         )}
                     </Route>
                     <Route path="/laps" component={LapSelectorPage} />
+                    <Route path="/sessions/:sessionId">
+                        {({ sessionId }: { sessionId: string }) => (
+                            <SessionDataPage sessionId={sessionId} />
+                        )}
+                    </Route>
                     <Route path="/" component={Homepage} />
                 </Switch>
             </Container>
