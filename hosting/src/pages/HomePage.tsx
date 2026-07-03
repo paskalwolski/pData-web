@@ -76,13 +76,11 @@ const Homepage = () => {
                 {isLoadingLatestSessions ? (
                     <Typography>Loading Sessions...</Typography>
                 ) : latestSessions ? (
-                    <Stack direction="row" overflow="auto" spacing={1} px={1}>
+                    <Stack direction="row" overflow="auto" spacing={1} p={1}>
                         {latestSessions.map((s) => (
                             <Box
                                 display="flex"
                                 flex={1}
-                                minWidth={"0.2"}
-                                maxWidth={"200px"}
                                 key={`lap-${s.sessionId}`}
                             >
                                 <SessionCard sessionData={s} />

@@ -2,9 +2,11 @@ import { Card, CardActionArea, Stack } from "@mui/material";
 import { SessionData } from "../types";
 import { useCallback } from "react";
 import { InfoCardValue } from "./InfoCardValue.component";
-import { TbArrowCapsule, TbCar, TbHelmet, TbRoad, TbTag } from "react-icons/tb";
+import { TbArrowCapsule, TbCar, TbHelmet, TbRoad } from "react-icons/tb";
 import { useMetaName } from "../hooks/CTDContext/useCollectionMeta";
 import { ExpiresIcon } from "./ExpiresIcon.component";
+import { formatDuration } from "../helpers/formatDuration";
+import { BiStopwatch } from "react-icons/bi";
 
 interface Props {
     sessionData: SessionData;
@@ -20,30 +22,22 @@ export const SessionCard = ({ sessionData, onClick }: Props) => {
     const { getDriverName, getTrackName, getCarName } = useMetaName();
 
     return (
-        <Card elevation={3} sx={{ m: 1, minWidth: "300px" }}>
+        <Card elevation={3} sx={{ minWidth: "300px" }}>
             <CardActionArea onClick={handleClick}>
-                <Stack flex={1} p={1}>
+                <Stack flex={1} py={1}>
                     <Stack
                         direction="row"
                         alignItems="center"
                         justifyContent="space-between"
                     >
                         <InfoCardValue
-                            Icon={TbTag}
-                            value={sessionData.sessionType}
+                            Icon={TbArrowCapsule}
+                            value={`${sessionData.sessionType} - ${sessionData.validLaps}/${sessionData.lapCount} laps`}
                         />
                         {sessionData.expiresAt && (
                             <ExpiresIcon expiresAt={sessionData.expiresAt} />
                         )}
                     </Stack>
-                    <InfoCardValue
-                        Icon={TbHelmet}
-                        value={getDriverName(sessionData.driver)}
-                    />
-                    <InfoCardValue
-                        Icon={TbArrowCapsule}
-                        value={`${sessionData.validLaps ?? "?"} / ${sessionData.laps ?? "?"}`}
-                    />
                     <InfoCardValue
                         Icon={TbRoad}
                         value={getTrackName(sessionData.track)}
@@ -51,6 +45,14 @@ export const SessionCard = ({ sessionData, onClick }: Props) => {
                     <InfoCardValue
                         Icon={TbCar}
                         value={getCarName(sessionData.car)}
+                    />
+                    <InfoCardValue
+                        Icon={BiStopwatch}
+                        value={formatDuration(sessionData.bestLapTime)}
+                    />
+                    <InfoCardValue
+                        Icon={TbHelmet}
+                        value={getDriverName(sessionData.driver)}
                     />
                 </Stack>
             </CardActionArea>

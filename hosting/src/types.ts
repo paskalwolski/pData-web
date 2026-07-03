@@ -30,8 +30,9 @@ export interface SessionData {
     sessionTime: string;
     sessionType: SessionType;
     expiresAt: Timestamp | null;
-    laps: number;
+    lapCount: number;
     validLaps: number;
+    bestLapTime: number;
 }
 
 export type TelemetryDataSet = Array<number | undefined>;
