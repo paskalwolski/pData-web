@@ -22,17 +22,18 @@ export const SessionCard = ({ sessionData, onClick }: Props) => {
     const { getDriverName, getTrackName, getCarName } = useMetaName();
 
     return (
-        <Card elevation={3} sx={{ minWidth: "300px" }}>
+        <Card elevation={3} sx={{ width: "300px" }}>
             <CardActionArea onClick={handleClick}>
                 <Stack flex={1} py={1}>
                     <Stack
                         direction="row"
                         alignItems="center"
                         justifyContent="space-between"
+                        pr={1}
                     >
                         <InfoCardValue
                             Icon={TbArrowCapsule}
-                            value={`${sessionData.sessionType} - ${sessionData.validLaps}/${sessionData.lapCount} laps`}
+                            value={`${sessionData.sessionType} - ${sessionData?.validLaps ?? "?"}/${sessionData.lapCount ?? "?"} laps`}
                         />
                         {sessionData.expiresAt && (
                             <ExpiresIcon expiresAt={sessionData.expiresAt} />
