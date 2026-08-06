@@ -81,7 +81,7 @@ const TrackDisplay = ({
     ]);
 
     const effectiveDimensions = useMemo(
-        () => ({ ...fallbackDimensions, ...(trackData.mapData ?? {}) }),
+        () => ({ ...fallbackDimensions, ...(trackData?.mapData ?? {}) }),
         [fallbackDimensions, trackData],
     );
 
