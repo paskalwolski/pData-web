@@ -1,6 +1,7 @@
 import { createTheme } from "@mui/material";
+import { PaletteColor, PaletteColorOptions } from "@mui/material/styles";
 
-const theme = createTheme({
+let theme = createTheme({
     palette: {
         mode: "dark",
         primary: {
@@ -20,5 +21,58 @@ const theme = createTheme({
         fontFamily: "Inter",
     },
 });
+
+theme = createTheme(theme, {
+    palette: {
+        green: theme.palette.augmentColor({
+            color: {
+                main: "#00c853",
+            },
+            name: "green",
+        }),
+        blue: theme.palette.augmentColor({
+            color: {
+                main: "#3066bc",
+            },
+            name: "blue",
+        }),
+        yellow: theme.palette.augmentColor({
+            color: {
+                main: "#ffe44d",
+            },
+            name: "yellow",
+        }),
+        red: theme.palette.augmentColor({
+            color: {
+                main: "#dc3b3b",
+            },
+            name: "red",
+        }),
+        purple: theme.palette.augmentColor({
+            color: {
+                main: "#b8a1ec",
+            },
+            name: "purple",
+        }),
+    },
+});
+
+declare module "@mui/material/styles" {
+    interface Palette {
+        green: PaletteColor;
+        blue: PaletteColor;
+        yellow: PaletteColor;
+        red: PaletteColor;
+        purple: PaletteColor;
+    }
+
+    interface PaletteOptions {
+        green?: PaletteColorOptions;
+        blue?: PaletteColorOptions;
+        yellow?: PaletteColorOptions;
+        red?: PaletteColorOptions;
+        purple?: PaletteColorOptions;
+    }
+}
 
 export default theme;

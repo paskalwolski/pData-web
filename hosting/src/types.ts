@@ -22,6 +22,14 @@ export interface LapData {
     sessionData: LapSessionData;
 }
 
+export interface LapInfo {
+    id?: string;
+    isPit: boolean;
+    isValid: boolean;
+    lapNumber: number;
+    lapTime: number;
+}
+
 export interface SessionData {
     sessionId: string;
     driver: string;
@@ -33,6 +41,7 @@ export interface SessionData {
     lapCount: number;
     validLaps: number;
     bestLapTime: number;
+    lapData: LapInfo[];
 }
 
 export type TelemetryDataSet = Array<number | undefined>;
