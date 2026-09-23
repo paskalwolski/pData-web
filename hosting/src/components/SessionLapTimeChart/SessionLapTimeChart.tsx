@@ -4,6 +4,7 @@ import { Box, Paper, Stack, Typography, useTheme } from "@mui/material";
 import { useContainerSize } from "../../hooks/useContainerSize";
 import { Line } from "../Charts";
 import { LapInfo } from "../../types";
+import { Scatter } from "../Charts";
 
 interface Props {
     laps: LapInfo[];
@@ -43,6 +44,12 @@ const SessionLapTimeChart = ({ laps }: Props) => {
                             yScale={yScale}
                             stepped
                             color={palette.primary.dark}
+                        />
+                        <Scatter
+                            data={data}
+                            xScale={xScale}
+                            yScale={yScale}
+                            color={palette.primary.light}
                         />
                     </svg>
                 </Box>
