@@ -1,7 +1,7 @@
 import { useTheme } from "@mui/material";
 import * as d3 from "d3";
 import React from "react";
-import { Line } from "../Line/Line.component";
+import { Line } from "../Charts";
 
 interface TelemetryLineProps {
     xScale: d3.ScaleLinear<number, number, never>;
@@ -23,7 +23,8 @@ const TelemetryLine = React.memo(
         const { palette } = useTheme();
 
         const resolvedColor =
-            color ?? (secondary ? palette.secondary.dark : palette.primary.dark);
+            color ??
+            (secondary ? palette.secondary.dark : palette.primary.dark);
 
         return (
             <Line

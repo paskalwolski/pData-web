@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import * as d3 from "d3";
 import { Box, Paper, Stack, Typography, useTheme } from "@mui/material";
 import { useContainerSize } from "../../hooks/useContainerSize";
-import { Line } from "../Line/Line.component";
+import { Line } from "../Charts";
 import { LapInfo } from "../../types";
 
 interface Props {
