@@ -1,6 +1,7 @@
 import { useTheme } from "@mui/material";
 import * as d3 from "d3";
-import React, { useMemo } from "react";
+import React from "react";
+import { Line } from "../Line/Line.component";
 
 interface TelemetryLineProps {
     xScale: d3.ScaleLinear<number, number, never>;
@@ -21,31 +22,17 @@ const TelemetryLine = React.memo(
     }: TelemetryLineProps) => {
         const { palette } = useTheme();
 
-        const resolvedColor = color
-            ? color
-            : secondary
-              ? palette.secondary.dark
-              : palette.primary.dark;
-
-        const line = useMemo(() => {
-            let d = d3
-                .line<number | undefined>()
-                .defined((d) => d !== undefined && d !== null)
-                .x((_, i) => xScale(i))
-                .y((d) => yScale(d as number));
-            if (!stepped) {
-                d = d.curve(d3.curveCatmullRom);
-            }
-            return d(data);
-        }, [data, stepped, xScale, yScale]);
+        const resolvedColor =
+            color ?? (secondary ? palette.secondary.dark : palette.primary.dark);
 
         return (
-            <path
-                d={line}
-                stroke={resolvedColor}
-                strokeWidth={2}
-                strokeDasharray={secondary ? "5 2" : "0"}
-                fill="none"
+            <Line
+                data={data}
+                xScale={xScale}
+                yScale={yScale}
+                stepped={stepped}
+                color={resolvedColor}
+                dashed={secondary}
             />
         );
     },
