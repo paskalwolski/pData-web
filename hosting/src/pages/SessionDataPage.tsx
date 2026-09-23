@@ -2,6 +2,7 @@ import { Stack, Typography, useTheme } from "@mui/material";
 import { SessionInfo } from "../components/SessionInfo.component";
 import { useSession } from "../hooks/useSessions";
 import { SessionLapCard } from "../components/SessionLapCard.component";
+import SessionLapTimeChart from "../components/SessionLapTimeChart";
 
 interface Props {
     sessionId: string;
@@ -35,6 +36,7 @@ export const SessionDataPage = ({ sessionId }: Props) => {
                     );
                 })}
             </Stack>
+            <SessionLapTimeChart laps={sessionData.lapData} />
         </>
     );
 };
