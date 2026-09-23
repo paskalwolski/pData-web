@@ -1,17 +1,7 @@
-import {
-    Box,
-    Card,
-    CardActionArea,
-    Stack,
-    Typography,
-    useTheme,
-} from "@mui/material";
+import { Stack, Typography, useTheme } from "@mui/material";
 import { SessionInfo } from "../components/SessionInfo.component";
 import { useSession } from "../hooks/useSessions";
-import { InfoCardValue } from "../components/InfoCardValue.component";
-import { TbNumber } from "react-icons/tb";
-import { BiStopwatch } from "react-icons/bi";
-import { formatDuration } from "../helpers/formatDuration";
+import { SessionLapCard } from "../components/SessionLapCard.component";
 
 interface Props {
     sessionId: string;
@@ -37,38 +27,11 @@ export const SessionDataPage = ({ sessionId }: Props) => {
                                 : palette.green.main;
 
                     return (
-                        <Box display="flex" flex={1} key={`session-lap-${i}`}>
-                            <Card
-                                elevation={3}
-                                color={resolvedColor}
-                                sx={{
-                                    flex: 1,
-                                    border: 1,
-                                    borderColor: resolvedColor,
-                                }}
-                            >
-                                <CardActionArea
-                                    onClick={() =>
-                                        console.log("Lap", lap.lapNumber)
-                                    }
-                                >
-                                    <Box>
-                                        <Stack flex={1} my={0.5}>
-                                            <InfoCardValue
-                                                Icon={TbNumber}
-                                                value={lap.lapNumber}
-                                            />
-                                            <InfoCardValue
-                                                Icon={BiStopwatch}
-                                                value={formatDuration(
-                                                    lap.lapTime,
-                                                )}
-                                            />
-                                        </Stack>
-                                    </Box>
-                                </CardActionArea>
-                            </Card>
-                        </Box>
+                        <SessionLapCard
+                            key={`session-lap-${i}`}
+                            lap={lap}
+                            color={resolvedColor}
+                        />
                     );
                 })}
             </Stack>
