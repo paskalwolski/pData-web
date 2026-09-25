@@ -14,6 +14,7 @@ const SessionLapTimeChart = ({ laps }: Props) => {
     const { palette } = useTheme();
 
     const height = 200;
+    const padding = 8;
     const [containerRef, width] = useContainerSize();
 
     const data = useMemo(() => laps.map((lap) => lap.lapTime), [laps]);
@@ -34,12 +35,16 @@ const SessionLapTimeChart = ({ laps }: Props) => {
             d3
                 .scaleLinear()
                 .domain([0, data.length - 1])
-                .range([0, width]),
+                .range([padding, width - padding]),
         [width, data.length],
     );
 
     const yScale = useMemo(
-        () => d3.scaleLinear().domain(d3.extent(data)).range([height, 0]),
+        () =>
+            d3
+                .scaleLinear()
+                .domain(d3.extent(data))
+                .range([height - padding, padding]),
         [data],
     );
 
