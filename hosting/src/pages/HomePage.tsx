@@ -83,7 +83,6 @@ const Homepage = () => {
                         {latestSessions.map((s) => (
                             <Box
                                 display="flex"
-                                flex={1}
                                 key={`lap-${s.sessionId}`}
                             >
                                 <SessionCard
