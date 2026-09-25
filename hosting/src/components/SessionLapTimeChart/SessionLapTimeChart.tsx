@@ -7,7 +7,7 @@ import { LapInfo } from "../../types";
 import { Scatter } from "../Charts";
 
 interface Props {
-    laps: LapInfo[];
+    laps: (LapInfo & { color: string })[];
 }
 
 const SessionLapTimeChart = ({ laps }: Props) => {
@@ -17,6 +17,17 @@ const SessionLapTimeChart = ({ laps }: Props) => {
     const [containerRef, width] = useContainerSize();
 
     const data = useMemo(() => laps.map((lap) => lap.lapTime), [laps]);
+
+    const scatterData = useMemo(
+        () =>
+            laps.map((l, i) => ({
+                x: i,
+                y: l.lapTime,
+                z: l.color,
+            })),
+
+        [laps],
+    );
 
     const xScale = useMemo(
         () =>
@@ -46,10 +57,9 @@ const SessionLapTimeChart = ({ laps }: Props) => {
                             color={palette.primary.dark}
                         />
                         <Scatter
-                            data={data}
+                            data={scatterData}
                             xScale={xScale}
                             yScale={yScale}
-                            color={palette.primary.light}
                         />
                     </svg>
                 </Box>
