@@ -4,6 +4,8 @@ import { useAutocompleteOptions } from "../../hooks/CTDContext/useAutocompleteOp
 import { AutocompleteCollection, FieldNameCollectionMapping } from "./types";
 import React, { useCallback } from "react";
 
+const EMPTY_VALUE: [] = [];
+
 interface Props {
     fieldLabel: string;
     field: string;
@@ -35,7 +37,7 @@ export const FilterControl = ({
                     options={options}
                     filterSelectedOptions
                     multiple
-                    value={filter?.value ?? []}
+                    value={filter?.value ?? EMPTY_VALUE}
                     renderInput={(params) => (
                         <TextField {...params} label={fieldLabel} />
                     )}
