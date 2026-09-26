@@ -15,6 +15,9 @@ interface Props {
     secondaryTelemetryData?: TelemetryData;
 }
 
+// Pixel gap kept between the rendered track (and its mask image) and the container edges.
+const TRACK_PADDING = 24;
+
 const getPositionData = (data: TelemetryData) => {
     if (!data) return undefined;
     const { posX, posZ } = data;
@@ -148,9 +151,14 @@ const TrackDisplay = ({
 
             // Step 1 — How much would we need to scale the viewport to fill each axis exactly?
             //   If this scale were used alone, the viewport would touch that edge perfectly,
-            //   but might overflow the other axis.
-            const scaleToFillWidth = fullWidth / viewportDimensions.width;
-            const scaleToFillHeight = fullHeight / viewportDimensions.height;
+            //   but might overflow the other axis. Shrink the available area by TRACK_PADDING
+            //   on each side so the rendered track (and its mask image) sit inset from the
+            //   container edges instead of touching them.
+            const availableWidth = fullWidth - TRACK_PADDING * 2;
+            const availableHeight = fullHeight - TRACK_PADDING * 2;
+            const scaleToFillWidth = availableWidth / viewportDimensions.width;
+            const scaleToFillHeight =
+                availableHeight / viewportDimensions.height;
 
             // Step 2 — Use the smaller of the two scales.
             //   The smaller scale is always the one that is constrained (i.e. would overflow
