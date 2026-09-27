@@ -1,13 +1,15 @@
-const pedalFormatter = (v: number) => (v * 100).toFixed(0);
+export type TelemetryValueFormatter = (v: number) => string;
 
-const speedFormatter = (v: number) => `${v.toFixed(0)}km/h`;
+const pedalFormatter: TelemetryValueFormatter = (v) => (v * 100).toFixed(0);
 
-const steerFormatter = (v: number) =>
+const speedFormatter: TelemetryValueFormatter = (v) => `${v.toFixed(0)}km/h`;
+
+const steerFormatter: TelemetryValueFormatter = (v) =>
     `${Math.abs(v).toFixed(0)}° ${v === 0 ? "" : v < 0 ? "R" : "L"}`;
 
-const ersFormatter = (v: number) => `${(v / 1000).toFixed(2)}MJ`;
+const ersFormatter: TelemetryValueFormatter = (v) => `${(v / 1000).toFixed(2)}MJ`;
 
-const rpmFormatter = (v: number) => `${v.toFixed(0)}RPM`;
+const rpmFormatter: TelemetryValueFormatter = (v) => `${v.toFixed(0)}RPM`;
 
 const gearFormatter = (v: number) => {
     if (v === 0) return "R";
