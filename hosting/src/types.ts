@@ -38,7 +38,6 @@ export interface SessionData {
     sessionTime: string;
     sessionType: SessionType;
     expiresAt: Timestamp | null;
-    lapCount: number;
     validLaps: number;
     bestLapTime: number;
     lapData: LapInfo[];

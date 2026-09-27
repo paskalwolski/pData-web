@@ -33,7 +33,7 @@ export const SessionCard = ({ sessionData, onClick }: Props) => {
                     >
                         <InfoCardValue
                             Icon={TbArrowCapsule}
-                            value={`${sessionData.sessionType} - ${sessionData?.validLaps ?? "?"}/${sessionData.lapCount ?? "?"} laps`}
+                            value={`${sessionData.sessionType} - ${sessionData?.validLaps ?? "?"}/${sessionData.lapData.length ?? "?"} laps`}
                         />
                         {sessionData.expiresAt && (
                             <ExpiresIcon expiresAt={sessionData.expiresAt} />

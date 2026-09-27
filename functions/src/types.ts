@@ -59,7 +59,6 @@ export interface SessionLapDetail {
 
 export interface CloseSessionPayload {
   sessionId: string;
-  lapCount: number;
 }
 
 export interface SaveSessionPayload {
