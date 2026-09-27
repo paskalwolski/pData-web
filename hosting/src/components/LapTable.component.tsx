@@ -107,7 +107,7 @@ const LapTableDataGrid = ({
                 headerName: "Time",
                 sortable: true,
                 sortingOrder: ["asc", null],
-                valueFormatter: formatDuration,
+                valueFormatter: (value) => formatDuration(value),
                 minWidth: 150,
             },
             {
