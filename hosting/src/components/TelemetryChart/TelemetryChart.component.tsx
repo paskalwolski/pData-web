@@ -8,6 +8,7 @@ import { TelemetryCrosshair } from "./TelemetryCrosshair";
 import { TelemetryChartProps, TelemetryValueDisplayProps } from "./types";
 import { TelemetryValueRender } from "./TelemetryValueRender";
 import { deltaFormatter as baseDeltaFormatter } from "../../helpers/telemetryValueFormatter";
+import { YAxisLabels } from "../Charts";
 
 const EMPTY_ARRAY = [] as const;
 
@@ -24,6 +25,7 @@ const TelemetryChart = ({
     const { palette } = useTheme();
 
     const height = 200;
+    const leftPadding = 50;
     const [containerRef, width] = useContainerSize();
 
     const mutatedPrimaryData = useMemo(
@@ -81,7 +83,7 @@ const TelemetryChart = ({
     );
 
     const xScale = useMemo(
-        () => d3.scaleLinear().domain(xDomain).range([0, width]),
+        () => d3.scaleLinear().domain(xDomain).range([leftPadding, width]),
         [width, xDomain],
     );
 
@@ -279,6 +281,20 @@ const TelemetryChart = ({
                                 )}
                             />
                         )}
+                        <YAxisLabels
+                            yScale={yScale}
+                            min={yDomain[0]}
+                            max={yDomain[1]}
+                            width={width}
+                            leftPadding={leftPadding}
+                            padding={0}
+                            subTick={(min, max) =>
+                                d3.scaleLinear().domain([min, max]).ticks(5)
+                            }
+                            formatLabel={(v) =>
+                                String(valueFormatter?.(v) ?? v)
+                            }
+                        />
                         <TelemetryLine
                             data={mutatedPrimaryData}
                             xScale={xScale}

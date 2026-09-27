@@ -5,16 +5,22 @@ import { useContainerSize } from "../../hooks/useContainerSize";
 import { Line } from "../Charts";
 import { LapInfo } from "../../types";
 import { Scatter } from "../Charts";
+import { YAxisLabels } from "../Charts";
+import { formatDuration } from "../../helpers/formatDuration";
 
 interface Props {
     laps: (LapInfo & { color: string })[];
 }
 
+const lapTimeLabelFormatter = (v: number) =>
+    formatDuration(v, { milliPrecision: 0 });
+
 const SessionLapTimeChart = ({ laps }: Props) => {
     const { palette } = useTheme();
 
-    const height = 200;
+    const height = 300;
     const padding = 8;
+    const leftPadding = 36;
     const [containerRef, width] = useContainerSize();
 
     const data = useMemo(() => laps.map((lap) => lap.lapTime), [laps]);
@@ -35,17 +41,22 @@ const SessionLapTimeChart = ({ laps }: Props) => {
             d3
                 .scaleLinear()
                 .domain([0, data.length - 1])
-                .range([padding, width - padding]),
+                .range([leftPadding, width - padding]),
         [width, data.length],
     );
+
+    const [minTime, maxTime] = useMemo(() => {
+        const [min, max] = d3.extent(data);
+        return [Math.floor(min / 1000) * 1000, Math.ceil(max / 1000) * 1000];
+    }, [data]);
 
     const yScale = useMemo(
         () =>
             d3
                 .scaleLinear()
-                .domain(d3.extent(data))
+                .domain([minTime, maxTime])
                 .range([height - padding, padding]),
-        [data],
+        [minTime, maxTime],
     );
 
     return (
@@ -54,6 +65,15 @@ const SessionLapTimeChart = ({ laps }: Props) => {
                 <Typography>Laptimes</Typography>
                 <Box ref={containerRef}>
                     <svg width={width} height={height}>
+                        <YAxisLabels
+                            yScale={yScale}
+                            min={minTime}
+                            max={maxTime}
+                            width={width}
+                            leftPadding={leftPadding}
+                            padding={padding}
+                            formatLabel={lapTimeLabelFormatter}
+                        />
                         <Line
                             data={data}
                             xScale={xScale}
