@@ -252,73 +252,81 @@ export const closeSession = onRequest(async (request, response) => {
   response.send({sessionId: sessionRef.id});
 });
 
-export const saveSession = onRequest(async (request, response) => {
-  const saveSessionBody = (await request.body) as SaveSessionPayload;
-  if (!saveSessionBody.id) {
-    response.status(400).send('No session ID provided');
+export const saveSession = onRequest(
+  {cors: true},
+  async (request, response) => {
+    const saveSessionBody = (await request.body) as SaveSessionPayload;
+    if (!saveSessionBody.id) {
+      response.status(400).send('No session ID provided');
+      return;
+    }
+    const batch = firestore.batch();
+    const sessionRef = firestore
+      .collection(SESSIONS)
+      .doc(saveSessionBody.id) as DocumentReference<SessionDetail>;
+    const sessionSnap = await sessionRef.get();
+
+    if (!sessionSnap.exists) {
+      response.status(404).send('No matching session found');
+      return;
+    }
+
+    const sessionData = sessionSnap.data();
+
+    const currentAggregateStatus = sessionData?.aggregateStatus;
+    // Only pass from 'ready' to 'pending'
+    const aggregateStatus =
+      currentAggregateStatus === 'ready' ? 'pending' : currentAggregateStatus;
+
+    batch.update(sessionRef, {expiresAt: null, aggregateStatus});
+
+    // TODO: Figure out which laps to keep when we don't want the full sessionData
+    if (saveSessionBody.keepAllLaps) {
+      const lapDocs = await firestore
+        .collection(LAPS)
+        .where('sessionId', '==', saveSessionBody.id)
+        .get();
+
+      lapDocs.docs.forEach(l => batch.update(l.ref, {expiresAt: null}));
+    }
+
+    await batch.commit();
+
+    response.status(200).send();
+  },
+);
+
+export const triggerSessionAggregate = onRequest(
+  {cors: true},
+  async (request, response) => {
+    const triggerSessionAggregateBody =
+      (await request.body) as AggregateSessionPayload;
+
+    if (!triggerSessionAggregateBody.sessionId) {
+      response.status(400).send('No session ID provided');
+      return;
+    }
+
+    const sessionRef = firestore
+      .collection(SESSIONS)
+      .doc(
+        triggerSessionAggregateBody.sessionId,
+      ) as DocumentReference<SessionDetail>;
+    const sessionSnap = await sessionRef.get();
+    if (!sessionSnap.exists) {
+      response.status(404).send('No matching session found');
+      return;
+    }
+    const sessionData = sessionSnap.data();
+    if (sessionData?.aggregateStatus !== 'ready') {
+      response.status(409).send('Session data is not ready for processing');
+      return;
+    }
+    await sessionRef.update({aggregateStatus: 'pending'});
+    response.status(202).send();
     return;
-  }
-  const batch = firestore.batch();
-  const sessionRef = firestore
-    .collection(SESSIONS)
-    .doc(saveSessionBody.id) as DocumentReference<SessionDetail>;
-  const sessionSnap = await sessionRef.get();
-
-  if (!sessionSnap.exists) {
-    response.status(404).send('No matching session found');
-    return;
-  }
-
-  const sessionData = sessionSnap.data();
-
-  const currentAggregateStatus = sessionData?.aggregateStatus;
-  // Only pass from 'ready' to 'pending'
-  const aggregateStatus =
-    currentAggregateStatus === 'ready' ? 'pending' : currentAggregateStatus;
-
-  batch.update(sessionRef, {expiresAt: null, aggregateStatus});
-
-  // TODO: Figure out which laps to keep when we don't want the full sessionData
-  if (saveSessionBody.keepAllLaps) {
-    const lapDocs = await firestore
-      .collection(LAPS)
-      .where('sessionId', '==', saveSessionBody.id)
-      .get();
-
-    lapDocs.docs.forEach(l => batch.update(l.ref, {expiresAt: null}));
-  }
-
-  await batch.commit();
-});
-
-export const triggerSessionAggregate = onRequest(async (request, response) => {
-  const triggerSessionAggregateBody =
-    (await request.body) as AggregateSessionPayload;
-
-  if (!triggerSessionAggregateBody.sessionId) {
-    response.status(400).send('No session ID provided');
-    return;
-  }
-
-  const sessionRef = firestore
-    .collection(SESSIONS)
-    .doc(
-      triggerSessionAggregateBody.sessionId,
-    ) as DocumentReference<SessionDetail>;
-  const sessionSnap = await sessionRef.get();
-  if (!sessionSnap.exists) {
-    response.status(404).send('No matching session found');
-    return;
-  }
-  const sessionData = sessionSnap.data();
-  if (sessionData?.aggregateStatus !== 'ready') {
-    response.status(409).send('Session data is not ready for processing');
-    return;
-  }
-  await sessionRef.update({aggregateStatus: 'pending'});
-  response.status(202).send();
-  return;
-});
+  },
+);
 
 // TODO: Allow specifying a specific user, and triggering with a request
 // TODO: Rename for clarity
