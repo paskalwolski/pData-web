@@ -307,6 +307,12 @@ export const triggerSessionAggregate = onCall<AggregateSessionPayload>(
       throw new HttpsError('not-found', 'No matching session found');
     }
     const sessionData = sessionSnap.data();
+    if (sessionData?.aggregateStatus === 'unavailable') {
+      throw new HttpsError(
+        'failed-precondition',
+        'Session lap data has been partially cleaned up and can no longer be aggregated',
+      );
+    }
     if (sessionData?.aggregateStatus !== 'ready') {
       throw new HttpsError(
         'failed-precondition',
@@ -362,7 +368,53 @@ export const deleteExpiredTestLaps = onSchedule('every 6 hours', async () => {
     console.log('No expired test_laps to delete.');
   } else {
     console.log(`Found ${expiredLapSnapshot.docs.length} expired laps.`);
-    const lapBatches = expiredLapSnapshot.docs.slice(0, 100).map(async lap => {
+
+    const expiredLaps = expiredLapSnapshot.docs.slice(0, 100);
+
+    // Flag targeted sessions as unavailable before deleting any laps, so an
+    // aggregate can't be started against partial lap data
+    const targetedSessionIds = new Set(
+      expiredLaps
+        .map(lap => lap.get('sessionId') as string | undefined)
+        .filter(id => !!id) as string[],
+    );
+    // Sessions mid-aggregation keep their laps until a later cleanup run
+    const blockedSessionIds = new Set(
+      (
+        await Promise.all(
+          [...targetedSessionIds].map(sessionId =>
+            firestore.runTransaction(async tx => {
+              const sessionRef = firestore
+                .collection(SESSIONS)
+                .doc(sessionId) as DocumentReference<SessionDetail>;
+              const sessionSnap = await tx.get(sessionRef);
+              const aggregateStatus = sessionSnap.data()?.aggregateStatus;
+              if (
+                aggregateStatus === 'pending' ||
+                aggregateStatus === 'processing'
+              ) {
+                return sessionId;
+              }
+              if (sessionSnap.exists && aggregateStatus !== 'completed') {
+                tx.update(sessionRef, {aggregateStatus: 'unavailable'});
+              }
+              return undefined;
+            }),
+          ),
+        )
+      ).filter(id => !!id),
+    );
+
+    const lapsToDelete = expiredLaps.filter(
+      lap => !blockedSessionIds.has(lap.get('sessionId')),
+    );
+    if (blockedSessionIds.size) {
+      console.log(
+        `Skipping ${expiredLaps.length - lapsToDelete.length} laps from ${blockedSessionIds.size} sessions mid-aggregation`,
+      );
+    }
+
+    const lapBatches = lapsToDelete.map(async lap => {
       const lapBatch = firestore.batch();
       const linkedTelemetryDocs = await lap.ref
         .collection('telemetry')

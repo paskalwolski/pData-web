@@ -24,6 +24,8 @@ export interface SessionDetail extends SessionData {
 export type AggregateStatus =
   | 'not_ready'
   | 'ready'
+  // Laps were auto-cleaned before aggregation; aggregate is blocked
+  | 'unavailable'
   | 'pending'
   | 'processing'
   | 'completed'
