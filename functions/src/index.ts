@@ -1,4 +1,4 @@
-import {onRequest} from 'firebase-functions/v2/https';
+import {HttpsError, onCall, onRequest} from 'firebase-functions/v2/https';
 import {onSchedule} from 'firebase-functions/v2/scheduler';
 
 // The Firebase Admin SDK to access Firestore.
@@ -252,59 +252,49 @@ export const closeSession = onRequest(async (request, response) => {
   response.send({sessionId: sessionRef.id});
 });
 
-export const saveSession = onRequest(
-  {cors: true},
-  async (request, response) => {
-    const saveSessionBody = (await request.body) as SaveSessionPayload;
-    if (!saveSessionBody.id) {
-      response.status(400).send('No session ID provided');
-      return;
-    }
-    const batch = firestore.batch();
-    const sessionRef = firestore
-      .collection(SESSIONS)
-      .doc(saveSessionBody.id) as DocumentReference<SessionDetail>;
-    const sessionSnap = await sessionRef.get();
+export const saveSession = onCall<SaveSessionPayload>(async request => {
+  const saveSessionBody = request.data;
+  if (!saveSessionBody?.id) {
+    throw new HttpsError('invalid-argument', 'No session ID provided');
+  }
+  const batch = firestore.batch();
+  const sessionRef = firestore
+    .collection(SESSIONS)
+    .doc(saveSessionBody.id) as DocumentReference<SessionDetail>;
+  const sessionSnap = await sessionRef.get();
 
-    if (!sessionSnap.exists) {
-      response.status(404).send('No matching session found');
-      return;
-    }
+  if (!sessionSnap.exists) {
+    throw new HttpsError('not-found', 'No matching session found');
+  }
 
-    const sessionData = sessionSnap.data();
+  const sessionData = sessionSnap.data();
 
-    const currentAggregateStatus = sessionData?.aggregateStatus;
-    // Only pass from 'ready' to 'pending'
-    const aggregateStatus =
-      currentAggregateStatus === 'ready' ? 'pending' : currentAggregateStatus;
+  const currentAggregateStatus = sessionData?.aggregateStatus;
+  // Only pass from 'ready' to 'pending'
+  const aggregateStatus =
+    currentAggregateStatus === 'ready' ? 'pending' : currentAggregateStatus;
 
-    batch.update(sessionRef, {expiresAt: null, aggregateStatus});
+  batch.update(sessionRef, {expiresAt: null, aggregateStatus});
 
-    // TODO: Figure out which laps to keep when we don't want the full sessionData
-    if (saveSessionBody.keepAllLaps) {
-      const lapDocs = await firestore
-        .collection(LAPS)
-        .where('sessionId', '==', saveSessionBody.id)
-        .get();
+  // TODO: Figure out which laps to keep when we don't want the full sessionData
+  if (saveSessionBody.keepAllLaps) {
+    const lapDocs = await firestore
+      .collection(LAPS)
+      .where('sessionId', '==', saveSessionBody.id)
+      .get();
 
-      lapDocs.docs.forEach(l => batch.update(l.ref, {expiresAt: null}));
-    }
+    lapDocs.docs.forEach(l => batch.update(l.ref, {expiresAt: null}));
+  }
 
-    await batch.commit();
+  await batch.commit();
+});
 
-    response.status(200).send();
-  },
-);
+export const triggerSessionAggregate = onCall<AggregateSessionPayload>(
+  async request => {
+    const triggerSessionAggregateBody = request.data;
 
-export const triggerSessionAggregate = onRequest(
-  {cors: true},
-  async (request, response) => {
-    const triggerSessionAggregateBody =
-      (await request.body) as AggregateSessionPayload;
-
-    if (!triggerSessionAggregateBody.sessionId) {
-      response.status(400).send('No session ID provided');
-      return;
+    if (!triggerSessionAggregateBody?.sessionId) {
+      throw new HttpsError('invalid-argument', 'No session ID provided');
     }
 
     const sessionRef = firestore
@@ -314,17 +304,16 @@ export const triggerSessionAggregate = onRequest(
       ) as DocumentReference<SessionDetail>;
     const sessionSnap = await sessionRef.get();
     if (!sessionSnap.exists) {
-      response.status(404).send('No matching session found');
-      return;
+      throw new HttpsError('not-found', 'No matching session found');
     }
     const sessionData = sessionSnap.data();
     if (sessionData?.aggregateStatus !== 'ready') {
-      response.status(409).send('Session data is not ready for processing');
-      return;
+      throw new HttpsError(
+        'failed-precondition',
+        'Session data is not ready for processing',
+      );
     }
     await sessionRef.update({aggregateStatus: 'pending'});
-    response.status(202).send();
-    return;
   },
 );
 
