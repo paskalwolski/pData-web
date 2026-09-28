@@ -10,6 +10,7 @@ import {
 } from 'firebase-admin/firestore';
 import {getStorage} from 'firebase-admin/storage';
 import {
+  AggregateSessionPayload,
   CloseSessionPayload,
   LapPayload,
   SaveSessionPayload,
@@ -19,13 +20,18 @@ import {
   TelemetryDataSet,
   TrackPayload,
 } from './types';
-import {onDocumentWritten} from 'firebase-functions/firestore';
+import {
+  onDocumentUpdated,
+  onDocumentWritten,
+} from 'firebase-functions/firestore';
+
 import {
   isNamedMetaCollection,
   resolveMetaName,
   upsertMetaNameMap,
 } from './metaCollection';
 import {handleFastestLap} from './bestAttempts';
+import {computeSessionAggregate} from './aggregateTelemetry';
 
 // Collection Definition
 const LAPS = 'test_laps';
@@ -239,6 +245,7 @@ export const closeSession = onRequest(async (request, response) => {
       ...closeSessionBody,
       bestLapTime: bestLap.data().lapTime,
       validLaps,
+      aggregateStatus: 'ready',
     });
   }
 
@@ -252,16 +259,65 @@ export const saveSession = onRequest(async (request, response) => {
     return;
   }
   const batch = firestore.batch();
-  const sessionRef = firestore.collection(SESSIONS).doc(saveSessionBody.id);
-  batch.update(sessionRef, {expiresAt: null});
-  const lapDocs = await firestore
-    .collection(LAPS)
-    .where('sessionId', '==', saveSessionBody.id)
-    .get();
+  const sessionRef = firestore
+    .collection(SESSIONS)
+    .doc(saveSessionBody.id) as DocumentReference<SessionDetail>;
+  const sessionSnap = await sessionRef.get();
 
-  lapDocs.docs.forEach(l => batch.update(l.ref, {expiresAt: null}));
+  if (!sessionSnap.exists) {
+    response.status(404).send('No matching session found');
+    return;
+  }
+
+  const sessionData = sessionSnap.data();
+
+  const currentAggregateStatus = sessionData?.aggregateStatus;
+  // Only pass from 'ready' to 'pending'
+  const aggregateStatus =
+    currentAggregateStatus === 'ready' ? 'pending' : currentAggregateStatus;
+
+  batch.update(sessionRef, {expiresAt: null, aggregateStatus});
+
+  // TODO: Figure out which laps to keep when we don't want the full sessionData
+  if (saveSessionBody.keepAllLaps) {
+    const lapDocs = await firestore
+      .collection(LAPS)
+      .where('sessionId', '==', saveSessionBody.id)
+      .get();
+
+    lapDocs.docs.forEach(l => batch.update(l.ref, {expiresAt: null}));
+  }
 
   await batch.commit();
+});
+
+export const triggerSessionAggregate = onRequest(async (request, response) => {
+  const triggerSessionAggregateBody =
+    (await request.body) as AggregateSessionPayload;
+
+  if (!triggerSessionAggregateBody.sessionId) {
+    response.status(400).send('No session ID provided');
+    return;
+  }
+
+  const sessionRef = firestore
+    .collection(SESSIONS)
+    .doc(
+      triggerSessionAggregateBody.sessionId,
+    ) as DocumentReference<SessionDetail>;
+  const sessionSnap = await sessionRef.get();
+  if (!sessionSnap.exists) {
+    response.status(404).send('No matching session found');
+    return;
+  }
+  const sessionData = sessionSnap.data();
+  if (sessionData?.aggregateStatus !== 'ready') {
+    response.status(409).send('Session data is not ready for processing');
+    return;
+  }
+  await sessionRef.update({aggregateStatus: 'pending'});
+  response.status(202).send();
+  return;
 });
 
 // TODO: Allow specifying a specific user, and triggering with a request
@@ -339,5 +395,29 @@ export const syncMetaName = onDocumentWritten(
 
     const metaName = resolveMetaName(collection, data);
     await upsertMetaNameMap(firestore, collection, id, metaName ?? id);
+  },
+);
+
+export const calculateSessionAggregate = onDocumentUpdated(
+  `${SESSIONS}/{sessionId}`,
+  async event => {
+    const before = event.data?.before.data() as SessionDetail | undefined;
+    const after = event.data?.after.data() as SessionDetail | undefined;
+
+    // Only proceed on the transition INTO 'pending' -- this is what stops
+    // this trigger's own subsequent writes (processing/completed/failed)
+    // from re-triggering itself, and ignores unrelated session-doc writes.
+    if (
+      !after ||
+      before?.aggregateStatus !== 'ready' ||
+      after.aggregateStatus !== 'pending'
+    ) {
+      return;
+    }
+
+    const sessionRef = firestore
+      .collection(SESSIONS)
+      .doc(event.params.sessionId) as DocumentReference<SessionDetail>;
+    await computeSessionAggregate(firestore, sessionRef);
   },
 );

@@ -17,6 +17,26 @@ export interface SessionData {
 export interface SessionDetail extends SessionData {
   lapData: SessionLapDetail[];
   bestLapTime: number;
+  aggregateStatus?: AggregateStatus;
+  validLaps?: number;
+}
+
+export type AggregateStatus =
+  | 'not_ready'
+  | 'ready'
+  | 'pending'
+  | 'processing'
+  | 'completed'
+  | 'failed';
+export type TelemetryIndicator = 'min' | 'max' | 'mean';
+export type TelemetryChannel = keyof TelemetryData;
+
+export interface TelemetryChannelDoc {
+  data: TelemetryDataSet;
+}
+
+export interface AggregateSessionPayload {
+  sessionId: string;
 }
 
 export interface LapPayload {
@@ -28,7 +48,7 @@ export interface LapPayload {
   lapData: TelemetryData;
   sessionData: SessionData;
 }
-export type TelemetryDataSet = Array<number | undefined>;
+export type TelemetryDataSet = Array<number | null>;
 
 export interface TelemetryData {
   brake?: TelemetryDataSet;
@@ -63,6 +83,7 @@ export interface CloseSessionPayload {
 
 export interface SaveSessionPayload {
   id: string;
+  keepAllLaps?: boolean;
 }
 
 interface SectionData {
