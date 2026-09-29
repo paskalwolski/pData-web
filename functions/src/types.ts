@@ -37,6 +37,12 @@ export interface TelemetryChannelDoc {
   data: TelemetryDataSet;
 }
 
+export interface AggregateChannelDoc {
+  min: TelemetryDataSet;
+  max: TelemetryDataSet;
+  mean: TelemetryDataSet;
+}
+
 export interface AggregateSessionPayload {
   sessionId: string;
 }

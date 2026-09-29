@@ -1,4 +1,5 @@
 import {
+  AggregateChannelDoc,
   AggregateStatus,
   SessionDetail,
   TelemetryChannelDoc,
@@ -80,10 +81,8 @@ const computeSessionAggregate = async (
         }
       }
 
-      const capitalized = channel.charAt(0).toUpperCase() + channel.slice(1);
-      batch.set(aggregateCollection.doc(`min${capitalized}`), {data: min});
-      batch.set(aggregateCollection.doc(`max${capitalized}`), {data: max});
-      batch.set(aggregateCollection.doc(`mean${capitalized}`), {data: mean});
+      const doc: AggregateChannelDoc = {min, max, mean};
+      batch.set(aggregateCollection.doc(channel), doc);
     }
 
     batch.update(sessionRef, {aggregateStatus: 'completed'});
