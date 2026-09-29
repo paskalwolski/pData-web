@@ -7,6 +7,14 @@ import {
 } from './types';
 
 const LAPS = 'test_laps';
+const GAS_CHANNEL = 'gas';
+const FULL_THROTTLE_CHECK_DISTANCE = 40;
+const FULL_THROTTLE = 1;
+
+const crossesFullThrottleEarly = (gas: TelemetryDataSet): boolean =>
+  gas
+    .slice(0, FULL_THROTTLE_CHECK_DISTANCE)
+    .some(v => v !== null && v >= FULL_THROTTLE);
 
 interface AggregateResult {
   status: AggregateStatus;
@@ -48,8 +56,20 @@ const computeSessionAggregate = async (
       lapSnapshot.docs.map(lapDoc => lapDoc.ref.collection('telemetry').get()),
     );
 
+    const includedLapTelemetry = perLapTelemetry.filter((snapshot, i) => {
+      if (lapSnapshot.docs[i].data().lapNumber !== 2) {
+        return true;
+      }
+      const gas = snapshot.docs.find(d => d.id === GAS_CHANNEL)?.data() as
+        | TelemetryChannelDoc
+        | undefined;
+      // Rolling start crossing the line: lap 2 never reaches full throttle
+      // near the start -- drop it like lap 1.
+      return gas === undefined || crossesFullThrottleEarly(gas.data);
+    });
+
     const channelArrays = new Map<string, TelemetryDataSet[]>();
-    for (const snapshot of perLapTelemetry) {
+    for (const snapshot of includedLapTelemetry) {
       for (const channelDoc of snapshot.docs) {
         const arrays = channelArrays.get(channelDoc.id) ?? [];
         arrays.push((channelDoc.data() as TelemetryChannelDoc).data);
