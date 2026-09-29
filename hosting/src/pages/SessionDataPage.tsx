@@ -1,4 +1,11 @@
-import { Button, Paper, Stack, Typography, useTheme } from "@mui/material";
+import {
+    Button,
+    CircularProgress,
+    Paper,
+    Stack,
+    Typography,
+    useTheme,
+} from "@mui/material";
 import { SessionInfo } from "../components/SessionInfo.component";
 import {
     useAggregateTelemetry,
@@ -109,6 +116,20 @@ export const SessionDataPage = ({ sessionId }: Props) => {
                                     )}
                                 </Stack>
                             )}
+                        {(sessionData.aggregateStatus === "pending" ||
+                            sessionData.aggregateStatus === "processing") && (
+                            <Stack
+                                alignItems="center"
+                                justifyContent="center"
+                                spacing={1}
+                            >
+                                <CircularProgress size={24} />
+                                <Typography variant="caption">
+                                    Processing telemetry data - it will show
+                                    here as soon as it&apos;s ready.
+                                </Typography>
+                            </Stack>
+                        )}
                         <Typography variant="caption">
                             Aggregate status: {sessionData.aggregateStatus}
                         </Typography>
