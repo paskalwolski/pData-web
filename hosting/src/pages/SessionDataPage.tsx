@@ -16,6 +16,7 @@ import { SessionLapCard } from "../components/SessionLapCard.component";
 import SessionLapTimeChart from "../components/SessionLapTimeChart";
 import { useCallback, useMemo, useState } from "react";
 import { LapInfo } from "../types";
+import { SessionAggregateTelemetry } from "../views/SessionAggregateTelemetry";
 
 interface Props {
     sessionId: string;
@@ -140,6 +141,11 @@ export const SessionDataPage = ({ sessionId }: Props) => {
                             </Typography>
                         )}
                     </Stack>
+                    {aggregateTelemetry && (
+                        <SessionAggregateTelemetry
+                            aggregateTelemetry={aggregateTelemetry}
+                        />
+                    )}
                 </Stack>
             </Paper>
         </>
