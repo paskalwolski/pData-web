@@ -4,10 +4,9 @@ import {
     collection,
     CollectionReference,
     doc,
-    DocumentSnapshot,
-    getDoc,
     getDocs,
     limit,
+    onSnapshot,
     orderBy,
     query,
     QueryConstraint,
@@ -62,22 +61,18 @@ const useSession = (sessionId: string) => {
     const [session, setSession] = useState<SessionData>();
     const [loading, setLoading] = useState(true);
     useEffect(() => {
-        let cancelled = false;
-
-        async function getSession() {
-            const snapshot = (await getDoc(
-                doc(db, "test_sessions", sessionId),
-            )) as DocumentSnapshot<SessionData>;
-            if (!cancelled && snapshot.exists) {
-                setSession(snapshot.data());
+        setLoading(true);
+        const unsubscribe = onSnapshot(
+            doc(db, "test_sessions", sessionId),
+            (snapshot) => {
+                if (snapshot.exists()) {
+                    setSession(snapshot.data() as SessionData);
+                }
                 setLoading(false);
-            }
-        }
-        getSession();
+            },
+        );
 
-        return () => {
-            cancelled = true;
-        };
+        return unsubscribe;
     }, [sessionId]);
 
     return [session, loading] as const;

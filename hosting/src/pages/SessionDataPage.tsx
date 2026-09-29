@@ -74,9 +74,13 @@ export const SessionDataPage = ({ sessionId }: Props) => {
             <Paper>
                 <Stack m={1} p={2}>
                     <Typography>Session Aggregate Data</Typography>
-                    <Stack>
+                    <Stack alignItems="center" justifyContent="center" spacing={1}>
                         {sessionData.aggregateStatus === "ready" && !saved && (
-                            <Stack alignItems="center" justifyContent="center">
+                            <Stack
+                                alignItems="center"
+                                justifyContent="center"
+                                spacing={1}
+                            >
                                 <Button
                                     variant="contained"
                                     loading={saving}
@@ -91,6 +95,9 @@ export const SessionDataPage = ({ sessionId }: Props) => {
                                 )}
                             </Stack>
                         )}
+                        <Typography variant="caption">
+                            Aggregate status: {sessionData.aggregateStatus}
+                        </Typography>
                     </Stack>
                 </Stack>
             </Paper>
