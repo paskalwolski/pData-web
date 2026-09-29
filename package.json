@@ -1,0 +1,14 @@
+{
+  "name": "pdata",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "cd hosting && npm run dev",
+    "build": "cd hosting && npm run build && cd ../functions && npm run build",
+    "build:hosting": "cd hosting && npm run build",
+    "build:functions": "cd functions && npm run build",
+    "deploy": "node scripts/deploy.js",
+    "deploy:hosting": "node scripts/deploy.js hosting",
+    "deploy:functions": "node scripts/deploy.js functions"
+  }
+}
