@@ -30,6 +30,15 @@ export interface LapInfo {
     lapTime: number;
 }
 
+export type AggregateStatus =
+    | "not_ready"
+    | "ready"
+    | "unavailable"
+    | "pending"
+    | "processing"
+    | "completed"
+    | "failed";
+
 export interface SessionData {
     sessionId: string;
     driver: string;
@@ -41,6 +50,7 @@ export interface SessionData {
     validLaps: number;
     bestLapTime: number;
     lapData: LapInfo[];
+    aggregateStatus?: AggregateStatus;
 }
 
 export type TelemetryDataSet = Array<number | undefined>;

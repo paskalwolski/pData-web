@@ -1,9 +1,9 @@
-import { Stack, Typography, useTheme } from "@mui/material";
+import { Button, Paper, Stack, Typography, useTheme } from "@mui/material";
 import { SessionInfo } from "../components/SessionInfo.component";
-import { useSession } from "../hooks/useSessions";
+import { useSaveSession, useSession } from "../hooks/useSessions";
 import { SessionLapCard } from "../components/SessionLapCard.component";
 import SessionLapTimeChart from "../components/SessionLapTimeChart";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { LapInfo } from "../types";
 
 interface Props {
@@ -13,6 +13,15 @@ interface Props {
 export const SessionDataPage = ({ sessionId }: Props) => {
     const { palette } = useTheme();
     const [sessionData, loadingSession] = useSession(sessionId);
+
+    const { saveSession, saving, error: saveError } = useSaveSession();
+    const [saved, setSaved] = useState(false);
+
+    const handleSave = useCallback(async () => {
+        if (await saveSession(sessionId)) {
+            setSaved(true);
+        }
+    }, [saveSession, sessionId]);
 
     const resolveLapColor = useCallback(
         (lap: LapInfo) => {
@@ -62,6 +71,29 @@ export const SessionDataPage = ({ sessionId }: Props) => {
                 })}
             </Stack>
             <SessionLapTimeChart laps={preparedLapData} />
+            <Paper>
+                <Stack m={1} p={2}>
+                    <Typography>Session Aggregate Data</Typography>
+                    <Stack>
+                        {sessionData.aggregateStatus === "ready" && !saved && (
+                            <Stack alignItems="center" justifyContent="center">
+                                <Button
+                                    variant="contained"
+                                    loading={saving}
+                                    onClick={handleSave}
+                                >
+                                    Save Session
+                                </Button>
+                                {saveError && (
+                                    <Typography color="error">
+                                        {saveError}
+                                    </Typography>
+                                )}
+                            </Stack>
+                        )}
+                    </Stack>
+                </Stack>
+            </Paper>
         </>
     );
 };

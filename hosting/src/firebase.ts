@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { initializeFirestore, persistentLocalCache } from "firebase/firestore";
+import { getFunctions } from "firebase/functions";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
@@ -17,3 +18,5 @@ export const db = initializeFirestore(firebaseApp, {
 });
 
 export const storage = getStorage();
+
+export const functions = getFunctions(firebaseApp);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { SessionData } from "../types";
 import {
     collection,
@@ -12,7 +12,8 @@ import {
     query,
     QueryConstraint,
 } from "firebase/firestore";
-import { db } from "../firebase";
+import { httpsCallable } from "firebase/functions";
+import { db, functions } from "../firebase";
 
 interface LatestSessionsProps {
     fetchLimit: number;
@@ -82,4 +83,35 @@ const useSession = (sessionId: string) => {
     return [session, loading] as const;
 };
 
-export { useLatestSessions, useSession };
+const useSaveSession = () => {
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState<string>();
+
+    const saveSession = useCallback(
+        // TODO: Examine the keepAllLaps tag - when is this necessary?
+        async (id: string, keepAllLaps = false): Promise<boolean> => {
+            setSaving(true);
+            setError(undefined);
+            try {
+                await httpsCallable(
+                    functions,
+                    "saveSession",
+                )({
+                    id,
+                    keepAllLaps,
+                });
+                return true;
+            } catch (e) {
+                setError((e as Error).message);
+                return false;
+            } finally {
+                setSaving(false);
+            }
+        },
+        [],
+    );
+
+    return { saveSession, saving, error } as const;
+};
+
+export { useLatestSessions, useSession, useSaveSession };
