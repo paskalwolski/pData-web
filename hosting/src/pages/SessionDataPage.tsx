@@ -34,6 +34,8 @@ export const SessionDataPage = ({ sessionId }: Props) => {
         sessionData?.aggregateStatus === "completed",
     );
 
+    const [selectedLapId, setSelectedLapId] = useState<string | null>(null);
+
     const handleSave = useCallback(async () => {
         if (await saveSession(sessionId)) {
             setSaveTriggered(true);
@@ -83,6 +85,12 @@ export const SessionDataPage = ({ sessionId }: Props) => {
                             key={`session-lap-${i}`}
                             lap={lap}
                             color={lap.color}
+                            selected={lap.id === selectedLapId}
+                            onSelect={(l) =>
+                                setSelectedLapId(
+                                    l.id === selectedLapId ? undefined : l.id,
+                                )
+                            }
                         />
                     );
                 })}
@@ -144,6 +152,7 @@ export const SessionDataPage = ({ sessionId }: Props) => {
                     {aggregateTelemetry && (
                         <SessionAggregateTelemetry
                             aggregateTelemetry={aggregateTelemetry}
+                            selectedLapId={selectedLapId}
                         />
                     )}
                 </Stack>
