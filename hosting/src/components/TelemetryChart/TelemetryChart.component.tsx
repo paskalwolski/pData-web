@@ -21,6 +21,7 @@ const TelemetryChart = ({
     rawData,
     mutators,
     slots,
+    elevation,
 }: TelemetryChartProps) => {
     const { palette } = useTheme();
 
@@ -194,7 +195,7 @@ const TelemetryChart = ({
     };
 
     return (
-        <Paper>
+        <Paper elevation={elevation}>
             <Stack spacing={1} margin={1}>
                 <Stack width={1} justifyContent="space-between" direction="row">
                     <Stack justifyContent="start" direction="row" spacing={1}>

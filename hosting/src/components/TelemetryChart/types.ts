@@ -10,6 +10,7 @@ export type TelemetryChartProps = {
     rawData?: TelemetryDataSet;
     mutators?: TelemetryMutator[];
     slots?: Slots;
+    elevation?: number;
 };
 
 type TitleProps = { title: string };
