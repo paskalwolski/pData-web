@@ -20,15 +20,21 @@ const Line = React.memo(
         dashed = false,
     }: LineProps) => {
         const line = useMemo(() => {
+            const points = data
+                .map((v, i) => ({ i, v }))
+                .filter(
+                    (p): p is { i: number; v: number } =>
+                        p.v !== undefined && p.v !== null,
+                );
+
             let d = d3
-                .line<number | undefined>()
-                .defined((d) => d !== undefined && d !== null)
-                .x((_, i) => xScale(i))
-                .y((d) => yScale(d as number));
+                .line<{ i: number; v: number }>()
+                .x((p) => xScale(p.i))
+                .y((p) => yScale(p.v));
             if (!stepped) {
                 d = d.curve(d3.curveCatmullRom);
             }
-            return d(data);
+            return d(points);
         }, [data, stepped, xScale, yScale]);
 
         return (

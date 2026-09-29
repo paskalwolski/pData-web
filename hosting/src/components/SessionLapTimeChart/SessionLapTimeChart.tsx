@@ -37,28 +37,29 @@ const SessionLapTimeChart = ({ laps }: Props) => {
 
     const filteredLaps = useMemo(
         () =>
-            laps.filter(
-                (lap) =>
+            laps.map((lap, i) => {
+                const visible =
                     (showPitLaps || !lap.isPit) &&
                     (showInvalidLaps || lap.isValid) &&
-                    (showStartLap || lap.lapNumber !== 1),
-            ),
+                    (showStartLap || lap.lapNumber !== 1);
+                return visible ? { ...lap, i } : undefined;
+            }),
         [laps, showPitLaps, showInvalidLaps, showStartLap],
     );
 
     const data = useMemo(
-        () => filteredLaps.map((lap) => lap.lapTime),
+        () => filteredLaps.map((lap) => lap?.lapTime),
         [filteredLaps],
     );
 
     const scatterData = useMemo(
         () =>
-            filteredLaps.map((l, i) => ({
-                x: i,
-                y: l.lapTime,
-                z: l.color,
-            })),
-
+            filteredLaps
+                .filter(
+                    (lap): lap is LapInfo & { color: string; i: number } =>
+                        lap !== undefined,
+                )
+                .map((lap) => ({ x: lap.i, y: lap.lapTime, z: lap.color })),
         [filteredLaps],
     );
 
@@ -66,9 +67,9 @@ const SessionLapTimeChart = ({ laps }: Props) => {
         () =>
             d3
                 .scaleLinear()
-                .domain([0, data.length - 1])
+                .domain([0, laps.length - 1])
                 .range([leftPadding, width - padding]),
-        [width, data.length],
+        [width, laps.length],
     );
 
     const [minTime, maxTime] = useMemo(() => {
