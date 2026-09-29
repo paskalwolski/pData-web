@@ -55,6 +55,12 @@ export interface SessionData {
 
 export type TelemetryDataSet = Array<number | undefined>;
 
+export interface AggregateChannelDoc {
+    min: TelemetryDataSet;
+    max: TelemetryDataSet;
+    mean: TelemetryDataSet;
+}
+
 export interface TrackPositionData {
     x: number | null;
     z: number | null;

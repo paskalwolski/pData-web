@@ -1,6 +1,10 @@
 import { Button, Paper, Stack, Typography, useTheme } from "@mui/material";
 import { SessionInfo } from "../components/SessionInfo.component";
-import { useSaveSession, useSession } from "../hooks/useSessions";
+import {
+    useAggregateTelemetry,
+    useSaveSession,
+    useSession,
+} from "../hooks/useSessions";
 import { SessionLapCard } from "../components/SessionLapCard.component";
 import SessionLapTimeChart from "../components/SessionLapTimeChart";
 import { useCallback, useMemo, useState } from "react";
@@ -15,11 +19,16 @@ export const SessionDataPage = ({ sessionId }: Props) => {
     const [sessionData, loadingSession] = useSession(sessionId);
 
     const { saveSession, saving, error: saveError } = useSaveSession();
-    const [saved, setSaved] = useState(false);
+    const [saveTriggered, setSaveTriggered] = useState(false);
+
+    const [aggregateTelemetry] = useAggregateTelemetry(
+        sessionId,
+        sessionData?.aggregateStatus === "completed",
+    );
 
     const handleSave = useCallback(async () => {
         if (await saveSession(sessionId)) {
-            setSaved(true);
+            setSaveTriggered(true);
         }
     }, [saveSession, sessionId]);
 
@@ -74,30 +83,41 @@ export const SessionDataPage = ({ sessionId }: Props) => {
             <Paper>
                 <Stack m={1} p={2}>
                     <Typography>Session Aggregate Data</Typography>
-                    <Stack alignItems="center" justifyContent="center" spacing={1}>
-                        {sessionData.aggregateStatus === "ready" && !saved && (
-                            <Stack
-                                alignItems="center"
-                                justifyContent="center"
-                                spacing={1}
-                            >
-                                <Button
-                                    variant="contained"
-                                    loading={saving}
-                                    onClick={handleSave}
+                    <Stack
+                        alignItems="center"
+                        justifyContent="center"
+                        spacing={1}
+                    >
+                        {sessionData.aggregateStatus === "ready" &&
+                            !saveTriggered && (
+                                <Stack
+                                    alignItems="center"
+                                    justifyContent="center"
+                                    spacing={1}
                                 >
-                                    Save Session
-                                </Button>
-                                {saveError && (
-                                    <Typography color="error">
-                                        {saveError}
-                                    </Typography>
-                                )}
-                            </Stack>
-                        )}
+                                    <Button
+                                        variant="contained"
+                                        loading={saving}
+                                        onClick={handleSave}
+                                    >
+                                        Save Session
+                                    </Button>
+                                    {saveError && (
+                                        <Typography color="error">
+                                            {saveError}
+                                        </Typography>
+                                    )}
+                                </Stack>
+                            )}
                         <Typography variant="caption">
                             Aggregate status: {sessionData.aggregateStatus}
                         </Typography>
+                        {aggregateTelemetry && (
+                            <Typography variant="caption">
+                                Channels loaded:{" "}
+                                {Object.keys(aggregateTelemetry).length}
+                            </Typography>
+                        )}
                     </Stack>
                 </Stack>
             </Paper>

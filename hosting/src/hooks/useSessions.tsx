@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { SessionData } from "../types";
+import { AggregateChannelDoc, SessionData } from "../types";
 import {
     collection,
     CollectionReference,
     doc,
     getDocs,
+    getDocsFromCache,
+    getDocsFromServer,
     limit,
     onSnapshot,
     orderBy,
@@ -78,6 +80,46 @@ const useSession = (sessionId: string) => {
     return [session, loading] as const;
 };
 
+const useAggregateTelemetry = (sessionId: string, enabled: boolean) => {
+    const [channels, setChannels] = useState<Record<string, AggregateChannelDoc>>();
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (!enabled) {
+            return;
+        }
+        let cancelled = false;
+        setLoading(true);
+
+        async function getAggregateTelemetry() {
+            const aggregateCollectionRef = collection(
+                db,
+                "test_sessions",
+                sessionId,
+                "aggregateTelemetry",
+            ) as CollectionReference<AggregateChannelDoc>;
+            let snapshot = await getDocsFromCache(aggregateCollectionRef);
+            if (snapshot.empty && !cancelled) {
+                snapshot = await getDocsFromServer(aggregateCollectionRef);
+            }
+            const docs = snapshot.docs;
+            if (!cancelled) {
+                setChannels(
+                    Object.fromEntries(docs.map((d) => [d.id, d.data()])),
+                );
+                setLoading(false);
+            }
+        }
+        getAggregateTelemetry();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [sessionId, enabled]);
+
+    return [channels, loading] as const;
+};
+
 const useSaveSession = () => {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string>();
@@ -109,4 +151,4 @@ const useSaveSession = () => {
     return { saveSession, saving, error } as const;
 };
 
-export { useLatestSessions, useSession, useSaveSession };
+export { useLatestSessions, useSession, useAggregateTelemetry, useSaveSession };
