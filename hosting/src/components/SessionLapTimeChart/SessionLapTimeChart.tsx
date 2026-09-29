@@ -1,6 +1,14 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import * as d3 from "d3";
-import { Box, Paper, Stack, Typography, useTheme } from "@mui/material";
+import {
+    Box,
+    Checkbox,
+    FormControlLabel,
+    Paper,
+    Stack,
+    Typography,
+    useTheme,
+} from "@mui/material";
 import { useContainerSize } from "../../hooks/useContainerSize";
 import { Line } from "../Charts";
 import { LapInfo } from "../../types";
@@ -23,17 +31,35 @@ const SessionLapTimeChart = ({ laps }: Props) => {
     const leftPadding = 36;
     const [containerRef, width] = useContainerSize();
 
-    const data = useMemo(() => laps.map((lap) => lap.lapTime), [laps]);
+    const [showPitLaps, setShowPitLaps] = useState(true);
+    const [showInvalidLaps, setShowInvalidLaps] = useState(true);
+    const [showStartLap, setShowStartLap] = useState(true);
+
+    const filteredLaps = useMemo(
+        () =>
+            laps.filter(
+                (lap) =>
+                    (showPitLaps || !lap.isPit) &&
+                    (showInvalidLaps || lap.isValid) &&
+                    (showStartLap || lap.lapNumber !== 1),
+            ),
+        [laps, showPitLaps, showInvalidLaps, showStartLap],
+    );
+
+    const data = useMemo(
+        () => filteredLaps.map((lap) => lap.lapTime),
+        [filteredLaps],
+    );
 
     const scatterData = useMemo(
         () =>
-            laps.map((l, i) => ({
+            filteredLaps.map((l, i) => ({
                 x: i,
                 y: l.lapTime,
                 z: l.color,
             })),
 
-        [laps],
+        [filteredLaps],
     );
 
     const xScale = useMemo(
@@ -62,7 +88,51 @@ const SessionLapTimeChart = ({ laps }: Props) => {
     return (
         <Paper>
             <Stack spacing={1} margin={1} padding={2}>
-                <Typography>Laptimes</Typography>
+                <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                >
+                    <Typography>Laptimes</Typography>
+                    <Stack direction="row">
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    size="small"
+                                    checked={showStartLap}
+                                    onChange={(e) =>
+                                        setShowStartLap(e.target.checked)
+                                    }
+                                />
+                            }
+                            label="Start Lap"
+                        />
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    size="small"
+                                    checked={showPitLaps}
+                                    onChange={(e) =>
+                                        setShowPitLaps(e.target.checked)
+                                    }
+                                />
+                            }
+                            label="Pit Laps"
+                        />
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    size="small"
+                                    checked={showInvalidLaps}
+                                    onChange={(e) =>
+                                        setShowInvalidLaps(e.target.checked)
+                                    }
+                                />
+                            }
+                            label="Invalid Laps"
+                        />
+                    </Stack>
+                </Stack>
                 <Box ref={containerRef}>
                     <svg width={width} height={height}>
                         <YAxisLabels
