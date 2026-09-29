@@ -35,6 +35,7 @@ const computeSessionAggregate = async (
     const lapSnapshot = await firestore
       .collection(LAPS)
       .where('sessionId', '==', sessionRef.id)
+      .where('lapNumber', '!=', 1)
       .get();
 
     if (lapSnapshot.empty) {
