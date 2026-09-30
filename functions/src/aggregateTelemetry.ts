@@ -8,13 +8,21 @@ import {
 
 const LAPS = 'test_laps';
 const GAS_CHANNEL = 'gas';
-const FULL_THROTTLE_CHECK_DISTANCE = 40;
+const FULL_THROTTLE_CHECK_DISTANCE = 50;
 const FULL_THROTTLE = 1;
 
-const crossesFullThrottleEarly = (gas: TelemetryDataSet): boolean =>
-  gas
-    .slice(0, FULL_THROTTLE_CHECK_DISTANCE)
-    .some(v => v !== null && v >= FULL_THROTTLE);
+const hasThrottleBackoff = (gas: TelemetryDataSet): boolean => {
+  const window = gas.slice(0, FULL_THROTTLE_CHECK_DISTANCE);
+  const firstFullIndex = window.findIndex(
+    v => v !== null && v >= FULL_THROTTLE,
+  );
+  if (firstFullIndex === -1) {
+    return true;
+  }
+  return !window
+    .slice(firstFullIndex)
+    .every(v => v !== null && v >= FULL_THROTTLE);
+};
 
 interface AggregateResult {
   status: AggregateStatus;
@@ -63,9 +71,8 @@ const computeSessionAggregate = async (
       const gas = snapshot.docs.find(d => d.id === GAS_CHANNEL)?.data() as
         | TelemetryChannelDoc
         | undefined;
-      // Rolling start crossing the line: lap 2 never reaches full throttle
-      // near the start -- drop it like lap 1.
-      return gas === undefined || crossesFullThrottleEarly(gas.data);
+
+      return gas === undefined || !hasThrottleBackoff(gas.data);
     });
 
     const channelArrays = new Map<string, TelemetryDataSet[]>();
