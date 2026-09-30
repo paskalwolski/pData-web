@@ -88,7 +88,7 @@ export const SessionDataPage = ({ sessionId }: Props) => {
                             selected={lap.id === selectedLapId}
                             onSelect={(l) =>
                                 setSelectedLapId(
-                                    l.id === selectedLapId ? undefined : l.id,
+                                    l.id === selectedLapId ? null : l.id,
                                 )
                             }
                         />
