@@ -414,17 +414,47 @@ export const deleteExpiredTestLaps = onSchedule('every 6 hours', async () => {
       );
     }
 
-    const lapBatches = lapsToDelete.map(async lap => {
-      const lapBatch = firestore.batch();
-      const linkedTelemetryDocs = await lap.ref
-        .collection('telemetry')
-        .listDocuments();
-      linkedTelemetryDocs.forEach(t => lapBatch.delete(t));
-      lapBatch.delete(lap.ref);
-      return lapBatch.commit();
+    const lapsBySessionId = new Map<string, typeof lapsToDelete>();
+    lapsToDelete.forEach(lap => {
+      const sessionId = (lap.get('sessionId') as string | undefined) ?? '';
+      lapsBySessionId.set(sessionId, [
+        ...(lapsBySessionId.get(sessionId) ?? []),
+        lap,
+      ]);
     });
+
+    const lapBatches = [...lapsBySessionId.entries()].map(
+      async ([sessionId, laps]) => {
+        const lapBatch = firestore.batch();
+        await Promise.all(
+          laps.map(async lap => {
+            const linkedTelemetryDocs = await lap.ref
+              .collection('telemetry')
+              .listDocuments();
+            linkedTelemetryDocs.forEach(t => lapBatch.delete(t));
+            lapBatch.delete(lap.ref);
+          }),
+        );
+
+        if (sessionId) {
+          const sessionRef = firestore
+            .collection(SESSIONS)
+            .doc(sessionId) as DocumentReference<SessionDetail>;
+          const sessionSnap = await sessionRef.get();
+          const currentLapData = sessionSnap.data()?.lapData ?? [];
+          const deletedLapIds = new Set(laps.map(l => l.id));
+          lapBatch.update(sessionRef, {
+            lapData: currentLapData.filter(l => !deletedLapIds.has(l.id!)),
+          });
+        }
+
+        return lapBatch.commit();
+      },
+    );
     await Promise.all(lapBatches);
-    console.log(`Deleted ${lapBatches.length} expired test_laps and telemetry`);
+    console.log(
+      `Deleted ${lapsToDelete.length} expired test_laps and telemetry`,
+    );
   }
 });
 
