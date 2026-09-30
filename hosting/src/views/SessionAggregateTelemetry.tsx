@@ -15,6 +15,7 @@ import { useLapTelemetry } from "../hooks/useLaps";
 interface Props {
     aggregateTelemetry: Record<string, AggregateChannelDoc>;
     selectedLapId?: string;
+    isBestLap?: boolean;
 }
 
 const STEER_MUTATORS = [invert];
@@ -51,10 +52,11 @@ const applyMutators = (
 export const SessionAggregateTelemetry = ({
     aggregateTelemetry,
     selectedLapId,
+    isBestLap,
 }: Props) => {
     const { palette } = useTheme();
     const channels = CHANNEL_ORDER.filter((key) => aggregateTelemetry[key]);
-    const [lapTelemetry] = useLapTelemetry(selectedLapId);
+    const [lapTelemetry, loadingTelemetry] = useLapTelemetry(selectedLapId);
 
     return (
         <Stack gap={1}>
@@ -73,10 +75,10 @@ export const SessionAggregateTelemetry = ({
                                     channel.mean,
                                     config.mutators,
                                 ),
-                                color: palette.secondary.main,
+                                color: palette.blue.light,
                                 stepped: config.stepped,
                             },
-                            ...(lapSeries
+                            ...(lapSeries && !loadingTelemetry
                                 ? [
                                       {
                                           label: "lap",
@@ -84,7 +86,9 @@ export const SessionAggregateTelemetry = ({
                                               lapSeries,
                                               config.mutators,
                                           ),
-                                          color: palette.primary.dark,
+                                          color: isBestLap
+                                              ? palette.primary.dark
+                                              : palette.secondary.main,
                                           stepped: config.stepped,
                                       },
                                   ]

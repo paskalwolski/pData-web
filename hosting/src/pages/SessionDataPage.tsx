@@ -36,6 +36,10 @@ export const SessionDataPage = ({ sessionId }: Props) => {
 
     const [selectedLapId, setSelectedLapId] = useState<string | null>(null);
 
+    const isBestLapSelected =
+        sessionData?.lapData.find((l) => l.id === selectedLapId)?.lapTime ===
+        sessionData?.bestLapTime;
+
     const handleSave = useCallback(async () => {
         if (await saveSession(sessionId)) {
             setSaveTriggered(true);
@@ -153,6 +157,7 @@ export const SessionDataPage = ({ sessionId }: Props) => {
                         <SessionAggregateTelemetry
                             aggregateTelemetry={aggregateTelemetry}
                             selectedLapId={selectedLapId}
+                            isBestLap={isBestLapSelected}
                         />
                     )}
                 </Stack>

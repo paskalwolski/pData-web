@@ -1,11 +1,4 @@
-import {
-    alpha,
-    Box,
-    Card,
-    CardActionArea,
-    Stack,
-    useTheme,
-} from "@mui/material";
+import { alpha, Box, Card, CardActionArea, Stack } from "@mui/material";
 import { TbNumber } from "react-icons/tb";
 import { BiStopwatch } from "react-icons/bi";
 import { LapInfo } from "../types";
@@ -20,7 +13,6 @@ interface Props {
 }
 
 const SessionLapCard = ({ lap, color, selected, onSelect }: Props) => {
-    const { palette } = useTheme();
     const selectable = !lap.isPit && lap.isValid;
 
     return (
@@ -30,11 +22,9 @@ const SessionLapCard = ({ lap, color, selected, onSelect }: Props) => {
                 color={color}
                 sx={{
                     flex: 1,
-                    border: selected ? 2 : 1,
+                    border: 1,
                     borderColor: color,
-                    backgroundColor: selected
-                        ? alpha(palette.primary.light, 0.6)
-                        : undefined,
+                    backgroundColor: selected ? alpha(color, 0.6) : undefined,
                 }}
             >
                 <CardActionArea
