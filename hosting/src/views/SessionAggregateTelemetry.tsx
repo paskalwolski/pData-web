@@ -34,7 +34,6 @@ export const SessionAggregateTelemetry = ({
                                     ? [
                                           {
                                               id: "lap",
-                                              label: "lap",
                                               data: lapSeries,
                                               color: isBestLap
                                                   ? palette.primary.dark
@@ -44,7 +43,6 @@ export const SessionAggregateTelemetry = ({
                                     : []),
                                 {
                                     id: "mean",
-                                    label: "mean",
                                     data: channel.mean,
                                     color: palette.blue.light,
                                 },
