@@ -27,6 +27,7 @@ export interface ChartSeries extends Partial<TelemetryChannelConfig> {
     color: string;
     dashed?: boolean;
     hidden?: boolean;
+    gapped?: boolean;
     // Targeting TelemetryChannelConfig settings for override
     readoutColor?: string;
 }
