@@ -478,7 +478,10 @@ export const syncMetaName = onDocumentWritten(
 );
 
 export const calculateSessionAggregate = onDocumentUpdated(
-  `${SESSIONS}/{sessionId}`,
+  {
+    document: `${SESSIONS}/{sessionId}`,
+    memory: '1GiB',
+  },
   async event => {
     const before = event.data?.before.data() as SessionDetail | undefined;
     const after = event.data?.after.data() as SessionDetail | undefined;
