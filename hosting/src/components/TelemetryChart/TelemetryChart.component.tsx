@@ -279,6 +279,7 @@ const TelemetryChart = ({
                                         stepped={s.stepped}
                                         color={s.color}
                                         dashed={s.dashed}
+                                        gapped={s.gapped}
                                     />
                                 ),
                         )}
