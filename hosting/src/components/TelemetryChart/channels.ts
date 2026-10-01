@@ -1,5 +1,5 @@
 import { SteeringAngleDisplay } from "../CustomTelemetry/SteeringAngleDisplay";
-import { invert } from "../../helpers/telemetryMutators";
+import { invert, round } from "../../helpers/telemetryMutators";
 import {
     ersFormatter,
     gearFormatter,
@@ -12,6 +12,7 @@ import { TelemetryChannel, TelemetryChannelConfig } from "./types";
 import { GearDeltaDisplay } from "../CustomTelemetry/GearDeltaDisplay";
 
 const STEER_MUTATORS = [invert];
+const GEAR_MUTATORS = [round];
 
 export const CHANNEL_CONFIG: Record<TelemetryChannel, TelemetryChannelConfig> =
     {
@@ -30,6 +31,7 @@ export const CHANNEL_CONFIG: Record<TelemetryChannel, TelemetryChannelConfig> =
             valueFormatter: gearFormatter,
             stepped: true,
             deltaReadout: GearDeltaDisplay,
+            mutators: GEAR_MUTATORS,
         },
         rpm: { title: "RPM", valueFormatter: rpmFormatter },
     };
