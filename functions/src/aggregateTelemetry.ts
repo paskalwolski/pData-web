@@ -84,8 +84,8 @@ const computeSessionAggregate = async (
       }
     }
 
-    const batch = firestore.batch();
     const aggregateCollection = sessionRef.collection('aggregateTelemetry');
+    const channelWrites: Array<Promise<unknown>> = [];
 
     for (const [channel, arrays] of channelArrays) {
       const length = Math.min(...arrays.map(a => a.length));
@@ -110,11 +110,11 @@ const computeSessionAggregate = async (
       }
 
       const doc: AggregateChannelDoc = {min, max, mean};
-      batch.set(aggregateCollection.doc(channel), doc);
+      channelWrites.push(aggregateCollection.doc(channel).set(doc));
     }
 
-    batch.update(sessionRef, {aggregateStatus: 'completed'});
-    await batch.commit();
+    await Promise.all(channelWrites);
+    await sessionRef.update({aggregateStatus: 'completed'});
     return {status: 'completed'};
   } catch (err) {
     console.error(
