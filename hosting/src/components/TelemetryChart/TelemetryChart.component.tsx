@@ -73,16 +73,13 @@ const TelemetryChart = ({
         [mutatedSeries, mutatedBands],
     );
 
-    const yDomain = useMemo(
-        () => {
-            const sets: TelemetryDataSet[] = [
-                ...mutatedSeries.map((s) => s.data),
-                ...mutatedBands.flatMap((b) => [b.min, b.max]),
-            ];
-            return d3.extent(sets.flatMap((d) => d3.extent(d)));
-        },
-        [mutatedSeries, mutatedBands],
-    );
+    const yDomain = useMemo(() => {
+        const sets: TelemetryDataSet[] = [
+            ...mutatedSeries.map((s) => s.data),
+            ...mutatedBands.flatMap((b) => [b.min, b.max]),
+        ];
+        return d3.extent(sets.flatMap((d) => d3.extent(d)));
+    }, [mutatedSeries, mutatedBands]);
 
     const {
         selectedIndex,
@@ -270,8 +267,7 @@ const TelemetryChart = ({
                                 opacity={b.opacity}
                             />
                         ))}
-                        {/* Reversed so the first series draws on top */}
-                        {[...mutatedSeries].reverse().map(
+                        {mutatedSeries.map(
                             (s) =>
                                 !s.hidden && (
                                     <Line
