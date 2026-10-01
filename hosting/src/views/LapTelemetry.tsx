@@ -1,20 +1,10 @@
-import { Box, Paper, Stack, Typography } from "@mui/material";
+import { Box, Paper, Stack, Typography, useTheme } from "@mui/material";
 import { useLapTelemetry } from "../hooks/useLaps";
-import TelemetryChart from "../components/TelemetryChart";
+import TelemetryChart, { CHANNEL_ORDER } from "../components/TelemetryChart";
 import { useTrackData } from "../hooks/useTracks";
 import { TrackDisplay } from "../components/Track/TrackDisplay.component";
 import { TelemetryPointProvider } from "../hooks/TelemetryPointContext/useTelemetryPoint";
-import {
-    ersFormatter,
-    pedalFormatter,
-    rpmFormatter,
-    speedFormatter,
-    steerFormatter,
-    gearFormatter,
-} from "../helpers/telemetryValueFormatter";
 import { TimeDeltaChart } from "../components/CustomTelemetry/TimeDeltaChart";
-import { invert } from "../helpers/telemetryMutators";
-import { SteeringAngleDisplay } from "../components/CustomTelemetry/SteeringAngleDisplay";
 
 interface Props {
     lapId: string;
@@ -22,9 +12,8 @@ interface Props {
     trackId: string;
 }
 
-const STEER_MUTATORS = [invert];
-
 export const LapTelemetry = ({ lapId, secondaryLapId, trackId }: Props) => {
+    const { palette } = useTheme();
     const [lapTelemetry, isLoadingTelemetry] = useLapTelemetry(lapId);
     const [secondaryTelemetry, isLoadingSecondaryTelemetry] =
         useLapTelemetry(secondaryLapId);
@@ -53,54 +42,37 @@ export const LapTelemetry = ({ lapId, secondaryLapId, trackId }: Props) => {
                             />
                         </Box>
                     )}
-                    <TelemetryChart
-                        title="Speed"
-                        data={lapTelemetry.speed}
-                        secondaryData={secondaryTelemetry?.speed}
-                        valueFormatter={speedFormatter}
-                    />
-                    <TelemetryChart
-                        title="Gas"
-                        data={lapTelemetry.gas}
-                        secondaryData={secondaryTelemetry?.gas}
-                        valueFormatter={pedalFormatter}
-                    />
-                    <TelemetryChart
-                        title="Brake"
-                        data={lapTelemetry.brake}
-                        secondaryData={secondaryTelemetry?.brake}
-                        valueFormatter={pedalFormatter}
-                    />
-                    <TelemetryChart
-                        title="Steering"
-                        data={lapTelemetry.steer}
-                        secondaryData={secondaryTelemetry?.steer}
-                        valueFormatter={steerFormatter}
-                        mutators={STEER_MUTATORS}
-                        slots={{
-                            primaryValue: SteeringAngleDisplay,
-                            secondaryValue: SteeringAngleDisplay,
-                        }}
-                    />
-                    <TelemetryChart
-                        title="ERS Deployment (Joules)"
-                        data={lapTelemetry.ers}
-                        secondaryData={secondaryTelemetry?.ers}
-                        valueFormatter={ersFormatter}
-                    />
-                    <TelemetryChart
-                        title="Gear"
-                        data={lapTelemetry.gear}
-                        secondaryData={secondaryTelemetry?.gear}
-                        mode="stepped"
-                        valueFormatter={gearFormatter}
-                    />
-                    <TelemetryChart
-                        title="RPM"
-                        data={lapTelemetry.rpm}
-                        secondaryData={secondaryTelemetry?.rpm}
-                        valueFormatter={rpmFormatter}
-                    />
+                    {CHANNEL_ORDER.map((key) => {
+                        const primarySeries = lapTelemetry?.[key];
+                        const secondarySeries = secondaryTelemetry?.[key];
+                        if (!primarySeries) return null;
+                        return (
+                            <TelemetryChart
+                                key={key}
+                                channel={key}
+                                series={[
+                                    {
+                                        id: "primary",
+                                        data: primarySeries,
+                                        color: palette.primary.dark,
+                                        readoutColor: palette.primary.light,
+                                    },
+                                    ...(secondarySeries
+                                        ? [
+                                              {
+                                                  id: "secondary",
+                                                  data: secondarySeries,
+                                                  color: palette.secondary.dark,
+                                                  readoutColor:
+                                                      palette.secondary.light,
+                                                  dashed: true,
+                                              },
+                                          ]
+                                        : []),
+                                ]}
+                            />
+                        );
+                    })}
                 </Stack>
                 <Box
                     sx={{

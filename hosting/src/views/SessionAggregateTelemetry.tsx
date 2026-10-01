@@ -1,53 +1,14 @@
 import { Stack, useTheme } from "@mui/material";
-import AggregateTelemetryChart from "../components/AggregateTelemetryChart";
-import { AggregateChannelDoc, TelemetryData } from "../types";
-import {
-    ersFormatter,
-    pedalFormatter,
-    rpmFormatter,
-    speedFormatter,
-    steerFormatter,
-    gearFormatter,
-} from "../helpers/telemetryValueFormatter";
-import { invert, TelemetryMutator } from "../helpers/telemetryMutators";
+import TelemetryChart, { CHANNEL_ORDER } from "../components/TelemetryChart";
+import { AggregateChannelDoc } from "../types";
 import { useLapTelemetry } from "../hooks/useLaps";
+import { TelemetryPointProvider } from "../hooks/TelemetryPointContext/useTelemetryPoint";
 
 interface Props {
     aggregateTelemetry: Record<string, AggregateChannelDoc>;
     selectedLapId?: string;
     isBestLap?: boolean;
 }
-
-const STEER_MUTATORS = [invert];
-
-const CHANNEL_CONFIG: Record<
-    string,
-    {
-        title: string;
-        valueFormatter: (v: number) => string | number;
-        stepped?: boolean;
-        mutators?: TelemetryMutator[];
-    }
-> = {
-    speed: { title: "Speed", valueFormatter: speedFormatter },
-    gas: { title: "Gas", valueFormatter: pedalFormatter },
-    brake: { title: "Brake", valueFormatter: pedalFormatter },
-    steer: {
-        title: "Steering",
-        valueFormatter: steerFormatter,
-        mutators: STEER_MUTATORS,
-    },
-    ers: { title: "ERS Deployment (Joules)", valueFormatter: ersFormatter },
-    gear: { title: "Gear", valueFormatter: gearFormatter, stepped: true },
-    rpm: { title: "RPM", valueFormatter: rpmFormatter },
-};
-
-const CHANNEL_ORDER = ["speed", "gas", "brake", "steer", "ers", "gear", "rpm"];
-
-const applyMutators = (
-    data: AggregateChannelDoc[keyof AggregateChannelDoc],
-    mutators?: TelemetryMutator[],
-) => (mutators ?? []).reduce((d, m) => m(d), data);
 
 export const SessionAggregateTelemetry = ({
     aggregateTelemetry,
@@ -59,48 +20,48 @@ export const SessionAggregateTelemetry = ({
     const [lapTelemetry, loadingTelemetry] = useLapTelemetry(selectedLapId);
 
     return (
-        <Stack gap={1}>
-            {channels.map((key) => {
-                const config = CHANNEL_CONFIG[key];
-                const channel = aggregateTelemetry[key];
-                const lapSeries = lapTelemetry?.[key as keyof TelemetryData];
-                return (
-                    <AggregateTelemetryChart
-                        key={key}
-                        title={config.title}
-                        data={[
-                            {
-                                label: "mean",
-                                data: applyMutators(
-                                    channel.mean,
-                                    config.mutators,
-                                ),
-                                color: palette.blue.light,
-                                stepped: config.stepped,
-                            },
-                            ...(lapSeries && !loadingTelemetry
-                                ? [
-                                      {
-                                          label: "lap",
-                                          data: applyMutators(
-                                              lapSeries,
-                                              config.mutators,
-                                          ),
-                                          color: isBestLap
-                                              ? palette.primary.dark
-                                              : palette.secondary.main,
-                                          stepped: config.stepped,
-                                      },
-                                  ]
-                                : []),
-                        ]}
-                        minSeries={applyMutators(channel.min, config.mutators)}
-                        maxSeries={applyMutators(channel.max, config.mutators)}
-                        valueFormatter={config.valueFormatter}
-                        elevation={4}
-                    />
-                );
-            })}
-        </Stack>
+        <TelemetryPointProvider>
+            <Stack gap={1}>
+                {channels.map((key) => {
+                    const channel = aggregateTelemetry[key];
+                    const lapSeries = lapTelemetry?.[key];
+                    return (
+                        <TelemetryChart
+                            key={key}
+                            channel={key}
+                            series={[
+                                ...(lapSeries && !loadingTelemetry
+                                    ? [
+                                          {
+                                              id: "lap",
+                                              label: "lap",
+                                              data: lapSeries,
+                                              color: isBestLap
+                                                  ? palette.primary.dark
+                                                  : palette.secondary.main,
+                                          },
+                                      ]
+                                    : []),
+                                {
+                                    id: "mean",
+                                    label: "mean",
+                                    data: channel.mean,
+                                    color: palette.blue.light,
+                                },
+                            ]}
+                            bands={[
+                                {
+                                    id: "minmax",
+                                    min: channel.min,
+                                    max: channel.max,
+                                    color: palette.blue.main,
+                                },
+                            ]}
+                            elevation={4}
+                        />
+                    );
+                })}
+            </Stack>
+        </TelemetryPointProvider>
     );
 };

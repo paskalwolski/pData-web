@@ -1,65 +1,87 @@
 import { useCallback, useMemo } from "react";
-import { TelemetryLine } from "./TelemetryLine.component";
 import * as d3 from "d3";
 import { useContainerSize } from "../../hooks/useContainerSize";
 import { Box, Paper, Stack, Typography, useTheme } from "@mui/material";
 import { useTelemetryPointContext } from "../../hooks/TelemetryPointContext/useTelemetryPoint";
 import { TelemetryCrosshair } from "./TelemetryCrosshair";
-import { TelemetryChartProps, TelemetryValueDisplayProps } from "./types";
-import { TelemetryValueRender } from "./TelemetryValueRender";
-import { deltaFormatter as baseDeltaFormatter } from "../../helpers/telemetryValueFormatter";
-import { YAxisLabels } from "../Charts";
+import { TelemetryReadouts } from "./TelemetryReadouts";
+import { Band } from "./Band.component";
+import { TelemetryChartProps } from "./types";
+import { Line, YAxisLabels } from "../Charts";
+import { TelemetryDataSet } from "../../types";
+import { CHANNEL_CONFIG } from "./channels";
 
 const EMPTY_ARRAY = [] as const;
 
 const TelemetryChart = ({
-    title,
-    data,
-    secondaryData,
-    valueFormatter,
-    mode = "normal",
-    rawData,
-    mutators,
+    channel,
+    title: titleProp,
+    series,
+    bands,
+    delta = true,
+    valueFormatter: valueFormatterProp,
+    mutators: mutatorsProp,
     slots,
     elevation,
 }: TelemetryChartProps) => {
     const { palette } = useTheme();
 
+    const config = channel ? CHANNEL_CONFIG[channel] : undefined;
+    const title = titleProp ?? config?.title;
+    const valueFormatter = valueFormatterProp ?? config?.valueFormatter;
+    const mutators = mutatorsProp ?? config?.mutators;
+
     const height = 200;
     const leftPadding = 50;
     const [containerRef, width] = useContainerSize();
 
-    const mutatedPrimaryData = useMemo(
-        () => (mutators ?? EMPTY_ARRAY).reduce((d, m) => m(d), data),
-        [mutators, data],
-    );
-    const mutatedSecondaryData = useMemo(
-        () =>
-            secondaryData
-                ? (mutators ?? EMPTY_ARRAY).reduce(
-                      (d, m) => m(d),
-                      secondaryData,
-                  )
-                : undefined,
-        [mutators, secondaryData],
-    );
-    const mutatedRawData = useMemo(
-        () =>
-            rawData
-                ? (mutators ?? EMPTY_ARRAY).reduce((d, m) => m(d), rawData)
-                : undefined,
-        [mutators, rawData],
+    const mutate = useCallback(
+        (data: TelemetryDataSet) =>
+            (mutators ?? EMPTY_ARRAY).reduce((d, m) => m(d), data),
+        [mutators],
     );
 
-    const targetData = mutatedRawData ?? mutatedPrimaryData;
+    const mutatedSeries = useMemo(
+        () =>
+            series.map((s) => ({
+                ...s,
+                stepped: s.stepped ?? config?.stepped,
+                readout: s.readout ?? config?.readout,
+                data: mutate(s.data),
+            })),
+        [series, mutate, config],
+    );
+    const mutatedBands = useMemo(
+        () =>
+            (bands ?? EMPTY_ARRAY).map((b) => ({
+                ...b,
+                min: mutate(b.min),
+                max: mutate(b.max),
+            })),
+        [bands, mutate],
+    );
+
+    const length = useMemo(
+        () =>
+            Math.max(
+                0,
+                ...mutatedSeries.map((s) => s.data.length),
+                ...mutatedBands.map((b) =>
+                    Math.max(b.min.length, b.max.length),
+                ),
+            ),
+        [mutatedSeries, mutatedBands],
+    );
 
     const yDomain = useMemo(
-        () =>
-            d3.extent([
-                ...d3.extent(mutatedPrimaryData),
-                ...d3.extent(mutatedSecondaryData ?? [undefined, undefined]),
-            ]),
-        [mutatedPrimaryData, mutatedSecondaryData],
+        () => {
+            const sets: TelemetryDataSet[] = [
+                ...mutatedSeries.map((s) => s.data),
+                ...mutatedBands.flatMap((b) => [b.min, b.max]),
+            ];
+            return d3.extent(sets.flatMap((d) => d3.extent(d)));
+        },
+        [mutatedSeries, mutatedBands],
     );
 
     const {
@@ -79,8 +101,8 @@ const TelemetryChart = ({
         () =>
             selectionStartIndex != null && selectionEndIndex != null
                 ? [selectionStartIndex, selectionEndIndex]
-                : [0, mutatedPrimaryData.length],
-        [mutatedPrimaryData.length, selectionStartIndex, selectionEndIndex],
+                : [0, Math.max(length - 1, 0)],
+        [length, selectionStartIndex, selectionEndIndex],
     );
 
     const xScale = useMemo(
@@ -92,13 +114,6 @@ const TelemetryChart = ({
         () => d3.scaleLinear().domain(yDomain).range([height, 0]),
         [height, yDomain],
     );
-
-    const selectedYValue = mutatedPrimaryData[selectedIndex];
-    const secondaryYValue = mutatedSecondaryData?.[selectedIndex];
-    const diffYValue =
-        selectedYValue != null && secondaryYValue != null
-            ? selectedYValue - secondaryYValue
-            : undefined;
 
     const getIndexFromEvent = useCallback(
         (e: React.MouseEvent) => {
@@ -160,14 +175,17 @@ const TelemetryChart = ({
 
     const handleMouseLeave = useCallback(
         (e: React.MouseEvent) => {
-            setSelectedIndex(null);
+            setSelectedIndex(undefined);
             if (highlightStartIndex == null) return;
-            setSelectionStartIndex(highlightStartIndex);
-            const x = getIndexFromEvent(e) ?? highlightEndIndex;
-            setSelectionStartIndex(Math.min(highlightStartIndex, x));
-            setSelectionEndIndex(Math.max(highlightStartIndex, x));
+            const x =
+                getIndexFromEvent(e) ??
+                highlightEndIndex ??
+                highlightStartIndex;
             setHighlightStartIndex(undefined);
             setHighlightEndIndex(undefined);
+            if (x === highlightStartIndex) return;
+            setSelectionStartIndex(Math.min(highlightStartIndex, x));
+            setSelectionEndIndex(Math.max(highlightStartIndex, x));
         },
         [
             setSelectedIndex,
@@ -181,76 +199,29 @@ const TelemetryChart = ({
         ],
     );
 
-    const deltaFormatter = useCallback(
-        (v?: number) => baseDeltaFormatter(valueFormatter(v)),
-        [valueFormatter],
-    );
-
-    const slotProps: Omit<TelemetryValueDisplayProps, "variant"> = {
-        index: selectedIndex,
-        valueFormatter,
-        primaryValue: selectedYValue,
-        secondaryValue: secondaryYValue,
-        deltaValue: diffYValue,
-    };
+    const highlightEnd =
+        highlightEndIndex ?? selectedIndex ?? highlightStartIndex;
 
     return (
         <Paper elevation={elevation}>
             <Stack spacing={1} margin={1}>
                 <Stack width={1} justifyContent="space-between" direction="row">
                     <Stack justifyContent="start" direction="row" spacing={1}>
-                        {slots?.title !== false &&
+                        {title &&
+                            slots?.title !== false &&
                             (slots?.title ? (
                                 <slots.title title={title} />
                             ) : (
                                 <Typography>{title}</Typography>
                             ))}
-                        {slots?.primaryValue !== false &&
-                            (slots?.primaryValue ? (
-                                <slots.primaryValue
-                                    variant="primary"
-                                    color={palette.primary.light}
-                                    {...slotProps}
-                                />
-                            ) : (
-                                <TelemetryValueRender
-                                    value={selectedYValue}
-                                    valueFormatter={valueFormatter}
-                                    color={palette.primary.light}
-                                />
-                            ))}
-                        {secondaryData && (
-                            <>
-                                {slots?.secondaryValue !== false &&
-                                    (slots?.secondaryValue ? (
-                                        <slots.secondaryValue
-                                            variant="secondary"
-                                            color={palette.secondary.light}
-                                            {...slotProps}
-                                        />
-                                    ) : (
-                                        <TelemetryValueRender
-                                            value={secondaryYValue}
-                                            valueFormatter={valueFormatter}
-                                            color={palette.secondary.light}
-                                        />
-                                    ))}
-                                {slots?.deltaValue !== false &&
-                                    (slots?.deltaValue ? (
-                                        <slots.deltaValue
-                                            variant="delta"
-                                            {...slotProps}
-                                        />
-                                    ) : (
-                                        <TelemetryValueRender
-                                            value={diffYValue}
-                                            valueFormatter={deltaFormatter}
-                                        />
-                                    ))}
-                            </>
-                        )}
+                        <TelemetryReadouts
+                            series={mutatedSeries}
+                            delta={delta}
+                            index={selectedIndex}
+                            valueFormatter={valueFormatter}
+                        />
                     </Stack>
-                    {isFinite(selectedIndex) && selectedIndex != null && (
+                    {selectedIndex != null && isFinite(selectedIndex) && (
                         <Typography>{selectedIndex}m</Typography>
                     )}
                 </Stack>
@@ -264,21 +235,13 @@ const TelemetryChart = ({
                                 ry={2}
                                 fillOpacity={0.3}
                                 x={xScale(
-                                    Math.min(
-                                        highlightStartIndex,
-                                        highlightEndIndex ??
-                                            selectedIndex ??
-                                            highlightStartIndex,
-                                    ),
+                                    Math.min(highlightStartIndex, highlightEnd),
                                 )}
                                 y={yScale.range()[1]}
                                 height={height}
                                 width={Math.abs(
-                                    xScale(
-                                        highlightEndIndex ??
-                                            selectedIndex ??
-                                            highlightStartIndex,
-                                    ) - xScale(highlightStartIndex),
+                                    xScale(highlightEnd) -
+                                        xScale(highlightStartIndex),
                                 )}
                             />
                         )}
@@ -296,35 +259,36 @@ const TelemetryChart = ({
                                 String(valueFormatter?.(v) ?? v)
                             }
                         />
-                        <TelemetryLine
-                            data={mutatedPrimaryData}
-                            xScale={xScale}
-                            yScale={yScale}
-                            stepped={mode === "stepped"}
-                            color={
-                                mode === "delta"
-                                    ? palette.success.dark
-                                    : undefined
-                            }
-                        />
-                        {secondaryData && (
-                            <TelemetryLine
-                                data={mutatedSecondaryData}
+                        {mutatedBands.map((b) => (
+                            <Band
+                                key={b.id}
                                 xScale={xScale}
                                 yScale={yScale}
-                                stepped={mode === "stepped"}
-                                color={
-                                    mode === "delta"
-                                        ? palette.error.dark
-                                        : undefined
-                                }
-                                secondary={mode !== "delta"}
+                                min={b.min}
+                                max={b.max}
+                                color={b.color}
+                                opacity={b.opacity}
                             />
+                        ))}
+                        {/* Reversed so the first series draws on top */}
+                        {[...mutatedSeries].reverse().map(
+                            (s) =>
+                                !s.hidden && (
+                                    <Line
+                                        key={s.id}
+                                        data={s.data}
+                                        xScale={xScale}
+                                        yScale={yScale}
+                                        stepped={s.stepped}
+                                        color={s.color}
+                                        dashed={s.dashed}
+                                    />
+                                ),
                         )}
                         <TelemetryCrosshair
                             xScale={xScale}
                             yScale={yScale}
-                            data={targetData}
+                            series={mutatedSeries}
                         />
                         <rect
                             style={{

@@ -1,10 +1,10 @@
 import { Typography } from "@mui/material";
-import { TelemetryChartProps } from "./types";
+import { SeriesReadoutProps } from "./types";
 
-type TelemetryValueRenderProps = Pick<TelemetryChartProps, "valueFormatter"> & {
-    value?: number;
-    color?: string;
-};
+type TelemetryValueRenderProps = Pick<
+    SeriesReadoutProps,
+    "value" | "color" | "valueFormatter"
+>;
 
 export const TelemetryValueRender = ({
     valueFormatter,

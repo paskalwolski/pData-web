@@ -1,17 +1,14 @@
 import { Stack } from "@mui/material";
-import { TelemetryValueDisplayProps } from "../TelemetryChart/types";
+import { SeriesReadoutProps } from "../TelemetryChart/types";
 import { WheelIcon } from "../Icons";
 import { TelemetryValueRender } from "../TelemetryChart/TelemetryValueRender";
 
 export const SteeringAngleDisplay = ({
-    variant,
-    primaryValue,
-    secondaryValue,
+    value,
     valueFormatter,
     color,
-}: TelemetryValueDisplayProps) => {
-    const targetValue =
-        (variant === "secondary" ? secondaryValue : primaryValue) * -1;
+}: SeriesReadoutProps) => {
+    const targetValue = value * -1;
     return (
         <Stack direction="row" width="100%" alignItems="center" spacing={1}>
             <TelemetryValueRender

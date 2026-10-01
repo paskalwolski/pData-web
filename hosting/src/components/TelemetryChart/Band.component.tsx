@@ -1,22 +1,21 @@
 import * as d3 from "d3";
 import React, { useMemo } from "react";
-import { useTheme } from "@mui/material";
 import { TelemetryDataSet } from "../../types";
 
-interface MinMaxBandProps {
+interface BandProps {
     xScale: d3.ScaleLinear<number, number, never>;
     yScale: d3.ScaleLinear<number, number, never>;
-    minSeries: TelemetryDataSet;
-    maxSeries: TelemetryDataSet;
+    min: TelemetryDataSet;
+    max: TelemetryDataSet;
+    color: string;
+    opacity?: number;
 }
 
-const MinMaxBand = React.memo(
-    ({ xScale, yScale, minSeries, maxSeries }: MinMaxBandProps) => {
-        const { palette } = useTheme();
-
+const Band = React.memo(
+    ({ xScale, yScale, min, max, color, opacity = 0.4 }: BandProps) => {
         const areaPath = useMemo(() => {
-            const points = minSeries
-                .map((min, i) => ({ i, min, max: maxSeries[i] }))
+            const points = min
+                .map((lo, i) => ({ i, min: lo, max: max[i] }))
                 .filter(
                     (p): p is { i: number; min: number; max: number } =>
                         p.min !== undefined &&
@@ -33,17 +32,17 @@ const MinMaxBand = React.memo(
                 .curve(d3.curveCatmullRom);
 
             return area(points);
-        }, [minSeries, maxSeries, xScale, yScale]);
+        }, [min, max, xScale, yScale]);
 
         return (
             <path
                 d={areaPath}
-                fill={palette.blue.main}
+                fill={color}
                 stroke="none"
-                fillOpacity={0.4}
+                fillOpacity={opacity}
             />
         );
     },
 );
 
-export { MinMaxBand };
+export { Band };
