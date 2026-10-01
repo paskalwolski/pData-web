@@ -9,19 +9,26 @@ export interface SeriesReadoutProps {
     valueFormatter?: ValueFormatter;
 }
 
-export interface ChartSeries {
+/** Per-channel defaults; explicit chart props and series fields win. */
+export interface TelemetryChannelConfig {
+    title: string;
+    valueFormatter: ValueFormatter;
+    mutators?: TelemetryMutator[];
+    /** Default for every series. */
+    stepped?: boolean;
+    /** Default for every series. */
+    readout?: React.ComponentType<SeriesReadoutProps> | false;
+    deltaReadout?: React.ComponentType<SeriesReadoutProps> | false;
+}
+
+export interface ChartSeries extends Partial<TelemetryChannelConfig> {
     id: string;
     data: TelemetryDataSet;
     color: string;
-    /** Readout text color; defaults to `color`. */
-    readoutColor?: string;
-    label?: string;
-    stepped?: boolean;
     dashed?: boolean;
-    /** Not drawn, but still feeds the y-domain and readouts. */
     hidden?: boolean;
-    /** Defaults to a plain value readout; `false` hides it. */
-    readout?: React.ComponentType<SeriesReadoutProps> | false;
+    // Targeting TelemetryChannelConfig settings for override
+    readoutColor?: string;
 }
 
 export interface ChartBand {
@@ -36,17 +43,6 @@ export type TelemetryChannel = keyof Pick<
     TelemetryData,
     "speed" | "gas" | "brake" | "steer" | "ers" | "gear" | "rpm"
 >;
-
-/** Per-channel defaults; explicit chart props and series fields win. */
-export interface TelemetryChannelConfig {
-    title: string;
-    valueFormatter: ValueFormatter;
-    mutators?: TelemetryMutator[];
-    /** Default for every series. */
-    stepped?: boolean;
-    /** Default for every series. */
-    readout?: React.ComponentType<SeriesReadoutProps>;
-}
 
 type TitleProps = { title: string };
 

@@ -1,11 +1,12 @@
 import { useCallback } from "react";
 import { deltaFormatter as baseDeltaFormatter } from "../../helpers/telemetryValueFormatter";
 import { TelemetryValueRender } from "./TelemetryValueRender";
-import { ChartSeries, ValueFormatter } from "./types";
+import { ChartSeries, SeriesReadoutProps, ValueFormatter } from "./types";
 
 interface Props {
     series: ChartSeries[];
     delta: boolean;
+    deltaReadout?: React.ComponentType<SeriesReadoutProps> | false;
     index: number | undefined;
     valueFormatter?: ValueFormatter;
 }
@@ -13,6 +14,7 @@ interface Props {
 const TelemetryReadouts = ({
     series,
     delta,
+    deltaReadout,
     index,
     valueFormatter,
 }: Props) => {
@@ -26,6 +28,11 @@ const TelemetryReadouts = ({
     const bValue = b?.data[index];
     const deltaValue =
         aValue != null && bValue != null ? aValue - bValue : undefined;
+
+    const DeltaReadout =
+        deltaReadout === false
+            ? undefined
+            : (deltaReadout ?? TelemetryValueRender);
 
     return (
         <>
@@ -41,8 +48,8 @@ const TelemetryReadouts = ({
                     />
                 );
             })}
-            {delta && a && b && (
-                <TelemetryValueRender
+            {delta && a && b && DeltaReadout && (
+                <DeltaReadout
                     value={deltaValue}
                     valueFormatter={deltaFormatter}
                 />

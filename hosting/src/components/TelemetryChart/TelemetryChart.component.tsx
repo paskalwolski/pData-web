@@ -214,6 +214,7 @@ const TelemetryChart = ({
                         <TelemetryReadouts
                             series={mutatedSeries}
                             delta={delta}
+                            deltaReadout={config?.deltaReadout}
                             index={selectedIndex}
                             valueFormatter={valueFormatter}
                         />
