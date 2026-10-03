@@ -14,6 +14,8 @@ import { Line } from "../Charts";
 import { LapInfo } from "../../types";
 import { Scatter } from "../Charts";
 import { YAxisLabels } from "../Charts";
+import { LapSelectionLayer, VisibleLap } from "./LapSelectionLayer";
+import { Tooltip } from "./Tooltip";
 import { formatDuration } from "../../helpers/formatDuration";
 
 interface Props {
@@ -22,6 +24,8 @@ interface Props {
 
 const lapTimeLabelFormatter = (v: number) =>
     formatDuration(v, { milliPrecision: 0 });
+const lapStatus = (lap: LapInfo) =>
+    lap.isPit ? "Pit" : !lap.isValid ? "Invalid" : "Valid";
 
 const SessionLapTimeChart = ({ laps }: Props) => {
     const { palette } = useTheme();
@@ -34,6 +38,9 @@ const SessionLapTimeChart = ({ laps }: Props) => {
     const [showPitLaps, setShowPitLaps] = useState(true);
     const [showInvalidLaps, setShowInvalidLaps] = useState(true);
     const [showStartLap, setShowStartLap] = useState(true);
+    const [selectedLap, setSelectedLap] = useState<VisibleLap | undefined>(
+        undefined,
+    );
 
     const filteredLaps = useMemo(
         () =>
@@ -52,15 +59,20 @@ const SessionLapTimeChart = ({ laps }: Props) => {
         [filteredLaps],
     );
 
+    const visibleLaps = useMemo(
+        () =>
+            filteredLaps.filter((lap): lap is VisibleLap => lap !== undefined),
+        [filteredLaps],
+    );
+
     const scatterData = useMemo(
         () =>
-            filteredLaps
-                .filter(
-                    (lap): lap is LapInfo & { color: string; i: number } =>
-                        lap !== undefined,
-                )
-                .map((lap) => ({ x: lap.i, y: lap.lapTime, z: lap.color })),
-        [filteredLaps],
+            visibleLaps.map((lap) => ({
+                x: lap.i,
+                y: lap.lapTime,
+                z: lap.color,
+            })),
+        [visibleLaps],
     );
 
     const xScale = useMemo(
@@ -134,7 +146,7 @@ const SessionLapTimeChart = ({ laps }: Props) => {
                         />
                     </Stack>
                 </Stack>
-                <Box ref={containerRef}>
+                <Box ref={containerRef} position="relative">
                     <svg width={width} height={height}>
                         <YAxisLabels
                             yScale={yScale}
@@ -157,7 +169,27 @@ const SessionLapTimeChart = ({ laps }: Props) => {
                             xScale={xScale}
                             yScale={yScale}
                         />
+                        <LapSelectionLayer
+                            laps={visibleLaps}
+                            xScale={xScale}
+                            yScale={yScale}
+                            width={width}
+                            height={height}
+                            padding={padding}
+                            selectedLap={selectedLap}
+                            onSelect={setSelectedLap}
+                        />
                     </svg>
+                    {selectedLap && (
+                        <Tooltip
+                            lap={selectedLap}
+                            x={xScale(selectedLap.i)}
+                            y={yScale(selectedLap.lapTime)}
+                            width={width}
+                            height={height}
+                            status={lapStatus(selectedLap)}
+                        />
+                    )}
                 </Box>
             </Stack>
         </Paper>
