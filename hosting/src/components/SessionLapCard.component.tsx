@@ -10,13 +10,19 @@ interface Props {
     color: string;
     selected?: boolean;
     onSelect?: (lap: LapInfo) => void;
+    onHover?: (lap: LapInfo | null) => void;
 }
 
-const SessionLapCard = ({ lap, color, selected, onSelect }: Props) => {
+const SessionLapCard = ({ lap, color, selected, onSelect, onHover }: Props) => {
     const selectable = !lap.isPit && lap.isValid;
 
     return (
-        <Box display="flex" flex={1}>
+        <Box
+            display="flex"
+            flex={1}
+            onMouseEnter={() => onHover?.(lap)}
+            onMouseLeave={() => onHover?.(null)}
+        >
             <Card
                 elevation={selected ? 8 : 3}
                 color={color}

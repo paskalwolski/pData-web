@@ -35,6 +35,7 @@ export const SessionDataPage = ({ sessionId }: Props) => {
     );
 
     const [selectedLapId, setSelectedLapId] = useState<string | null>(null);
+    const [hoveredLapId, setHoveredLapId] = useState<string | null>(null);
 
     const isBestLapSelected =
         sessionData?.lapData.find((l) => l.id === selectedLapId)?.lapTime ===
@@ -95,11 +96,15 @@ export const SessionDataPage = ({ sessionId }: Props) => {
                                     l.id === selectedLapId ? null : l.id,
                                 )
                             }
+                            onHover={(l) => setHoveredLapId(l?.id ?? null)}
                         />
                     );
                 })}
             </Stack>
-            <SessionLapTimeChart laps={preparedLapData} />
+            <SessionLapTimeChart
+                laps={preparedLapData}
+                hoverLapId={hoveredLapId}
+            />
             <Paper>
                 <Stack m={1} p={2}>
                     <Typography>Session Aggregate Data</Typography>

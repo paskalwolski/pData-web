@@ -16,6 +16,7 @@ interface Props {
     height: number;
     padding: number;
     selectedLap: VisibleLap | undefined;
+    hoverLap?: VisibleLap;
     onSelect: (lap: VisibleLap | undefined) => void;
 }
 
@@ -37,6 +38,7 @@ const LapSelectionLayer = ({
     height,
     padding,
     selectedLap,
+    hoverLap,
     onSelect,
 }: Props) => {
     const { palette } = useTheme();
@@ -56,6 +58,26 @@ const LapSelectionLayer = ({
 
     return (
         <>
+            {hoverLap && hoverLap.i !== selectedLap?.i && (
+                <>
+                    <line
+                        x1={xScale(hoverLap.i)}
+                        x2={xScale(hoverLap.i)}
+                        y1={padding}
+                        y2={height - padding}
+                        stroke={palette.text.secondary}
+                        strokeDasharray="4 2"
+                    />
+                    <circle
+                        r={6}
+                        cx={xScale(hoverLap.i)}
+                        cy={yScale(hoverLap.lapTime)}
+                        fill="none"
+                        stroke={palette.text.secondary}
+                        strokeWidth={2}
+                    />
+                </>
+            )}
             {selectedLap && (
                 <>
                     <line

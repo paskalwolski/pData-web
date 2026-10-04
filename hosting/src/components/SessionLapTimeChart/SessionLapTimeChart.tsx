@@ -20,6 +20,7 @@ import { formatDuration } from "../../helpers/formatDuration";
 
 interface Props {
     laps: (LapInfo & { color: string })[];
+    hoverLapId?: string;
 }
 
 const lapTimeLabelFormatter = (v: number) =>
@@ -27,7 +28,7 @@ const lapTimeLabelFormatter = (v: number) =>
 const lapStatus = (lap: LapInfo) =>
     lap.isPit ? "Pit" : !lap.isValid ? "Invalid" : "Valid";
 
-const SessionLapTimeChart = ({ laps }: Props) => {
+const SessionLapTimeChart = ({ laps, hoverLapId }: Props) => {
     const { palette } = useTheme();
 
     const height = 300;
@@ -63,6 +64,11 @@ const SessionLapTimeChart = ({ laps }: Props) => {
         () =>
             filteredLaps.filter((lap): lap is VisibleLap => lap !== undefined),
         [filteredLaps],
+    );
+
+    const hoverLap = useMemo(
+        () => visibleLaps.find((lap) => lap.id === hoverLapId),
+        [visibleLaps, hoverLapId],
     );
 
     const scatterData = useMemo(
@@ -177,6 +183,7 @@ const SessionLapTimeChart = ({ laps }: Props) => {
                             height={height}
                             padding={padding}
                             selectedLap={selectedLap}
+                            hoverLap={hoverLap}
                             onSelect={setSelectedLap}
                         />
                     </svg>
