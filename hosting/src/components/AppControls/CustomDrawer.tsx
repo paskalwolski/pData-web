@@ -1,56 +1,34 @@
-import {
-    Divider,
-    Drawer,
-    List,
-    MenuItem,
-    MenuItemProps,
-    Stack,
-    Typography,
-} from "@mui/material";
-import React from "react";
+import { Divider, Drawer, List, MenuItem, Stack } from "@mui/material";
 import { Link } from "wouter";
+
 interface CustomerDrawerProps {
     isDrawerOpen: boolean;
     toggleDrawerOpen: () => void;
 }
 
-interface DrawerMenuItemProps extends Exclude<MenuItemProps, "onclick"> {
-    children: React.ReactNode;
-}
-
 const CustomDrawer = ({
     isDrawerOpen,
     toggleDrawerOpen,
-}: CustomerDrawerProps) => {
-    const DrawerMenuItem = React.memo<DrawerMenuItemProps>(
-        ({ children, ...props }) => (
-            <MenuItem {...props} onClick={toggleDrawerOpen}>
-                {children}
-            </MenuItem>
-        ),
-    );
-
-    return (
-        <Drawer open={isDrawerOpen} onClose={toggleDrawerOpen}>
-            <Stack direction="column" flexGrow={1} width={200}>
-                <List>
-                    <DrawerMenuItem>
-                        <Link href="/" asChild>
-                            <Typography>Home</Typography>
-                        </Link>
-                    </DrawerMenuItem>
-                    <Divider />
-                    <DrawerMenuItem>
-                        <Link href="/laps" asChild>
-                            <Typography>Laps</Typography>
-                        </Link>
-                    </DrawerMenuItem>
-                    <DrawerMenuItem>Sessions</DrawerMenuItem>
-                    <Divider />
-                </List>
-            </Stack>
-        </Drawer>
-    );
-};
+}: CustomerDrawerProps) => (
+    <Drawer open={isDrawerOpen} onClose={toggleDrawerOpen}>
+        <Stack direction="column" flexGrow={1} width={200}>
+            <List>
+                <MenuItem component={Link} href="/" onClick={toggleDrawerOpen}>
+                    Home
+                </MenuItem>
+                <Divider />
+                <MenuItem
+                    component={Link}
+                    href="/laps"
+                    onClick={toggleDrawerOpen}
+                >
+                    Laps
+                </MenuItem>
+                <MenuItem onClick={toggleDrawerOpen}>Sessions</MenuItem>
+                <Divider />
+            </List>
+        </Stack>
+    </Drawer>
+);
 
 export { CustomDrawer };
