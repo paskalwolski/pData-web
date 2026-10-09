@@ -1,5 +1,30 @@
 import { TelemetryData, TelemetryDataSet, TrackSegmentType } from "../types";
 
+/* Start-of-lap noise handling. Samples are one per metre, deltas in ms. */
+const START_WINDOW_METERS = 50;
+const START_JUMP_THRESHOLD_MS = 100;
+
+const cleanStartDeltas = (
+    deltas: Array<number | undefined>,
+): Array<number | undefined> => {
+    /* Drop everything up to the last significant jump within the start
+     * window, then rebase so the delta starts at 0. */
+    let dropUntil = -1;
+    let prev: number | undefined;
+    for (let i = 0; i < Math.min(START_WINDOW_METERS, deltas.length); i++) {
+        const d = deltas[i];
+        if (d == undefined) continue;
+        if (prev != undefined && Math.abs(d - prev) > START_JUMP_THRESHOLD_MS) {
+            dropUntil = i - 1;
+        }
+        prev = d;
+    }
+
+    const trimmed = deltas.map((d, i) => (i <= dropUntil ? undefined : d));
+    const baseline = trimmed.find((d): d is number => d != undefined) ?? 0;
+    return trimmed.map((d) => (d != undefined ? d - baseline : undefined));
+};
+
 const computeSmoothedDeltas = (
     primaryData: TelemetryData,
     secondaryData: TelemetryData,
@@ -7,11 +32,12 @@ const computeSmoothedDeltas = (
     /* Calculate the raw timeDelta values per index for an entire TelemetryData bundle */
     const smoothingWindow = 15;
 
-    const rawDeltas = primaryData.lapTime.map((t, i) => {
+    const uncleanedDeltas = primaryData.lapTime.map((t, i) => {
         const t2 = secondaryData.lapTime[i];
         const delta = t != undefined && t2 != undefined ? t - t2 : undefined;
         return delta;
     });
+    const rawDeltas = cleanStartDeltas(uncleanedDeltas);
     const slopeValues: Array<number> = [];
     const smoothedValues = rawDeltas.map((delta, i) => {
         const window = rawDeltas
