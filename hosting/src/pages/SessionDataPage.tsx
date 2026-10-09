@@ -1,11 +1,4 @@
-import {
-    Button,
-    CircularProgress,
-    Paper,
-    Stack,
-    Typography,
-    useTheme,
-} from "@mui/material";
+import { Button, Paper, Stack, Typography, useTheme } from "@mui/material";
 import { SessionInfo } from "../components/SessionInfo.component";
 import {
     useAggregateTelemetry,
@@ -108,7 +101,7 @@ const SessionDataPage = ({ sessionId }: Props) => {
                 hoverLapId={hoveredLapId}
             />
             <Paper>
-                <Stack m={1} p={1}>
+                <Stack m={1} p={2} spacing={1}>
                     <Typography>Session Aggregate Data</Typography>
                     <Stack
                         alignItems="center"
@@ -138,26 +131,16 @@ const SessionDataPage = ({ sessionId }: Props) => {
                             )}
                         {(sessionData.aggregateStatus === "pending" ||
                             sessionData.aggregateStatus === "processing") && (
-                            <Stack
-                                alignItems="center"
-                                justifyContent="center"
-                                spacing={1}
-                            >
-                                <CircularProgress size={24} />
-                                <Typography variant="caption">
-                                    Processing telemetry data - it will show
-                                    here as soon as it&apos;s ready.
-                                </Typography>
-                            </Stack>
-                        )}
-                        <Typography variant="caption">
-                            Aggregate status: {sessionData.aggregateStatus}
-                        </Typography>
-                        {aggregateTelemetry && (
-                            <Typography variant="caption">
-                                Channels loaded:{" "}
-                                {Object.keys(aggregateTelemetry).length}
-                            </Typography>
+                            <CarSpinner
+                                heading={
+                                    sessionData?.aggregateStatus[0].toUpperCase() +
+                                    sessionData.aggregateStatus.slice(1) +
+                                    " session data calculation"
+                                }
+                                subheading={
+                                    "Your session data is being calculated and will immediately show when completed"
+                                }
+                            />
                         )}
                     </Stack>
                     {loadingAggregateTelemetry ? (

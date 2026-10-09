@@ -9,7 +9,7 @@ interface CarSpinnerIconProps extends SVGProps<SVGSVGElement> {
 }
 
 export const CarSpinnerIcon = ({
-    size = "1em",
+    size = "8em",
     color = "currentColor",
     spinnerColor = color,
     duration = 1,
@@ -17,7 +17,6 @@ export const CarSpinnerIcon = ({
 }: CarSpinnerIconProps) => (
     <svg
         width={size}
-        height={size}
         viewBox="0 0 98.751 98.75"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
