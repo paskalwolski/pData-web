@@ -1,10 +1,11 @@
-import { Box, Paper, Stack, Typography, useTheme } from "@mui/material";
+import { Box, Paper, Stack, useTheme } from "@mui/material";
 import { useLapTelemetry } from "../hooks/useLaps";
 import TelemetryChart, { CHANNEL_ORDER } from "../components/TelemetryChart";
 import { useTrackData } from "../hooks/useTracks";
 import { TrackDisplay } from "../components/Track/TrackDisplay.component";
 import { TelemetryPointProvider } from "../hooks/TelemetryPointContext/useTelemetryPoint";
 import { TimeDeltaChart } from "../components/CustomTelemetry/TimeDeltaChart";
+import { CarSpinner } from "../components/CarSpinner";
 
 interface Props {
     lapId: string;
@@ -22,7 +23,7 @@ export const LapTelemetry = ({ lapId, secondaryLapId, trackId }: Props) => {
     return isLoadingTelemetry ||
         isLoadingSecondaryTelemetry ||
         isLoadingTrackData ? (
-        <Typography>Loading Lap Data...</Typography>
+        <CarSpinner />
     ) : (
         <Stack direction="row" gap={2}>
             <TelemetryPointProvider>

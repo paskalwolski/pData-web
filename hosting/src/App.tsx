@@ -1,19 +1,23 @@
 import { Switch, Route } from "wouter";
-import { Container, Typography } from "@mui/material";
+import { Container } from "@mui/material";
 import { AppControlBar } from "./components/AppControls/AppControlBar";
 import { useToggle } from "./hooks/useToggle";
 import { Homepage } from "./pages/HomePage";
-import { LapDataPage } from "./pages/LapDataPage";
-import { LapSelectorPage } from "./pages/LapSelectorPage";
+
 import { useCTDContext } from "./hooks/CTDContext/useCTDContext";
-import { SessionDataPage } from "./pages/SessionDataPage";
+import { lazy, Suspense } from "react";
+import { CarSpinner } from "./components/CarSpinner";
+
+const LapDataPage = lazy(() => import("./pages/LapDataPage"));
+const SessionDataPage = lazy(() => import("./pages/SessionDataPage"));
+const LapSelectorPage = lazy(() => import("./pages/LapSelectorPage"));
 
 export default function App() {
     const { loading } = useCTDContext();
     const [isDrawerOpen, toggleDrawerOpen] = useToggle(false);
 
     return loading ? (
-        <Typography>Loading...</Typography>
+        <CarSpinner />
     ) : (
         <>
             <AppControlBar
@@ -30,21 +34,31 @@ export default function App() {
                             lapId: string;
                             secondaryId: string;
                         }) => (
-                            <LapDataPage
-                                lapId={lapId}
-                                secondaryLapId={secondaryId}
-                            />
+                            <Suspense fallback={<CarSpinner />}>
+                                <LapDataPage
+                                    lapId={lapId}
+                                    secondaryLapId={secondaryId}
+                                />
+                            </Suspense>
                         )}
                     </Route>
                     <Route path="/laps/:lapId">
                         {({ lapId }: { lapId: string }) => (
-                            <LapDataPage lapId={lapId} />
+                            <Suspense fallback={<CarSpinner />}>
+                                <LapDataPage lapId={lapId} />
+                            </Suspense>
                         )}
                     </Route>
-                    <Route path="/laps" component={LapSelectorPage} />
+                    <Route path="/laps">
+                        <Suspense fallback={<CarSpinner />}>
+                            <LapSelectorPage />
+                        </Suspense>
+                    </Route>
                     <Route path="/sessions/:sessionId">
                         {({ sessionId }: { sessionId: string }) => (
-                            <SessionDataPage sessionId={sessionId} />
+                            <Suspense fallback={<CarSpinner />}>
+                                <SessionDataPage sessionId={sessionId} />
+                            </Suspense>
                         )}
                     </Route>
                     <Route path="/" component={Homepage} />

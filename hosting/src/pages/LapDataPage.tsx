@@ -6,7 +6,6 @@ import {
     Divider,
     Paper,
     Stack,
-    Typography,
     useTheme,
 } from "@mui/material";
 import { useLap } from "../hooks/useLaps";
@@ -23,13 +22,14 @@ import { LapTable } from "../components/LapTable.component";
 import { GridFilterItem } from "@mui/x-data-grid";
 import { DOCUMENT_REF } from "../helpers/datagridConvertors";
 import { useMetaName } from "../hooks/CTDContext/useCollectionMeta";
+import { CarSpinner } from "../components/CarSpinner";
 
 interface Props {
     lapId: string;
     secondaryLapId?: string;
 }
 
-export const LapDataPage = ({ lapId, secondaryLapId }: Props) => {
+const LapDataPage = ({ lapId, secondaryLapId }: Props) => {
     const { palette } = useTheme();
     const [lapData, isLoadingLapData] = useLap(lapId);
     const [secondaryLapData, isLoadingSecondaryLapData] =
@@ -99,8 +99,8 @@ export const LapDataPage = ({ lapId, secondaryLapId }: Props) => {
                         direction="row"
                         justifyContent="space-between"
                     >
-                        {isLoadingLapData ? (
-                            <Typography>Loading...</Typography>
+                        {isLoadingLapData || isLoadingSecondaryLapData ? (
+                            <CarSpinner />
                         ) : hasComparisonLap ? (
                             <Stack p={1} spacing={1} flex={1}>
                                 <InfoCardValue
@@ -128,23 +128,19 @@ export const LapDataPage = ({ lapId, secondaryLapId }: Props) => {
                                         />
                                     </Paper>
                                     <Divider orientation="vertical" />
-                                    {isLoadingSecondaryLapData ? (
-                                        <Typography>Loading...</Typography>
-                                    ) : (
-                                        secondaryLapData && (
-                                            <Paper
-                                                sx={{
-                                                    flex: 1,
-                                                    backgroundColor:
-                                                        palette.secondary.dark,
-                                                }}
-                                            >
-                                                <LapInfo
-                                                    lapData={secondaryLapData}
-                                                    isComparison
-                                                />
-                                            </Paper>
-                                        )
+                                    {secondaryLapData && (
+                                        <Paper
+                                            sx={{
+                                                flex: 1,
+                                                backgroundColor:
+                                                    palette.secondary.dark,
+                                            }}
+                                        >
+                                            <LapInfo
+                                                lapData={secondaryLapData}
+                                                isComparison
+                                            />
+                                        </Paper>
                                     )}
                                 </Stack>
                             </Stack>
@@ -171,9 +167,8 @@ export const LapDataPage = ({ lapId, secondaryLapId }: Props) => {
                         </Stack>
                     </Stack>
                 </Paper>
-                {isLoadingLapData || isLoadingSecondaryLapData ? (
-                    <Typography>Loading...</Typography>
-                ) : (
+
+                {lapData && (
                     <LapTelemetry
                         trackId={lapData.sessionData.track}
                         lapId={lapId}
@@ -202,3 +197,5 @@ export const LapDataPage = ({ lapId, secondaryLapId }: Props) => {
         </>
     );
 };
+
+export default LapDataPage;

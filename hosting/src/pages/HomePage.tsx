@@ -12,6 +12,7 @@ import { useLocation } from "wouter";
 import { LapInfo } from "../components/LapInfo.component";
 import { useLatestSessions } from "../hooks/useSessions";
 import { SessionCard } from "../components/SessionCard.component";
+import { CarSpinner } from "../components/CarSpinner";
 
 const Homepage = () => {
     const [latestLaps, isLoadingLatestLaps] = useLatestLaps({
@@ -39,7 +40,7 @@ const Homepage = () => {
                 </Box>
                 <Divider />
                 {isLoadingLatestLaps ? (
-                    <Typography>Loading...</Typography>
+                    <CarSpinner />
                 ) : latestLaps ? (
                     <Stack direction="row" overflow="auto" spacing={1} px={1}>
                         {latestLaps.map((lap) => (
@@ -81,10 +82,7 @@ const Homepage = () => {
                 ) : latestSessions ? (
                     <Stack direction="row" overflow="auto" spacing={1} p={1}>
                         {latestSessions.map((s) => (
-                            <Box
-                                display="flex"
-                                key={`lap-${s.sessionId}`}
-                            >
+                            <Box display="flex" key={`lap-${s.sessionId}`}>
                                 <SessionCard
                                     sessionData={s}
                                     onClick={handleSelectSession}

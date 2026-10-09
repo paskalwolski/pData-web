@@ -23,7 +23,7 @@ interface Props {
     sessionId: string;
 }
 
-export const SessionDataPage = ({ sessionId }: Props) => {
+const SessionDataPage = ({ sessionId }: Props) => {
     const { palette } = useTheme();
     const [sessionData, loadingSession] = useSession(sessionId);
 
@@ -81,7 +81,7 @@ export const SessionDataPage = ({ sessionId }: Props) => {
         [sessionData?.lapData, resolveLapColor],
     );
     return loadingSession ? (
-        <Typography>Loading...</Typography>
+        <CarSpinner />
     ) : (
         <>
             <SessionInfo sessionData={sessionData} variant="normal" />
@@ -177,3 +177,5 @@ export const SessionDataPage = ({ sessionId }: Props) => {
         </>
     );
 };
+
+export default SessionDataPage;
