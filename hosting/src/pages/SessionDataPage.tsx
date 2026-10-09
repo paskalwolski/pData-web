@@ -106,7 +106,7 @@ export const SessionDataPage = ({ sessionId }: Props) => {
                 hoverLapId={hoveredLapId}
             />
             <Paper>
-                <Stack m={1} p={2}>
+                <Stack m={1} p={1}>
                     <Typography>Session Aggregate Data</Typography>
                     <Stack
                         alignItems="center"
@@ -161,6 +161,7 @@ export const SessionDataPage = ({ sessionId }: Props) => {
                     {aggregateTelemetry && (
                         <SessionAggregateTelemetry
                             aggregateTelemetry={aggregateTelemetry}
+                            trackId={sessionData.track}
                             selectedLapId={selectedLapId}
                             isBestLap={isBestLapSelected}
                         />
