@@ -1,3 +1,4 @@
+import { CarSpinnerIcon } from "./CarSpinnerIcon";
 import { WheelIcon } from "./WheelIcon";
 
-export { WheelIcon };
+export { CarSpinnerIcon, WheelIcon };
