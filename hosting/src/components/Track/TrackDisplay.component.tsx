@@ -8,6 +8,8 @@ import { useTelemetryPointContext } from "../../hooks/TelemetryPointContext/useT
 import { TrackCrosshair } from "./TrackCrosshair.component";
 import { useTrackSegments } from "../../hooks/useTrackSegments";
 import { TrackDisplayMenu } from "./TrackDisplayMenu.component";
+import { detectApexes } from "../../helpers/detectApexes";
+import { TrackApexes } from "./TrackApexes.component";
 
 interface Props {
     trackData?: TrackData;
@@ -39,6 +41,16 @@ const TrackDisplay = ({
         telemetryData,
         secondaryTelemetryData,
         displayMode,
+    );
+
+    const apexes = useMemo(
+        () => detectApexes(telemetryData),
+        [telemetryData],
+    );
+    const secondaryApexes = useMemo(
+        () =>
+            secondaryTelemetryData ? detectApexes(secondaryTelemetryData) : [],
+        [secondaryTelemetryData],
     );
 
     const primaryPositionData = useMemo(
@@ -315,6 +327,24 @@ const TrackDisplay = ({
                     displayMode={displayMode}
                     positionData={primaryPositionData}
                     trackSegmentData={activeSegmentData}
+                    xScale={xScale}
+                    yScale={yScale}
+                    renderScale={renderScale}
+                />
+
+                {secondaryTelemetryData && (
+                    <TrackApexes
+                        apexes={secondaryApexes}
+                        telemetryData={secondaryTelemetryData}
+                        xScale={xScale}
+                        yScale={yScale}
+                        renderScale={renderScale}
+                        secondary
+                    />
+                )}
+                <TrackApexes
+                    apexes={apexes}
+                    telemetryData={telemetryData}
                     xScale={xScale}
                     yScale={yScale}
                     renderScale={renderScale}

@@ -123,3 +123,12 @@ export type Entity = (typeof ENTITIES)[number];
 export type EntityMetadata = {
     nameMap: Record<string, string>;
 };
+
+export interface Apex {
+    /** Index into telemetry arrays (≈ metres along the lap) */
+    meter: number;
+    /** Smoothed (and optionally normalised) |steer| at the apex */
+    peak: number;
+    startMeter: number;
+    endMeter: number;
+}
