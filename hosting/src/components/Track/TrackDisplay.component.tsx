@@ -8,8 +8,8 @@ import { useTelemetryPointContext } from "../../hooks/TelemetryPointContext/useT
 import { TrackCrosshair } from "./TrackCrosshair.component";
 import { useTrackSegments } from "../../hooks/useTrackSegments";
 import { TrackDisplayMenu } from "./TrackDisplayMenu.component";
-import { detectApexes } from "../../helpers/detectApexes";
-import { TrackApexes } from "./TrackApexes.component";
+import { detectTrackMarkers } from "../../helpers/detectTrackMarkers";
+import { TrackMarkers } from "./TrackMarkers.component";
 
 interface Props {
     trackData?: TrackData;
@@ -43,14 +43,13 @@ const TrackDisplay = ({
         displayMode,
     );
 
-    const apexes = useMemo(
-        () => detectApexes(telemetryData),
-        [telemetryData],
+    const markers = useMemo(
+        () => detectTrackMarkers(telemetryData, displayMode),
+        [telemetryData, displayMode],
     );
-    const secondaryApexes = useMemo(
-        () =>
-            secondaryTelemetryData ? detectApexes(secondaryTelemetryData) : [],
-        [secondaryTelemetryData],
+    const secondaryMarkers = useMemo(
+        () => detectTrackMarkers(secondaryTelemetryData, displayMode),
+        [secondaryTelemetryData, displayMode],
     );
 
     const primaryPositionData = useMemo(
@@ -333,8 +332,8 @@ const TrackDisplay = ({
                 />
 
                 {secondaryTelemetryData && (
-                    <TrackApexes
-                        apexes={secondaryApexes}
+                    <TrackMarkers
+                        markers={secondaryMarkers}
                         telemetryData={secondaryTelemetryData}
                         xScale={xScale}
                         yScale={yScale}
@@ -342,8 +341,8 @@ const TrackDisplay = ({
                         secondary
                     />
                 )}
-                <TrackApexes
-                    apexes={apexes}
+                <TrackMarkers
+                    markers={markers}
                     telemetryData={telemetryData}
                     xScale={xScale}
                     yScale={yScale}

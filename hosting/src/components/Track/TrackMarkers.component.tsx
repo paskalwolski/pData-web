@@ -1,8 +1,9 @@
 import { useTheme } from "@mui/material";
-import { Apex, TelemetryData } from "../../types";
+import { TelemetryData } from "../../types";
 
 interface Props {
-    apexes: Apex[];
+    /** Telemetry indices (≈ metres along the lap) to mark. */
+    markers: number[];
     telemetryData: TelemetryData;
     xScale: d3.ScaleLinear<number, number, never>;
     yScale: d3.ScaleLinear<number, number, never>;
@@ -10,14 +11,14 @@ interface Props {
     secondary?: boolean;
 }
 
-// Samples either side of the apex used to estimate the local track direction.
+// Samples either side of the marker used to estimate the local track direction.
 const DIRECTION_SPAN = 5;
 // Bar size in world units; multiplied by renderScale so it zooms with the track.
 const BAR_HALF_LENGTH = 7;
 const BAR_WIDTH = 4;
 
-export const TrackApexes = ({
-    apexes,
+export const TrackMarkers = ({
+    markers,
     telemetryData,
     xScale,
     yScale,
@@ -59,18 +60,15 @@ export const TrackApexes = ({
 
     return (
         <>
-            {apexes.map((apex) => {
-                const centre = getBar(
-                    apex.meter,
-                    BAR_HALF_LENGTH * renderScale,
-                );
+            {markers.map((meter) => {
+                const centre = getBar(meter, BAR_HALF_LENGTH * renderScale);
                 if (!centre) return null;
                 const colour = secondary
                     ? palette.secondary.main
                     : palette.primary.main;
 
                 return (
-                    <g key={apex.meter}>
+                    <g key={meter}>
                         <line
                             {...centre.line}
                             stroke={colour}
