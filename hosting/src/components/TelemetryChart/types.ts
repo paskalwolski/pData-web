@@ -42,7 +42,15 @@ export interface ChartBand {
 
 export type TelemetryChannel = keyof Pick<
     TelemetryData,
-    "speed" | "gas" | "brake" | "steer" | "ers" | "gear" | "rpm"
+    | "speed"
+    | "gas"
+    | "brake"
+    | "steer"
+    | "ers"
+    | "gear"
+    | "rpm"
+    | "frontSlip"
+    | "rearSlip"
 >;
 
 type TitleProps = { title: string };

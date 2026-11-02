@@ -44,4 +44,6 @@ export const CHANNEL_ORDER: TelemetryChannel[] = [
     "ers",
     "gear",
     "rpm",
+    "frontSlip",
+    "rearSlip",
 ];

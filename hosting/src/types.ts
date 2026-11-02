@@ -89,6 +89,8 @@ export interface TelemetryData {
     posX?: TelemetryDataSet;
     posY?: TelemetryDataSet;
     posZ?: TelemetryDataSet;
+    frontSlip?: TelemetryDataSet;
+    rearSlip?: TelemetryDataSet;
 }
 
 export interface TrackData {
