@@ -32,6 +32,7 @@ import {
 } from './metaCollection';
 import {handleFastestLap} from './bestAttempts';
 import {computeSessionAggregate} from './aggregateTelemetry';
+import {isConstantSeries} from './helpers';
 
 // Collection Definition
 const LAPS = 'test_laps';
@@ -133,12 +134,13 @@ export const handleLap = onRequest(async (request, response) => {
     // Store lap data + telemetry for valid laps
     await firestore.runTransaction(async transaction => {
       transaction.set(lapRef, lapDocumentData);
-      (Object.entries(lapData) as [string, TelemetryDataSet][]).map(
-        ([telemetryKey, telemetryData]) =>
+      (Object.entries(lapData) as [string, TelemetryDataSet][])
+        .filter(([, telemetryData]) => !isConstantSeries(telemetryData))
+        .map(([telemetryKey, telemetryData]) =>
           transaction.set(lapRef.collection('telemetry').doc(telemetryKey), {
             data: telemetryData,
           }),
-      );
+        );
 
       // Update the driver meta collection for best laps
       const bestAttemptsRef = driverRef.collection(track).doc(car);
