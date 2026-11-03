@@ -12,7 +12,7 @@ export interface SeriesReadoutProps {
 /** Per-channel defaults; explicit chart props and series fields win. */
 export interface TelemetryChannelConfig {
     title: string;
-    valueFormatter: ValueFormatter;
+    valueFormatter?: ValueFormatter;
     mutators?: TelemetryMutator[];
     /** Default for every series. */
     stepped?: boolean;

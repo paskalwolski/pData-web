@@ -1,28 +1,42 @@
 import { TelemetryData, TelemetryDataSet, TrackSegmentType } from "../types";
 
-/* Start-of-lap noise handling. Samples are one per metre, deltas in ms. */
-const START_WINDOW_METERS = 50;
-const START_JUMP_THRESHOLD_MS = 100;
+/* Edge glitch handling: large jumps in the first/last few metres are noise. */
+const EDGE_WINDOW_METERS = 10;
+const EDGE_JUMP_THRESHOLD_MS = 1000;
 
-const cleanStartDeltas = (
+const trimBoundaryDeltaJumps = (
     deltas: Array<number | undefined>,
 ): Array<number | undefined> => {
-    /* Drop everything up to the last significant jump within the start
-     * window, then rebase so the delta starts at 0. */
-    let dropUntil = -1;
+    /* Blank out everything before the last big jump in the first window, and
+     * everything from the first big jump in the last window onwards. */
+    const n = deltas.length;
+    const window = Math.min(EDGE_WINDOW_METERS, n);
+    const isJump = (a?: number, b?: number) =>
+        a != undefined &&
+        b != undefined &&
+        Math.abs(b - a) > EDGE_JUMP_THRESHOLD_MS;
+
+    let keepFrom = 0;
     let prev: number | undefined;
-    for (let i = 0; i < Math.min(START_WINDOW_METERS, deltas.length); i++) {
+    for (let i = 0; i < window; i++) {
         const d = deltas[i];
         if (d == undefined) continue;
-        if (prev != undefined && Math.abs(d - prev) > START_JUMP_THRESHOLD_MS) {
-            dropUntil = i - 1;
-        }
+        if (isJump(prev, d)) keepFrom = i;
         prev = d;
     }
 
-    const trimmed = deltas.map((d, i) => (i <= dropUntil ? undefined : d));
-    const baseline = trimmed.find((d): d is number => d != undefined) ?? 0;
-    return trimmed.map((d) => (d != undefined ? d - baseline : undefined));
+    let keepUntil = n - 1;
+    prev = undefined;
+    for (let i = n - 1; i >= n - window; i--) {
+        const d = deltas[i];
+        if (d == undefined) continue;
+        if (isJump(prev, d)) keepUntil = i;
+        prev = d;
+    }
+
+    return deltas.map((d, i) =>
+        i >= keepFrom && i <= keepUntil ? d : undefined,
+    );
 };
 
 const computeSmoothedDeltas = (
@@ -37,7 +51,7 @@ const computeSmoothedDeltas = (
         const delta = t != undefined && t2 != undefined ? t - t2 : undefined;
         return delta;
     });
-    const rawDeltas = cleanStartDeltas(uncleanedDeltas);
+    const rawDeltas = trimBoundaryDeltaJumps(uncleanedDeltas);
     const slopeValues: Array<number> = [];
     const smoothedValues = rawDeltas.map((delta, i) => {
         const window = rawDeltas
