@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useId, useMemo } from "react";
 import * as d3 from "d3";
 import { useContainerSize } from "../../hooks/useContainerSize";
 import { Box, Paper, Stack, Typography, useTheme } from "@mui/material";
@@ -25,6 +25,7 @@ const TelemetryChart = ({
     elevation,
 }: TelemetryChartProps) => {
     const { palette } = useTheme();
+    const clipId = useId();
 
     const config = channel ? CHANNEL_CONFIG[channel] : undefined;
     const title = titleProp ?? config?.title;
@@ -223,8 +224,18 @@ const TelemetryChart = ({
                         <Typography>{selectedIndex}m</Typography>
                     )}
                 </Stack>
-                <Box ref={containerRef}>
+                <Box ref={containerRef} sx={{ width: 1, overflow: "hidden" }}>
                     <svg width={width} height={height}>
+                        <defs>
+                            <clipPath id={clipId}>
+                                <rect
+                                    x={leftPadding}
+                                    y={0}
+                                    width={Math.max(width - leftPadding, 0)}
+                                    height={height}
+                                />
+                            </clipPath>
+                        </defs>
                         {highlightStartIndex != null && (
                             <rect
                                 fill={palette.info.light}
@@ -257,32 +268,34 @@ const TelemetryChart = ({
                                 String(valueFormatter?.(v) ?? v)
                             }
                         />
-                        {mutatedBands.map((b) => (
-                            <Band
-                                key={b.id}
-                                xScale={xScale}
-                                yScale={yScale}
-                                min={b.min}
-                                max={b.max}
-                                color={b.color}
-                                opacity={b.opacity}
-                            />
-                        ))}
-                        {mutatedSeries.map(
-                            (s) =>
-                                !s.hidden && (
-                                    <Line
-                                        key={s.id}
-                                        data={s.data}
-                                        xScale={xScale}
-                                        yScale={yScale}
-                                        stepped={s.stepped}
-                                        color={s.color}
-                                        dashed={s.dashed}
-                                        gapped={s.gapped}
-                                    />
-                                ),
-                        )}
+                        <g clipPath={`url(#${clipId})`}>
+                            {mutatedBands.map((b) => (
+                                <Band
+                                    key={b.id}
+                                    xScale={xScale}
+                                    yScale={yScale}
+                                    min={b.min}
+                                    max={b.max}
+                                    color={b.color}
+                                    opacity={b.opacity}
+                                />
+                            ))}
+                            {mutatedSeries.map(
+                                (s) =>
+                                    !s.hidden && (
+                                        <Line
+                                            key={s.id}
+                                            data={s.data}
+                                            xScale={xScale}
+                                            yScale={yScale}
+                                            stepped={s.stepped}
+                                            color={s.color}
+                                            dashed={s.dashed}
+                                            gapped={s.gapped}
+                                        />
+                                    ),
+                            )}
+                        </g>
                         <TelemetryCrosshair
                             xScale={xScale}
                             yScale={yScale}
