@@ -13,7 +13,7 @@ export interface SeriesReadoutProps {
 export interface TelemetryChannelConfig {
     title: string;
     valueFormatter?: ValueFormatter;
-    mutators?: TelemetryMutator[];
+    mutators?: readonly TelemetryMutator[];
     /** Default for every series. */
     stepped?: boolean;
     /** Default for every series. */

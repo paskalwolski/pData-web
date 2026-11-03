@@ -7,9 +7,12 @@ const speedFormatter: TelemetryValueFormatter = (v) => `${v.toFixed(0)}km/h`;
 const steerFormatter: TelemetryValueFormatter = (v) =>
     `${Math.abs(v).toFixed(0)}° ${v === 0 ? "" : v < 0 ? "R" : "L"}`;
 
-const ersFormatter: TelemetryValueFormatter = (v) => `${(v / 1000).toFixed(2)}MJ`;
+const ersFormatter: TelemetryValueFormatter = (v) =>
+    `${(v / 1000).toFixed(2)}MJ`;
 
 const rpmFormatter: TelemetryValueFormatter = (v) => `${v.toFixed(0)}RPM`;
+
+const slipFormatter: TelemetryValueFormatter = (v) => `${v.toFixed(2)}`;
 
 const gearFormatter = (v: number) => {
     if (v === 0) return "R";
@@ -26,5 +29,6 @@ export {
     steerFormatter,
     ersFormatter,
     rpmFormatter,
+    slipFormatter,
     gearFormatter,
 };

@@ -1,18 +1,21 @@
 import { SteeringAngleDisplay } from "../CustomTelemetry/SteeringAngleDisplay";
-import { invert, round } from "../../helpers/telemetryMutators";
+import { invert, movingAverage, round } from "../../helpers/telemetryMutators";
 import {
     ersFormatter,
     gearFormatter,
     pedalFormatter,
     rpmFormatter,
+    slipFormatter,
     speedFormatter,
     steerFormatter,
 } from "../../helpers/telemetryValueFormatter";
 import { TelemetryChannel, TelemetryChannelConfig } from "./types";
 import { GearDeltaDisplay } from "../CustomTelemetry/GearDeltaDisplay";
 
-const STEER_MUTATORS = [invert];
-const GEAR_MUTATORS = [round];
+const STEER_MUTATORS = [invert] as const;
+const GEAR_MUTATORS = [round] as const;
+const SLIP_SMOOTHING_WINDOW_M = 30;
+const SLIP_MUTATORS = [movingAverage(SLIP_SMOOTHING_WINDOW_M)] as const;
 
 export const CHANNEL_CONFIG: Partial<
     Record<TelemetryChannel, TelemetryChannelConfig>
@@ -35,6 +38,16 @@ export const CHANNEL_CONFIG: Partial<
         mutators: GEAR_MUTATORS,
     },
     rpm: { title: "RPM", valueFormatter: rpmFormatter },
+    frontSlip: {
+        title: "Front Slip Ratio",
+        mutators: SLIP_MUTATORS,
+        valueFormatter: slipFormatter,
+    },
+    rearSlip: {
+        title: "Rear Slip Ratio",
+        mutators: SLIP_MUTATORS,
+        valueFormatter: slipFormatter,
+    },
 };
 
 export const CHANNEL_ORDER: TelemetryChannel[] = [
