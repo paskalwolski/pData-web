@@ -28,6 +28,7 @@ export interface LapInfo {
     isValid: boolean;
     lapNumber: number;
     lapTime: number;
+    dropped?: boolean;
 }
 
 export type AggregateStatus =

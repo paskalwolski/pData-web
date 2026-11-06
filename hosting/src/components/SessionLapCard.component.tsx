@@ -34,7 +34,7 @@ const SessionLapCard = ({
     onHover,
     onCompareLap,
 }: Props) => {
-    const selectable = !lap.isPit && lap.isValid;
+    const selectable = !lap.isPit && lap.isValid && !lap.dropped;
     const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
     const closeMenu = () => setMenuAnchor(null);
 
@@ -53,6 +53,7 @@ const SessionLapCard = ({
                     border: 1,
                     borderColor: color,
                     backgroundColor: selected ? alpha(color, 0.6) : undefined,
+                    borderStyle: lap.dropped ? "dashed" : undefined,
                     position: "relative",
                     "&:hover .lap-options-button": { opacity: 1 },
                 }}

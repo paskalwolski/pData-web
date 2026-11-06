@@ -81,7 +81,8 @@ const useSession = (sessionId: string) => {
 };
 
 const useAggregateTelemetry = (sessionId: string, enabled: boolean) => {
-    const [channels, setChannels] = useState<Record<string, AggregateChannelDoc>>();
+    const [channels, setChannels] =
+        useState<Record<string, AggregateChannelDoc>>();
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
