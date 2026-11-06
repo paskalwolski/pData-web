@@ -11,6 +11,7 @@ import { useCallback, useMemo, useState } from "react";
 import { LapInfo } from "../types";
 import { SessionAggregateTelemetry } from "../views/SessionAggregateTelemetry";
 import { CarSpinner } from "../components/CarSpinner";
+import { useLocation } from "wouter";
 
 interface Props {
     sessionId: string;
@@ -18,6 +19,7 @@ interface Props {
 
 const SessionDataPage = ({ sessionId }: Props) => {
     const { palette } = useTheme();
+    const [, navigate] = useLocation();
     const [sessionData, loadingSession] = useSession(sessionId);
 
     const { saveSession, saving, error: saveError } = useSaveSession();
@@ -92,6 +94,7 @@ const SessionDataPage = ({ sessionId }: Props) => {
                                 )
                             }
                             onHover={(l) => setHoveredLapId(l?.id ?? null)}
+                            onCompareLap={(l) => navigate(`/laps/${l.id}`)}
                         />
                     );
                 })}

@@ -1,4 +1,16 @@
-import { alpha, Box, Card, CardActionArea, Stack } from "@mui/material";
+import {
+    alpha,
+    Box,
+    Card,
+    CardActionArea,
+    Divider,
+    IconButton,
+    Menu,
+    MenuItem,
+    Stack,
+} from "@mui/material";
+import { useState } from "react";
+import { MdMoreVert } from "react-icons/md";
 import { TbNumber } from "react-icons/tb";
 import { BiStopwatch } from "react-icons/bi";
 import { LapInfo } from "../types";
@@ -11,10 +23,20 @@ interface Props {
     selected?: boolean;
     onSelect?: (lap: LapInfo) => void;
     onHover?: (lap: LapInfo | null) => void;
+    onCompareLap?: (lap: LapInfo) => void;
 }
 
-const SessionLapCard = ({ lap, color, selected, onSelect, onHover }: Props) => {
+const SessionLapCard = ({
+    lap,
+    color,
+    selected,
+    onSelect,
+    onHover,
+    onCompareLap,
+}: Props) => {
     const selectable = !lap.isPit && lap.isValid;
+    const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
+    const closeMenu = () => setMenuAnchor(null);
 
     return (
         <Box
@@ -31,6 +53,8 @@ const SessionLapCard = ({ lap, color, selected, onSelect, onHover }: Props) => {
                     border: 1,
                     borderColor: color,
                     backgroundColor: selected ? alpha(color, 0.6) : undefined,
+                    position: "relative",
+                    "&:hover .lap-options-button": { opacity: 1 },
                 }}
             >
                 <CardActionArea
@@ -50,6 +74,49 @@ const SessionLapCard = ({ lap, color, selected, onSelect, onHover }: Props) => {
                         </Stack>
                     </Box>
                 </CardActionArea>
+                {selectable && (
+                    <>
+                        <IconButton
+                            size="small"
+                            aria-label="Lap options"
+                            onClick={(e) => setMenuAnchor(e.currentTarget)}
+                            className="lap-options-button"
+                            sx={{
+                                position: "absolute",
+                                top: 0,
+                                right: 0,
+                                opacity: menuAnchor ? 1 : 0,
+                                transition: "opacity 0.15s",
+                                "&:focus-visible": { opacity: 1 },
+                            }}
+                        >
+                            <MdMoreVert />
+                        </IconButton>
+                        <Menu
+                            anchorEl={menuAnchor}
+                            open={!!menuAnchor}
+                            onClose={closeMenu}
+                        >
+                            <MenuItem
+                                onClick={() => {
+                                    closeMenu();
+                                    onSelect?.(lap);
+                                }}
+                            >
+                                Select in Session
+                            </MenuItem>
+                            <MenuItem
+                                onClick={() => {
+                                    closeMenu();
+                                    onCompareLap?.(lap);
+                                }}
+                            >
+                                Compare to Lap
+                            </MenuItem>
+                            <Divider />
+                        </Menu>
+                    </>
+                )}
             </Card>
         </Box>
     );
