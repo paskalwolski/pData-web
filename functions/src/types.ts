@@ -83,6 +83,7 @@ export interface SessionLapDetail {
   isValid: boolean;
   lapNumber: number;
   lapTime?: string;
+  dropped?: boolean;
 }
 
 export interface CloseSessionPayload {

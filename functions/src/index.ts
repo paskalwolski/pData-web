@@ -276,17 +276,27 @@ export const saveSession = onCall<SaveSessionPayload>(async request => {
   const aggregateStatus =
     currentAggregateStatus === 'ready' ? 'pending' : currentAggregateStatus;
 
+  const lapDocs = await firestore
+    .collection(LAPS)
+    .where('sessionId', '==', saveSessionBody.id)
+    .orderBy('lapTime')
+    .get();
+
+  // Without keepAllLaps, only the fastest valid lap survives; the rest stay expirable
+  const keptLapIds = new Set(
+    saveSessionBody.keepAllLaps
+      ? lapDocs.docs.map(l => l.id)
+      : lapDocs.docs
+          .filter(l => l.get('isValid') && !l.get('isPit'))
+          .slice(0, 1)
+          .map(l => l.id),
+  );
+
+  lapDocs.docs
+    .filter(l => keptLapIds.has(l.id))
+    .forEach(l => batch.update(l.ref, {expiresAt: null}));
+
   batch.update(sessionRef, {expiresAt: null, aggregateStatus});
-
-  // TODO: Figure out which laps to keep when we don't want the full sessionData
-  if (saveSessionBody.keepAllLaps) {
-    const lapDocs = await firestore
-      .collection(LAPS)
-      .where('sessionId', '==', saveSessionBody.id)
-      .get();
-
-    lapDocs.docs.forEach(l => batch.update(l.ref, {expiresAt: null}));
-  }
 
   await batch.commit();
 });
@@ -446,7 +456,9 @@ export const deleteExpiredTestLaps = onSchedule('every 6 hours', async () => {
           const currentLapData = sessionSnap.data()?.lapData ?? [];
           const deletedLapIds = new Set(laps.map(l => l.id));
           lapBatch.update(sessionRef, {
-            lapData: currentLapData.filter(l => !deletedLapIds.has(l.id!)),
+            lapData: currentLapData.map(l =>
+              deletedLapIds.has(l.id!) ? {...l, dropped: true} : l,
+            ),
           });
         }
 
