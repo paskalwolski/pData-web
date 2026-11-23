@@ -1,6 +1,6 @@
 import { Timestamp } from "firebase/firestore";
 
-export type SessionType = "RACE" | "PRACTICE" | "QUALIFYING" | "HOTLAP";
+export type SessionType = "RACE" | "PRACTICE" | "QUALIFY" | "HOTLAP";
 
 export interface LapSessionData {
     driver: string;

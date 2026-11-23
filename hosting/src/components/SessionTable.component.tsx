@@ -21,6 +21,7 @@ import {
 } from "../hooks/FilterContext/useFiltering";
 import { useMetaName } from "../hooks/CTDContext/useCollectionMeta";
 import { ExpiresIcon } from "./ExpiresIcon.component";
+import { getSessionTypeLabel } from "../helpers/fieldLabelMappers";
 
 // NOTE: This component mirrors `LapTable.component.tsx` - the pagination,
 // sorting and filtering state handling is identical and only the columns and
@@ -106,6 +107,14 @@ const SessionTableDataGrid = ({
                 sortingOrder: ["asc", null],
                 valueFormatter: (value) => formatDuration(value),
                 minWidth: 150,
+            },
+            {
+                field: "sessionType",
+                headerName: "Session Type",
+                sortable: false,
+                minWidth: 150,
+                valueGetter: (_, row) => getSessionTypeLabel(row.sessionType),
+                ...CUSTOM_HEADER,
             },
             {
                 field: "trackName",

@@ -41,7 +41,6 @@ const createFilterConvertor = (fieldMapping: Record<string, string>) => {
         ...fieldMapping,
         [DOCUMENT_REF]: documentId(),
     };
-    console.log();
     return (filtering: GridFilterModel) =>
         filtering.items.map((f) =>
             where(

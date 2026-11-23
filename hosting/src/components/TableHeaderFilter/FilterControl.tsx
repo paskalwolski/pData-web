@@ -1,7 +1,11 @@
 import { Autocomplete, Box, Paper, TextField } from "@mui/material";
 import { GridFilterItem } from "@mui/x-data-grid";
 import { useAutocompleteOptions } from "../../hooks/CTDContext/useAutocompleteOptions";
-import { AutocompleteCollection, FieldNameCollectionMapping } from "./types";
+import {
+    AutocompleteCollection,
+    FieldNameCollectionMapping,
+    StaticFieldOptions,
+} from "./types";
 import React, { useCallback } from "react";
 
 const EMPTY_VALUE: [] = [];
@@ -21,9 +25,11 @@ export const FilterControl = ({
     onChange,
     disabled,
 }: Props) => {
-    const [options, isLoading] = useAutocompleteOptions(
+    const staticOptions = StaticFieldOptions?.[field];
+    const [ctdOptions, isLoading] = useAutocompleteOptions(
         FieldNameCollectionMapping[field as AutocompleteCollection],
     );
+    const options = staticOptions ?? ctdOptions;
 
     const handleChange = useCallback(
         (e: React.SyntheticEvent, v: []) => onChange(v),
