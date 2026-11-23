@@ -25,6 +25,7 @@ const sessionFieldMapping = {
     driverName: "driver",
     sessionTime: "sessionTime",
     expiresAt: "expiresAt",
+    // sessionType: "sessionType",
 };
 const filterOperatorMapping = {
     isAnyOf: "in",
@@ -44,7 +45,7 @@ const createFilterConvertor = (fieldMapping: Record<string, string>) => {
     return (filtering: GridFilterModel) =>
         filtering.items.map((f) =>
             where(
-                effectiveFieldMapping[f.field],
+                effectiveFieldMapping?.[f.field] ?? f.field,
                 filterOperatorMapping[f.operator],
                 Array.isArray(f.value) ? f.value.map((v) => v.id) : f.value,
             ),
