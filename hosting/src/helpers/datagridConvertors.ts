@@ -16,6 +16,16 @@ const lapFieldMapping = {
     lapTimestamp: "lapTimestamp",
     expiresAt: "expiresAt",
 };
+// Sessions store driver/car/track at the top level of the document (laps nest
+// them under `sessionData`).
+const sessionFieldMapping = {
+    bestLapTime: "bestLapTime",
+    trackName: "track",
+    carName: "car",
+    driverName: "driver",
+    sessionTime: "sessionTime",
+    expiresAt: "expiresAt",
+};
 const filterOperatorMapping = {
     isAnyOf: "in",
     "=": "==",
@@ -44,9 +54,14 @@ const createFilterConvertor = (fieldMapping: Record<string, string>) => {
 
 const lapFilterConvertor = createFilterConvertor(lapFieldMapping);
 
+const sessionSortConvertor = createSortConvertor(sessionFieldMapping);
+const sessionFilterConvertor = createFilterConvertor(sessionFieldMapping);
+
 export {
     DOCUMENT_REF,
     createSortConvertor,
     lapSortConvertor,
     lapFilterConvertor,
+    sessionSortConvertor,
+    sessionFilterConvertor,
 };

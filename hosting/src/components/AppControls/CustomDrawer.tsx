@@ -24,7 +24,13 @@ const CustomDrawer = ({
                 >
                     Laps
                 </MenuItem>
-                <MenuItem onClick={toggleDrawerOpen}>Sessions</MenuItem>
+                <MenuItem
+                    component={Link}
+                    href="/sessions"
+                    onClick={toggleDrawerOpen}
+                >
+                    Sessions
+                </MenuItem>
                 <Divider />
             </List>
         </Stack>

@@ -11,6 +11,9 @@ import { CarSpinner } from "./components/CarSpinner";
 const LapDataPage = lazy(() => import("./pages/LapDataPage"));
 const SessionDataPage = lazy(() => import("./pages/SessionDataPage"));
 const LapSelectorPage = lazy(() => import("./pages/LapSelectorPage"));
+const SessionSelectorPage = lazy(
+    () => import("./pages/SessionSelectorPage"),
+);
 
 export default function App() {
     const { loading } = useCTDContext();
@@ -60,6 +63,11 @@ export default function App() {
                                 <SessionDataPage sessionId={sessionId} />
                             </Suspense>
                         )}
+                    </Route>
+                    <Route path="/sessions">
+                        <Suspense fallback={<CarSpinner />}>
+                            <SessionSelectorPage />
+                        </Suspense>
                     </Route>
                     <Route path="/" component={Homepage} />
                 </Switch>
