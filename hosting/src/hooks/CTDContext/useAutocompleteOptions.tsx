@@ -9,7 +9,7 @@ const useAutocompleteOptions = (
 ): [AutocompleteOption[], boolean] => {
     const [options, setOptions] = useState<AutocompleteOption[]>([]);
 
-    const { loading, ...ctdContext } = useCTDContext();
+    const ctdContext = useCTDContext();
 
     useEffect(() => {
         let cancelled = false;
@@ -20,7 +20,7 @@ const useAutocompleteOptions = (
         }
 
         async function fetchFilterOptions() {
-            if (loading || cancelled) {
+            if (ctdContext.loading || cancelled) {
                 return;
             }
             const metaName = ctdContext?.[field];
@@ -34,9 +34,9 @@ const useAutocompleteOptions = (
             };
         }
         fetchFilterOptions();
-    }, [ctdContext, field, loading]);
+    }, [ctdContext, field]);
 
-    return [options, loading];
+    return [options, ctdContext.loading];
 };
 
 export { useAutocompleteOptions };
