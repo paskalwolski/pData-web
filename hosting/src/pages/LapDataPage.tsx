@@ -12,7 +12,7 @@ import { useLap } from "../hooks/useLaps";
 import { SessionInfo } from "../components/SessionInfo.component";
 import { LapTelemetry } from "../views/LapTelemetry";
 import { useRoute } from "wouter";
-import { TbAB, TbABOff, TbRoad } from "react-icons/tb";
+import { TbAB, TbAB2, TbABOff, TbRoad } from "react-icons/tb";
 import { useCallback, useMemo } from "react";
 import { navigate } from "wouter/use-browser-location";
 import { LapInfo } from "../components/LapInfo.component";
@@ -46,6 +46,11 @@ const LapDataPage = ({ lapId, secondaryLapId }: Props) => {
             handleClose();
         },
         [handleClose, lapId],
+    );
+
+    const handleComparisonLapSwap = useCallback(
+        () => navigate(`/laps/${secondaryLapId}/compare/${lapId}`),
+        [lapId, secondaryLapId],
     );
 
     const removeComparisonLap = useCallback(() => {
@@ -155,6 +160,15 @@ const LapDataPage = ({ lapId, secondaryLapId }: Props) => {
                             <Button variant="outlined" onClick={handleOpen}>
                                 <TbAB />
                             </Button>
+                            {hasComparisonLap && (
+                                <Button
+                                    variant="outlined"
+                                    color="info"
+                                    onClick={handleComparisonLapSwap}
+                                >
+                                    <TbAB2 />
+                                </Button>
+                            )}
                             {hasComparisonLap && (
                                 <Button
                                     variant="outlined"
