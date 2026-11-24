@@ -1,7 +1,12 @@
 import { Box } from "@mui/material";
 import * as d3 from "d3";
 import { useContainerSize } from "../../hooks/useContainerSize";
-import { TelemetryData, TrackData, TrackDisplayMode } from "../../types";
+import {
+    TelemetryData,
+    TrackData,
+    TrackDisplayMode,
+    TrackMarkerType,
+} from "../../types";
 import { useMemo, useState } from "react";
 import { TrackPath } from "./TrackPath.component";
 import { useTelemetryPointContext } from "../../hooks/TelemetryPointContext/useTelemetryPoint";
@@ -19,6 +24,13 @@ interface Props {
 
 // Pixel gap kept between the rendered track (and its mask image) and the container edges.
 const TRACK_PADDING = 24;
+
+// Marker sets drawn for each segment mode. Stand-in until the track menu owns this.
+const MODE_MARKER_TYPES: Record<TrackDisplayMode, TrackMarkerType[]> = {
+    lines: ["apex"],
+    pedals: ["fullThrottle"],
+    delta: [],
+};
 
 const getPositionData = (data: TelemetryData) => {
     if (!data) return undefined;
@@ -43,13 +55,17 @@ const TrackDisplay = ({
         displayMode,
     );
 
-    const markers = useMemo(
-        () => detectTrackMarkers(telemetryData, displayMode),
-        [telemetryData, displayMode],
+    const markerSets = useMemo(
+        () => detectTrackMarkers(telemetryData),
+        [telemetryData],
     );
-    const secondaryMarkers = useMemo(
-        () => detectTrackMarkers(secondaryTelemetryData, displayMode),
-        [secondaryTelemetryData, displayMode],
+    const secondaryMarkerSets = useMemo(
+        () => detectTrackMarkers(secondaryTelemetryData, true),
+        [secondaryTelemetryData],
+    );
+    const markerVisibility = useMemo(
+        () => ({ markerTypes: MODE_MARKER_TYPES[displayMode] }),
+        [displayMode],
     );
 
     const primaryPositionData = useMemo(
@@ -333,16 +349,17 @@ const TrackDisplay = ({
 
                 {secondaryTelemetryData && (
                     <TrackMarkers
-                        markers={secondaryMarkers}
+                        markerSets={secondaryMarkerSets}
+                        markerVisibility={markerVisibility}
                         telemetryData={secondaryTelemetryData}
                         xScale={xScale}
                         yScale={yScale}
                         renderScale={renderScale}
-                        secondary
                     />
                 )}
                 <TrackMarkers
-                    markers={markers}
+                    markerSets={markerSets}
+                    markerVisibility={markerVisibility}
                     telemetryData={telemetryData}
                     xScale={xScale}
                     yScale={yScale}

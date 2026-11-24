@@ -78,6 +78,29 @@ export type TrackSegmentType = "positive" | "negative" | "neutral";
 
 export type TrackDisplayMode = "pedals" | "delta" | "lines";
 
+/** What a marker set marks; marker visibility selects sets by marker type. */
+export type TrackMarkerType = "apex" | "fullThrottle";
+
+export interface TrackMarkerStyle {
+    /** Theme palette key. */
+    color: string;
+    dashed?: boolean;
+    scale?: number;
+}
+
+/** A named series of track markers: how they look (`style`) and where they are (`data`). */
+export interface TrackMarkerSet {
+    markerType: TrackMarkerType;
+    style: TrackMarkerStyle;
+    /** Telemetry indices (≈ metres along the lap). */
+    data: number[];
+}
+
+export interface TrackMarkerVisibility {
+    /** Only marker sets of these types are drawn. */
+    markerTypes: TrackMarkerType[];
+}
+
 export interface TelemetryData {
     brake?: TelemetryDataSet;
     gas?: TelemetryDataSet;

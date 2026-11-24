@@ -1,14 +1,19 @@
 import { useTheme } from "@mui/material";
-import { TelemetryData } from "../../types";
+import {
+    TelemetryData,
+    TrackMarkerVisibility,
+    TrackMarkerSet,
+} from "../../types";
 
 interface Props {
-    /** Telemetry indices (≈ metres along the lap) to mark. */
-    markers: number[];
+    /** Marker sets of one lap; `markerVisibility` decides which are drawn. */
+    markerSets: TrackMarkerSet[];
+    markerVisibility: TrackMarkerVisibility;
+    /** Lap the marker indices refer to; supplies track positions. */
     telemetryData: TelemetryData;
     xScale: d3.ScaleLinear<number, number, never>;
     yScale: d3.ScaleLinear<number, number, never>;
     renderScale: number;
-    secondary?: boolean;
 }
 
 // Samples either side of the marker used to estimate the local track direction.
@@ -18,12 +23,12 @@ const BAR_HALF_LENGTH = 7;
 const BAR_WIDTH = 4;
 
 export const TrackMarkers = ({
-    markers,
+    markerSets,
+    markerVisibility,
     telemetryData,
     xScale,
     yScale,
     renderScale,
-    secondary = false,
 }: Props) => {
     const { palette } = useTheme();
     const { posX, posZ } = telemetryData;
@@ -60,23 +65,38 @@ export const TrackMarkers = ({
 
     return (
         <>
-            {markers.map((meter) => {
-                const centre = getBar(meter, BAR_HALF_LENGTH * renderScale);
-                if (!centre) return null;
-                const colour = secondary
-                    ? palette.secondary.main
-                    : palette.primary.main;
+            {markerSets
+                .filter((set) =>
+                    markerVisibility.markerTypes.includes(set.markerType),
+                )
+                .map(({ markerType, style, data }) =>
+                    data.map((meter) => {
+                        const centre = getBar(
+                            meter,
+                            BAR_HALF_LENGTH * (style.scale ?? 1) * renderScale,
+                        );
+                        if (!centre) return null;
 
-                return (
-                    <g key={meter}>
-                        <line
-                            {...centre.line}
-                            stroke={colour}
-                            strokeWidth={BAR_WIDTH * renderScale}
-                        />
-                    </g>
-                );
-            })}
+                        return (
+                            <g key={`${markerType}-${meter}`}>
+                                <line
+                                    {...centre.line}
+                                    stroke={palette[style.color].main}
+                                    strokeWidth={
+                                        BAR_WIDTH *
+                                        (style.scale ?? 1) *
+                                        renderScale
+                                    }
+                                    strokeDasharray={
+                                        style.dashed
+                                            ? `${4 * renderScale}`
+                                            : undefined
+                                    }
+                                />
+                            </g>
+                        );
+                    }),
+                )}
         </>
     );
 };
