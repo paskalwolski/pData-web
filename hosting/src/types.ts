@@ -96,10 +96,10 @@ export interface TrackMarkerSet {
     data: number[];
 }
 
-export interface TrackMarkerVisibility {
-    /** Only marker sets of these types are drawn. */
-    markerTypes: TrackMarkerType[];
-}
+/** One toggle per marker type, plus whether the comparison lap's markers are drawn at all. */
+export type TrackMarkerVisibility = Record<TrackMarkerType, boolean> & {
+    secondary: boolean;
+};
 
 export interface TelemetryData {
     brake?: TelemetryDataSet;

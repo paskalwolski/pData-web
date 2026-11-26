@@ -5,9 +5,9 @@ import {
     TelemetryData,
     TrackData,
     TrackDisplayMode,
-    TrackMarkerType,
+    TrackMarkerVisibility,
 } from "../../types";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { TrackPath } from "./TrackPath.component";
 import { useTelemetryPointContext } from "../../hooks/TelemetryPointContext/useTelemetryPoint";
 import { TrackCrosshair } from "./TrackCrosshair.component";
@@ -24,13 +24,6 @@ interface Props {
 
 // Pixel gap kept between the rendered track (and its mask image) and the container edges.
 const TRACK_PADDING = 24;
-
-// Marker sets drawn for each segment mode. Stand-in until the track menu owns this.
-const MODE_MARKER_TYPES: Record<TrackDisplayMode, TrackMarkerType[]> = {
-    lines: ["apex"],
-    pedals: ["fullThrottle"],
-    delta: [],
-};
 
 const getPositionData = (data: TelemetryData) => {
     if (!data) return undefined;
@@ -63,9 +56,18 @@ const TrackDisplay = ({
         () => detectTrackMarkers(secondaryTelemetryData, true),
         [secondaryTelemetryData],
     );
-    const markerVisibility = useMemo(
-        () => ({ markerTypes: MODE_MARKER_TYPES[displayMode] }),
-        [displayMode],
+
+    const [markerVisibility, setMarkerVisibility] =
+        useState<TrackMarkerVisibility>({
+            apex: true,
+            fullThrottle: true,
+            secondary: true,
+        });
+
+    const handleMarkerVisibilityChange = useCallback(
+        (key: keyof TrackMarkerVisibility, visible: boolean) =>
+            setMarkerVisibility((prev) => ({ ...prev, [key]: visible })),
+        [],
     );
 
     const primaryPositionData = useMemo(
@@ -284,6 +286,8 @@ const TrackDisplay = ({
                 displayMode={displayMode}
                 setDisplayMode={setDisplayMode}
                 hasComparisonLap={!!secondaryTelemetryData}
+                markerVisibility={markerVisibility}
+                onMarkerVisibilityChange={handleMarkerVisibilityChange}
             />
             <svg
                 style={{ position: "absolute", top: 0, left: 0 }}
@@ -347,7 +351,7 @@ const TrackDisplay = ({
                     renderScale={renderScale}
                 />
 
-                {secondaryTelemetryData && (
+                {secondaryTelemetryData && markerVisibility.secondary && (
                     <TrackMarkers
                         markerSets={secondaryMarkerSets}
                         markerVisibility={markerVisibility}

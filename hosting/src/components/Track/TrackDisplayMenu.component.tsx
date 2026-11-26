@@ -7,24 +7,43 @@ import {
     Divider,
     ToggleButtonGroup,
     ToggleButton,
+    Checkbox,
+    FormControlLabel,
+    FormGroup,
     alpha,
     useTheme,
 } from "@mui/material";
 import { TbSettingsOff, TbSettings } from "react-icons/tb";
 import { useOpeneable } from "../../hooks/useOpenable";
-import { TrackDisplayMode } from "../../types";
+import {
+    TrackDisplayMode,
+    TrackMarkerType,
+    TrackMarkerVisibility,
+} from "../../types";
 import { useCallback, useEffect } from "react";
 
 interface Props {
     displayMode: TrackDisplayMode;
     setDisplayMode: (mode: TrackDisplayMode) => void;
     hasComparisonLap: boolean;
+    markerVisibility: TrackMarkerVisibility;
+    onMarkerVisibilityChange: (
+        key: keyof TrackMarkerVisibility,
+        visible: boolean,
+    ) => void;
 }
+
+const MARKER_TYPE_LABELS: Record<TrackMarkerType, string> = {
+    apex: "Apexes",
+    fullThrottle: "Full throttle",
+};
 
 const TrackDisplayMenu = ({
     displayMode,
     setDisplayMode,
     hasComparisonLap = false,
+    markerVisibility,
+    onMarkerVisibilityChange,
 }: Props) => {
     const { isOpen, handleOpen, handleClose } = useOpeneable();
 
@@ -96,6 +115,46 @@ const TrackDisplayMenu = ({
                             Delta
                         </ToggleButton>
                     </ToggleButtonGroup>
+                    <Divider />
+                    <Typography variant="overline">Markers</Typography>
+                    <FormGroup>
+                        {(
+                            Object.keys(MARKER_TYPE_LABELS) as TrackMarkerType[]
+                        ).map((markerType) => (
+                            <FormControlLabel
+                                key={markerType}
+                                label={MARKER_TYPE_LABELS[markerType]}
+                                control={
+                                    <Checkbox
+                                        size="small"
+                                        checked={markerVisibility[markerType]}
+                                        onChange={(e) =>
+                                            onMarkerVisibilityChange(
+                                                markerType,
+                                                e.target.checked,
+                                            )
+                                        }
+                                    />
+                                }
+                            />
+                        ))}
+                        <FormControlLabel
+                            label="Comparison lap"
+                            disabled={!hasComparisonLap}
+                            control={
+                                <Checkbox
+                                    size="small"
+                                    checked={markerVisibility.secondary}
+                                    onChange={(e) =>
+                                        onMarkerVisibilityChange(
+                                            "secondary",
+                                            e.target.checked,
+                                        )
+                                    }
+                                />
+                            }
+                        />
+                    </FormGroup>
                 </Stack>
             </Paper>
         </Box>

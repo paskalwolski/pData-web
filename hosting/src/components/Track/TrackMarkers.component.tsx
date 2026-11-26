@@ -66,9 +66,7 @@ export const TrackMarkers = ({
     return (
         <>
             {markerSets
-                .filter((set) =>
-                    markerVisibility.markerTypes.includes(set.markerType),
-                )
+                .filter((set) => markerVisibility[set.markerType])
                 .map(({ markerType, style, data }) =>
                     data.map((meter) => {
                         const centre = getBar(
