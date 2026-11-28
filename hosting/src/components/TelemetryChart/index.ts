@@ -4,6 +4,7 @@ export default TelemetryChart;
 export { CHANNEL_ORDER } from "./channels";
 export type {
     ChartBand,
+    ChartReferenceLine,
     ChartSeries,
     SeriesReadoutProps,
     TelemetryChannel,

@@ -18,6 +18,7 @@ const TelemetryChart = ({
     title: titleProp,
     series,
     bands,
+    referenceLines,
     delta = true,
     valueFormatter: valueFormatterProp,
     mutators: mutatorsProp,
@@ -278,6 +279,18 @@ const TelemetryChart = ({
                                     max={b.max}
                                     color={b.color}
                                     opacity={b.opacity}
+                                />
+                            ))}
+                            {(referenceLines ?? EMPTY_ARRAY).map((r) => (
+                                <line
+                                    key={r.id}
+                                    x1={leftPadding}
+                                    x2={width}
+                                    y1={yScale(r.value)}
+                                    y2={yScale(r.value)}
+                                    stroke={r.color}
+                                    strokeWidth={1}
+                                    strokeDasharray={r.dashed ? "5 2" : "0"}
                                 />
                             ))}
                             {mutatedSeries.map(

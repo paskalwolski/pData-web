@@ -40,6 +40,14 @@ export interface ChartBand {
     opacity?: number;
 }
 
+export interface ChartReferenceLine {
+    id: string;
+    /** Y value (in data units) the horizontal line is drawn at. */
+    value: number;
+    color: string;
+    dashed?: boolean;
+}
+
 export type TelemetryChannel = keyof Pick<
     TelemetryData,
     | "speed"
@@ -65,6 +73,8 @@ export type TelemetryChartProps = {
     title?: string;
     series: ChartSeries[];
     bands?: ChartBand[];
+    /** Horizontal lines drawn across the plot area. */
+    referenceLines?: ChartReferenceLine[];
     /** Show `series[0] - series[1]` after the series readouts. Defaults to true. */
     delta?: boolean;
     valueFormatter?: ValueFormatter;
