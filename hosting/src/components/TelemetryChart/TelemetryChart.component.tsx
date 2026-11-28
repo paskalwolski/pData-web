@@ -18,7 +18,7 @@ const TelemetryChart = ({
     title: titleProp,
     series,
     bands,
-    referenceLines,
+    referenceLines: referenceLinesProp,
     delta = true,
     valueFormatter: valueFormatterProp,
     mutators: mutatorsProp,
@@ -32,6 +32,7 @@ const TelemetryChart = ({
     const title = titleProp ?? config?.title;
     const valueFormatter = valueFormatterProp ?? config?.valueFormatter;
     const mutators = mutatorsProp ?? config?.mutators;
+    const referenceLines = referenceLinesProp ?? config?.referenceLines;
 
     const height = 200;
     const leftPadding = 50;
@@ -80,8 +81,11 @@ const TelemetryChart = ({
             ...mutatedSeries.map((s) => s.data),
             ...mutatedBands.flatMap((b) => [b.min, b.max]),
         ];
-        return d3.extent(sets.flatMap((d) => d3.extent(d)));
-    }, [mutatedSeries, mutatedBands]);
+        return d3.extent([
+            ...sets.flatMap((d) => d3.extent(d)),
+            ...(referenceLines ?? EMPTY_ARRAY).map((r) => r.value),
+        ]);
+    }, [mutatedSeries, mutatedBands, referenceLines]);
 
     const {
         selectedIndex,
@@ -288,7 +292,7 @@ const TelemetryChart = ({
                                     x2={width}
                                     y1={yScale(r.value)}
                                     y2={yScale(r.value)}
-                                    stroke={r.color}
+                                    stroke={r.color ?? palette.text.secondary}
                                     strokeWidth={1}
                                     strokeDasharray={r.dashed ? "5 2" : "0"}
                                 />

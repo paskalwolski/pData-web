@@ -14,6 +14,8 @@ export interface TelemetryChannelConfig {
     title: string;
     valueFormatter?: ValueFormatter;
     mutators?: readonly TelemetryMutator[];
+    /** Default horizontal reference lines; the chart prop wins. */
+    referenceLines?: readonly ChartReferenceLine[];
     /** Default for every series. */
     stepped?: boolean;
     /** Default for every series. */
@@ -44,7 +46,8 @@ export interface ChartReferenceLine {
     id: string;
     /** Y value (in data units) the horizontal line is drawn at. */
     value: number;
-    color: string;
+    /** Defaults to the theme's secondary text color. */
+    color?: string;
     dashed?: boolean;
 }
 

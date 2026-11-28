@@ -13,6 +13,9 @@ import { TelemetryChannel, TelemetryChannelConfig } from "./types";
 import { GearDeltaDisplay } from "../CustomTelemetry/GearDeltaDisplay";
 
 const STEER_MUTATORS = [invert] as const;
+const STEER_REFERENCE_LINES = [
+    { id: "steer-zero", value: 0, dashed: true },
+] as const;
 const GEAR_MUTATORS = [round] as const;
 const SLIP_SMOOTHING_WINDOW_M = 30;
 const SLIP_MUTATORS = [movingAverage(SLIP_SMOOTHING_WINDOW_M)] as const;
@@ -27,6 +30,7 @@ export const CHANNEL_CONFIG: Partial<
         title: "Steering",
         valueFormatter: steerFormatter,
         mutators: STEER_MUTATORS,
+        referenceLines: STEER_REFERENCE_LINES,
         readout: SteeringAngleDisplay,
     },
     ers: { title: "ERS Deployment (Joules)", valueFormatter: ersFormatter },
