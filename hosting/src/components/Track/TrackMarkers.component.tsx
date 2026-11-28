@@ -1,4 +1,3 @@
-import { useTheme } from "@mui/material";
 import {
     TelemetryData,
     TrackMarkerVisibility,
@@ -18,8 +17,9 @@ interface Props {
 
 // Samples either side of the marker used to estimate the local track direction.
 const DIRECTION_SPAN = 5;
-// Bar size in world units; multiplied by renderScale so it zooms with the track.
-const BAR_HALF_LENGTH = 7;
+// Base marker size in world units; multiplied by the style's scale and by renderScale
+// so markers zoom with the track.
+const BAR_LENGTH = 26;
 const BAR_WIDTH = 4;
 
 export const TrackMarkers = ({
@@ -30,13 +30,12 @@ export const TrackMarkers = ({
     yScale,
     renderScale,
 }: Props) => {
-    const { palette } = useTheme();
     const { posX, posZ } = telemetryData;
     if (!posX || !posZ) return null;
 
-    // Perpendicular bar centred on the track position at `index`.
-    // Direction is measured in pixel space so the bar stays perpendicular on screen.
-    const getBar = (index: number, halfLength: number) => {
+    // Centre and on-screen unit direction across the track (perpendicular to it) at the
+    // track position `index`. Measured in pixel space so the bar stays perpendicular on screen.
+    const getBar = (index: number) => {
         const prev = Math.max(0, index - DIRECTION_SPAN);
         const next = Math.min(posX.length - 1, index + DIRECTION_SPAN);
         if (
@@ -54,44 +53,40 @@ export const TrackMarkers = ({
         const dx = xScale(posX[next]) - xScale(posX[prev]);
         const dy = yScale(posZ[next]) - yScale(posZ[prev]);
         const len = Math.hypot(dx, dy) || 1;
-        const nx = (-dy / len) * halfLength;
-        const ny = (dx / len) * halfLength;
-        return {
-            cx,
-            cy,
-            line: { x1: cx - nx, y1: cy - ny, x2: cx + nx, y2: cy + ny },
-        };
+        return { cx, cy, ux: -dy / len, uy: dx / len };
     };
 
     return (
         <>
             {markerSets
                 .filter((set) => markerVisibility[set.markerType])
-                .map(({ markerType, style, data }) =>
+                .map(({ markerType, config, data }) =>
                     data.map((meter) => {
-                        const centre = getBar(
-                            meter,
-                            BAR_HALF_LENGTH * (style.scale ?? 1) * renderScale,
-                        );
-                        if (!centre) return null;
+                        const bar = getBar(meter);
+                        if (!bar) return null;
+
+                        const size = (config.scale ?? 1) * renderScale;
+                        const ax = (bar.ux * BAR_LENGTH * size) / 2;
+                        const ay = (bar.uy * BAR_LENGTH * size) / 2;
 
                         return (
-                            <g key={`${markerType}-${meter}`}>
-                                <line
-                                    {...centre.line}
-                                    stroke={palette[style.color].main}
-                                    strokeWidth={
-                                        BAR_WIDTH *
-                                        (style.scale ?? 1) *
-                                        renderScale
-                                    }
-                                    strokeDasharray={
-                                        style.dashed
-                                            ? `${4 * renderScale}`
-                                            : undefined
-                                    }
-                                />
-                            </g>
+                            <line
+                                key={`${markerType}-${meter}`}
+                                x1={bar.cx - ax}
+                                y1={bar.cy - ay}
+                                x2={bar.cx + ax}
+                                y2={bar.cy + ay}
+                                stroke={config.color}
+                                strokeWidth={BAR_WIDTH * renderScale}
+                                strokeLinecap={
+                                    config.secondary ? "round" : undefined
+                                }
+                                strokeDasharray={
+                                    config.secondary
+                                        ? `${0} ${6 * renderScale}`
+                                        : undefined
+                                }
+                            />
                         );
                     }),
                 )}

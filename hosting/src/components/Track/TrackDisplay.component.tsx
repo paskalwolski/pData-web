@@ -13,7 +13,7 @@ import { useTelemetryPointContext } from "../../hooks/TelemetryPointContext/useT
 import { TrackCrosshair } from "./TrackCrosshair.component";
 import { useTrackSegments } from "../../hooks/useTrackSegments";
 import { TrackDisplayMenu } from "./TrackDisplayMenu.component";
-import { detectTrackMarkers } from "../../helpers/detectTrackMarkers";
+import { useTrackMarkers } from "../../hooks/useTrackMarkers";
 import { TrackMarkers } from "./TrackMarkers.component";
 
 interface Props {
@@ -48,14 +48,8 @@ const TrackDisplay = ({
         displayMode,
     );
 
-    const markerSets = useMemo(
-        () => detectTrackMarkers(telemetryData),
-        [telemetryData],
-    );
-    const secondaryMarkerSets = useMemo(
-        () => detectTrackMarkers(secondaryTelemetryData, true),
-        [secondaryTelemetryData],
-    );
+    const markerSets = useTrackMarkers(telemetryData);
+    const secondaryMarkerSets = useTrackMarkers(secondaryTelemetryData, true);
 
     const [markerVisibility, setMarkerVisibility] =
         useState<TrackMarkerVisibility>({

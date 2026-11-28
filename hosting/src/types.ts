@@ -81,17 +81,19 @@ export type TrackDisplayMode = "pedals" | "delta" | "lines";
 /** What a marker set marks; marker visibility selects sets by marker type. */
 export type TrackMarkerType = "apex" | "fullThrottle";
 
-export interface TrackMarkerStyle {
-    /** Theme palette key. */
+export interface TrackMarkerConfig {
+    /** Line colour (CSS colour value). */
     color: string;
-    dashed?: boolean;
+    /** Secondary render flag */
+    secondary?: boolean;
+    /** Multiplies the marker's base length and width; defaults to 1. */
     scale?: number;
 }
 
 /** A named series of track markers: how they look (`style`) and where they are (`data`). */
 export interface TrackMarkerSet {
     markerType: TrackMarkerType;
-    style: TrackMarkerStyle;
+    config: TrackMarkerConfig;
     /** Telemetry indices (≈ metres along the lap). */
     data: number[];
 }
