@@ -1,7 +1,11 @@
 import { useMemo } from "react";
 import { useTheme } from "@mui/material";
 import { TelemetryData } from "../../types";
-import TelemetryChart, { ChartSeries } from "../TelemetryChart";
+import TelemetryChart, {
+    ChartReferenceLine,
+    ChartSeries,
+} from "../TelemetryChart";
+import { useTelemetryPointContext } from "../../hooks/TelemetryPointContext/useTelemetryPoint";
 import { useChartDeltaSegments } from "../../hooks/useDeltaSegments";
 
 const formatMillis = (t: number) => (t / 1000).toFixed(3) + "s";
@@ -43,10 +47,31 @@ const TimeDeltaChart = ({ primaryData, secondaryData }: Props) => {
         [rawDeltaData, positiveDeltaData, negativeDeltaData, palette],
     );
 
+    const { selectionStartIndex } = useTelemetryPointContext();
+    const startValue =
+        selectionStartIndex != null
+            ? rawDeltaData[selectionStartIndex]
+            : undefined;
+    const referenceLines = useMemo<ChartReferenceLine[]>(
+        () =>
+            startValue != null && isFinite(startValue)
+                ? [
+                      {
+                          id: "selection-start",
+                          value: startValue,
+                          color: palette.text.secondary,
+                          dashed: true,
+                      },
+                  ]
+                : [],
+        [startValue, palette],
+    );
+
     return (
         <TelemetryChart
             title={"Time Delta"}
             series={series}
+            referenceLines={referenceLines}
             delta={false}
             valueFormatter={formatMillis}
         />
